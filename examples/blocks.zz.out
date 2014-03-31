@@ -1,0 +1,11 @@
+## invocation
+blk: one = 1, two = 2
+blk: one = 1, two = 2
+3
+
+## closures
+closure: arg = 1, outer = 12
+closure: arg = 2, outer = 13
+
+## nonlocal return
+11

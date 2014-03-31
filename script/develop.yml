@@ -1,0 +1,13 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+  name: 'zzz development requirements'
+  tasks:
+
+  - name: install homebrew dependencies
+    homebrew: name={{ item }} state=present
+    with_items:
+    - ragel  # Lexer generator
+    - lemon  # Parser generator
+    - icu4c  # Unicode library

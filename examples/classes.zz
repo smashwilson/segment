@@ -1,0 +1,80 @@
+# Demonstrate class, method, and mixin definition.
+
+class :SomeClass {
+  def :some_method { (a) puts "some_method: #{a}" }
+
+  def :other_method { (a)
+    puts "other_method: #{a}"
+    some_method a
+  }
+
+  defclass :cls_method { puts "class method" }
+}
+
+puts "## class and instance methods"
+
+SomeClass.cls_method
+%inst = SomeClass.new
+%inst.some_method 10
+%inst.other_method 20
+
+## Instance Variables
+
+class :Box {
+  constructor {
+    @value = 0
+  }
+
+  def :value { @value }
+  def :value= { (v) @value = v }
+
+  def :increment { (by)
+    %temp = @value
+    @value = @value + by
+    %temp
+  }
+}
+
+puts "\n## instance variables"
+
+%b = Box.new
+puts "%b.value = #{%b.value}"
+%b.value= 10
+puts "%b.value = #{%b.value}"
+%was = %b.increment
+puts "%b.value was #{%was}, now #{%b.value}"
+
+## Mixins
+
+mixin :Pokeable {
+  def :poke { puts "#{self} was poked" }
+  def :prod { puts "Pokeable#prod was called" }
+}
+
+mixin :Prodable {
+  def :prod { puts "Prodable#prod was called" }
+  defclass :can_be_prodded { puts "Prodable#can_be_prodded was called" }
+  mixinclass :on_mixin { puts "Prodable#on_mixin was called" }
+}
+
+class :One {
+  include Pokeable
+  def :prod { puts "One#prod was called" }
+  def :as_string { "one" }
+}
+
+class :Two {
+  include Pokeable
+  include Prodable :prod
+  def :as_string { "two" }
+}
+
+puts "\n## mixins"
+
+One.new.poke
+One.new.prod
+Two.new.poke
+Two.new.prod
+
+Two.can_be_prodded
+Prodable.on_mixin

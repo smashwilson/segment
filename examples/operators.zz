@@ -1,0 +1,24 @@
+# Demonstrate operators and precedence.
+
+class :Foo {
+  constructor { (v) @value = v }
+
+  def :value { @value }
+
+  def :+ { (rhs) "(#{self} + #{rhs})" }
+  def :== { (other) @value == other.value }
+
+  def :someop* { (rhs) "(#{self} someop* #{rhs})" }
+  def :otherop- { (rhs) "(#{self} otherop- #{rhs})" }
+
+  def :as_string { "[foo #{@value}]" }
+}
+
+%f0 = Foo.new(0)
+%f1 = Foo.new(1)
+%f2 = Foo.new(2)
+
+puts "## operator definition"
+puts(%f0 + %f1 + %f2)
+puts(%f0 == %f0 + %f2)
+puts(%f0 otherop- %f1 someop* %f2)

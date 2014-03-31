@@ -1,0 +1,53 @@
+# Demonstrates the two styles of non-operator method invocation.
+
+def :some_method { (arg0, arg1, arg2)
+  puts "<<< some_method"
+  puts "arg0 is #{arg0}"
+  puts "arg1 is #{arg1}"
+  puts "arg2 is #{arg2}"
+  puts ">>>"
+}
+
+# Dot invocation.
+
+## Explicit receiver.
+self.some_method(10, 20, 30)
+
+## Implicit receiver.
+some_method(11, 21, 31)
+
+## Keyword arguments.
+some_method(arg2: 12, arg0: 22, arg1: 32)
+
+# Space invocation.
+
+## Explicit receiver.
+self.some_method 13 23 33
+
+## Implicit receiver.
+some_method 14 24 34
+
+## Keyword arguments (partial).
+some_method 15 arg2: 25 arg1: 35
+
+# Default arguments.
+
+def :withdef { (one, two = 2, three = two)
+  puts "<<< withdef"
+  puts "one = #{one}"
+  puts "two = #{two}"
+  puts "three = #{three}"
+  puts ">>>"
+}
+
+withdef 1
+withdef 1 10
+withdef 1 10 100
+withdef 1 three: 6
+
+# Zero arguments.
+
+def :zeroarg { puts "<<< zeroarg" }
+
+zeroarg()
+zeroarg

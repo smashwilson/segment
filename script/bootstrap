@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Use Ansible to bootstrap a reasonable development environment.
+
+ansible-playbook -i 'localhost,' script/develop.yml

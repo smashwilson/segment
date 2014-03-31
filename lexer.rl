@@ -2,30 +2,28 @@
 #include "grammar.c"
 
 %%{
-
   machine zzz_lexer;
 
-  true = 'true';
-  false = 'false';
+  comment = '#' [^\n]* '\n';
 
   integer = ('+'|'-')?[0-9]+;
   float = ('+'|'-')?[0-9]+'.'[0-9]+;
+  true = 'true';
+  false = 'false';
   string = '"' [^"]* '"';
 
   identifier = [^ \t\r\n({.;"']+;
+  symbol = ':' identifier | ':' string;
 
   main := |*
-
-    '#' [^\n]* '\n';
+    comment;
 
     integer => { /* INTEGER */ };
     float => { /* FLOAT */ };
     true => { /* TRUE */ };
     false => { /* FALSE */ };
     string => { /* STRING */ };
-    ':' identifier | ':' string => {
-      /* SYMBOL */
-    };
+    symbol => { /* SYMBOL */ };
 
     '(' => { /* LPAREN */ };
     ')' => { /* RPAREN */ };
@@ -50,8 +48,7 @@
     '!' => { /* NOTLIKE */ };
 
     space;
-  *|
-
+  *|;
 }%%
 /* Syntax Highlighting */
 

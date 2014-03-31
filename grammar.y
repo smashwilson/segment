@@ -1,4 +1,6 @@
-// Grammer definition for zzz.
+%include { #include<assert.h> }
+
+// Grammar definition for zzz.
 
 program ::= statementlist.
 
@@ -11,7 +13,7 @@ expr ::= var.
 expr ::= literal.
 expr ::= block.
 expr ::= assignment.
-expr ::= invocation.
+expr ::= invocationlist.
 
 // Literals
 
@@ -38,11 +40,12 @@ var ::= TVAR.
 
 // Invocation
 
-invocation ::= receiver IDENTIFIER LPAREN commaargs RPAREN.
-invocation ::= receiver IDENTIFIER spaceargs.
+invocationlist ::= invocation.
+invocationlist ::= invocation PERIOD invocationlist.
+invocation ::= IDENTIFIER args.
 
-receiver ::= .
-receiver ::= IDENTIFIER PERIOD.
+args ::= LPAREN commaargs RPAREN.
+args ::= spaceargs.
 
 // Operators and operator precedence.
 
@@ -53,7 +56,7 @@ receiver ::= IDENTIFIER PERIOD.
 %left MULTLIKE DIVLIKE MODLIKE.
 %right EXPLIKE NOTLIKE.
 
-invocation ::= receiver operator expr.
+invocationlist ::= invocation operator invocationlist.
 
 operator ::= ANDLIKE.
 operator ::= ORLIKE.
@@ -64,7 +67,7 @@ operator ::= DIVLIKE.
 operator ::= MODLIKE.
 operator ::= EXPLIKE.
 
-invocation ::= NOTLIKE expr.
+invocationlist ::= NOTLIKE expr invocationlist.
 
 // Argument and method parameter lists.
 

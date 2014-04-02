@@ -23,7 +23,7 @@ statementlist ::= statement SEMI statementlist.
 statement ::= expr.
 statement ::= spaceinvocation.
 
-expr ::= LPAREN expr RPAREN.
+expr ::= LPAREN statement RPAREN.
 expr ::= literal.
 expr ::= IDENTIFIER.
 expr ::= block.
@@ -79,6 +79,8 @@ invocation ::= NOTLIKE expr.
 // Method call, explicit receiver
 
 invocation ::= receiver METHODNAME commaargs RPAREN.
+
+// Method call, space invocation.
 
 spaceinvocation ::= receiver IDENTIFIER spaceargs.
 

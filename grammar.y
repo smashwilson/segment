@@ -76,26 +76,34 @@ invocation ::= expr EXPLIKE expr.
 
 invocation ::= NOTLIKE expr.
 
-// Method call, explicit receiver
+// Paren method call, explicit receiver
 
 invocation ::= receiver METHODNAME commaargs RPAREN.
 
-// Method call, space invocation.
+// Paren method call, implicit receiver
+
+invocation ::= METHODNAME commaargs RPAREN.
+
+// Space method call, explicit receiver
 
 spaceinvocation ::= receiver IDENTIFIER spaceargs.
 
-receiver ::= expr PERIOD.
+// Space method call, implicit receiver
 
-// invocation ::= METHODNAME commaargs RPAREN.
-// invocation ::= IDENTIFIER spaceargs.
+spaceinvocation ::= IDENTIFIER spaceargs.
+
+receiver ::= expr PERIOD.
 
 // Argument lists.
 
 commaargs ::= .
-commaargs ::= commaargs COMMA arg.
+commaargs ::= commaargs COMMA commaarg.
 
-spaceargs ::= arg.
-spaceargs ::= spaceargs arg.
+commaarg ::= statement.
+commaarg ::= KEYWORD statement.
 
-arg ::= expr.
-arg ::= KEYWORD expr.
+spaceargs ::= spacearg.
+spaceargs ::= spaceargs spacearg.
+
+spacearg ::= expr.
+spacearg ::= KEYWORD expr.

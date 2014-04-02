@@ -1,6 +1,6 @@
 # A bunch of exercises of Blocks.
 
-%blk = { (one, two)
+%blk = { |one, two|
   puts "blk: one = #{one}, two = #{two}"
   one + two
 }
@@ -12,7 +12,7 @@ puts %blk(1, 2)
 # Yes, they're closures.
 
 %outer = 12
-%closure = { (arg)
+%closure = { |arg|
   puts "closure: arg = #{arg}, outer = #{%outer}"
   %outer = %outer + arg
 }
@@ -23,9 +23,9 @@ puts %closure(2)
 
 # Nonlocal return is supported.
 
-def :invokeit { (block) block.call }
+def :invokeit { |block| block.call }
 
-def :method { (arg)
+def :method { |arg|
   %local = { return(arg + 1) }
   invokeit %local
   puts "never gets here"

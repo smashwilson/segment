@@ -1,6 +1,6 @@
 # Demonstrates the two styles of non-operator method invocation.
 
-def :some_method { (arg0, arg1, arg2)
+def :some_method { |arg0, arg1, arg2|
   puts "<<< some_method"
   puts "arg0 is #{arg0}"
   puts "arg1 is #{arg1}"
@@ -32,7 +32,7 @@ some_method 15 arg2: 25 arg1: 35
 
 # Default arguments.
 
-def :withdef { (one, two = 2, three = two)
+def :withdef { |one, two = 2, three = two|
   puts "<<< withdef"
   puts "one = #{one}"
   puts "two = #{two}"

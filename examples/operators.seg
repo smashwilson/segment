@@ -1,15 +1,15 @@
 # Demonstrate operators and precedence.
 
 class :Foo {
-  constructor { (v) @value = v }
+  constructor { |v| @value = v }
 
   def :value { @value }
 
-  def :+ { (rhs) "(#{self} + #{rhs})" }
-  def :== { (other) @value == other.value }
+  def :+ { |rhs| "(#{self} + #{rhs})" }
+  def :== { |other| @value == other.value }
 
-  def :someop* { (rhs) "(#{self} someop* #{rhs})" }
-  def :otherop- { (rhs) "(#{self} otherop- #{rhs})" }
+  def :someop* { |rhs| "(#{self} someop* #{rhs})" }
+  def :otherop- { |rhs| "(#{self} otherop- #{rhs})" }
 
   def :as_string { "[foo #{@value}]" }
 }

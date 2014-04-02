@@ -1,9 +1,9 @@
 # Demonstrate class, method, and mixin definition.
 
 class :SomeClass {
-  def :some_method { (a) puts "some_method: #{a}" }
+  def :some_method { |a| puts "some_method: #{a}" }
 
-  def :other_method { (a)
+  def :other_method { |a|
     puts "other_method: #{a}"
     some_method a
   }
@@ -26,9 +26,9 @@ class :Box {
   }
 
   def :value { @value }
-  def :value= { (v) @value = v }
+  def :value= { |v| @value = v }
 
-  def :increment { (by)
+  def :increment { |by|
     %temp = @value
     @value = @value + by
     %temp

@@ -1,6 +1,6 @@
 %include { #include<assert.h> }
 
-// Grammar definition for zzz.
+// Grammar definition for segment.
 
 program ::= statementlist.
 
@@ -13,7 +13,8 @@ expr ::= var.
 expr ::= literal.
 expr ::= block.
 expr ::= assignment.
-expr ::= invocationlist.
+expr ::= invocationchain.
+expr ::= operatorchain.
 
 // Literals
 
@@ -40,8 +41,9 @@ var ::= TVAR.
 
 // Invocation
 
-invocationlist ::= invocation.
-invocationlist ::= invocation PERIOD invocationlist.
+invocationchain ::= invocation.
+invocationchain ::= invocation PERIOD invocationchain.
+
 invocation ::= IDENTIFIER args.
 
 args ::= LPAREN commaargs RPAREN.
@@ -55,8 +57,9 @@ args ::= spaceargs.
 %left PLUSLIKE MINUSLIKE.
 %left MULTLIKE DIVLIKE MODLIKE.
 %right EXPLIKE NOTLIKE.
+%left PERIOD.
 
-invocationlist ::= invocation operator invocationlist.
+operatorchain ::= expr operator operatorchain.
 
 operator ::= ANDLIKE.
 operator ::= ORLIKE.
@@ -67,7 +70,7 @@ operator ::= DIVLIKE.
 operator ::= MODLIKE.
 operator ::= EXPLIKE.
 
-invocationlist ::= NOTLIKE expr invocationlist.
+invocation ::= NOTLIKE expr.
 
 // Argument and method parameter lists.
 
@@ -81,10 +84,10 @@ parameter ::= IDENTIFIER.
 parameter ::= IDENTIFIER ASSIGNMENT expr.
 
 commaargs ::= .
-commaargs ::= commaargs COMMA arg.
+commaargs ::= commaargs WS COMMA WS arg.
 
 spaceargs ::= .
-spaceargs ::= spaceargs arg.
+spaceargs ::= spaceargs WS arg.
 
 arg ::= expr.
 arg ::= KEYWORD expr.

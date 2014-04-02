@@ -7,6 +7,7 @@
   machine zzz_lexer;
 
   comment = '#' [^\n]* '\n';
+  whitespace = [ \t]+
 
   integer = ('+'|'-')?[0-9]+;
   float = ('+'|'-')?[0-9]+'.'[0-9]+;
@@ -49,7 +50,7 @@
     identifier? '%' => { /* MODLIKE */ };
     '!' => { /* NOTLIKE */ };
 
-    space;
+    whitespace => { /* WS */ };
   *|;
 }%%
 /* Syntax Highlighting */

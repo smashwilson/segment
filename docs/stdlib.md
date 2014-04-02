@@ -45,7 +45,7 @@ Always visible by default.
 
 ## REPL
 
- * `zz`
+ * `segment`
 
 ## Parser
 

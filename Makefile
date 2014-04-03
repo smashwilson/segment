@@ -1,6 +1,8 @@
-bin/segment: src/grammar.o src/lexer.o
+OBJECTS=src/lexer.o src/segment.o
+
+bin/segment: src/grammar.c ${OBJECTS}
 	mkdir -p bin/
-	gcc src/lexer.o -o bin/segment
+	gcc ${OBJECTS} -o bin/segment
 
 src/lexer.c: src/lexer.rl
 	ragel -C -G2 src/lexer.rl

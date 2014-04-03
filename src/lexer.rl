@@ -66,7 +66,7 @@
 
 %% write data nofinal;
 
-int compile(char *content, size_t length)
+int segment_parse(char *content, off_t length)
 {
   /* Variables used by Ragel. */
   int cs, act;

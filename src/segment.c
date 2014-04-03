@@ -38,8 +38,8 @@ int main(int argc, const char **argv)
   }
 
   printf("Beginning parse:\n");
-  segment_parse((char*) content, istat.st_size);
-  printf("Parse complete.\n");
+  res = segment_parse((char*) content, istat.st_size);
+  printf("Parse complete: %d\n", res);
 
   return 0;
 }

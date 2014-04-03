@@ -75,14 +75,20 @@ int segment_parse(char *content, off_t length)
   const char *pe = content + length;
   const char *eof = pe;
 
+  int lexer_error = 0;
   void *parser = ParseAlloc(malloc);
 
   %% write init;
 
   %% write exec;
 
-  Parse(parser, 0, NULL);
+  if (cs == 0) {
+    lexer_error = 1;
+  } else {
+    Parse(parser, 0, NULL);
+  }
+
   ParseFree(parser, free);
 
-  return 0;
+  return lexer_error;
 }

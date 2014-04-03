@@ -59,13 +59,13 @@ See the [examples](examples/) directory for more samples of what it'll look like
 
 ## Getting Started
 
-If you're on a Mac with Homebrew and Ansible, you can clone it and run:
+If you're on a Mac with Homebrew, or a Linux box with apt, you can clone it and run:
 
 ```bash
 script/bootstrap
 ```
 
-If you don't have those things, [`develop.yml`](script/develop.yml) is good documentation on what dependencies you'll need to install on your platform of choice. I'm using [lemon](http://www.hwaci.com/sw/lemon/) as a parser generator and [ragel](http://www.complang.org/ragel/) for the lexer.
+If you don't have those things, [`script/bootstrap`](script/bootstrap) is good documentation on what dependencies you'll need to install on your platform of choice. I'm using [lemon](http://www.hwaci.com/sw/lemon/) as a parser generator and [ragel](http://www.complang.org/ragel/) for the lexer.
 
 Once you've got that, build it with:
 

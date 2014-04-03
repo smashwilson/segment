@@ -1,5 +1,17 @@
 #!/bin/sh
 #
-# Use Ansible to bootstrap a reasonable development environment.
+# Bootstrap a reasonable development environment, using the packaging utility for the current platform.
 
-ansible-playbook -i 'localhost,' script/develop.yml
+has () {
+  which $1 >/dev/null 2>&1
+  return $?
+}
+
+if has brew; then
+  brew install ragel lemon icu4c
+fi
+
+if has apt-get; then
+  sudo apt-get install ragel lemon libicu-dev
+fi
+

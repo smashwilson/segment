@@ -1,17 +1,19 @@
-segment: grammar.o lexer.o
-	gcc grammar.o lexer.o -o segment
+bin/segment: src/grammar.o src/lexer.o
+	mkdir -p bin/
+	gcc src/grammar.o src/lexer.o -o bin/segment
 
-lexer.c: lexer.rl
-	ragel -C -G2 lexer.rl
+src/lexer.c: src/lexer.rl
+	ragel -C -G2 src/lexer.rl
 
-grammar.c: grammar.y
+src/grammar.c: src/grammar.y
+	cd src
 	lemon -s grammar.y
 
 clean:
-	rm -f *.o grammar.c grammar.h grammar.out lexer.c
+	rm -f src/*.o src/grammar.c src/grammar.h src/grammar.out src/lexer.c
 
-grammar.o: grammar.c
+src/grammar.o: src/grammar.c
 	gcc grammar.c
 
-lexer.o: lexer.c
+src/lexer.o: src/lexer.c
 	gcc lexer.c

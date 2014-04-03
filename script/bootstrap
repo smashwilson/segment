@@ -9,9 +9,14 @@ has () {
 
 if has brew; then
   brew install ragel lemon icu4c
+  exit 0
 fi
 
 if has apt-get; then
-  sudo apt-get install ragel lemon libicu-dev
+  sudo apt-get install -y ragel lemon libicu-dev
+  exit 0
 fi
 
+echo "Your OS's packaging system isn't supported yet!"
+echo "Feel free to submit a pull request to add it."
+exit 1

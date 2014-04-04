@@ -107,7 +107,7 @@ static void visit_expr(
       visit_binop(root->expr.binop, visitor, state);
       break;
   default:
-      fprintf(stderr, "Unexpected kind in expr: %d", root->kind);
+      fprintf(stderr, "Unexpected kind in expr: %d\n", root->kind);
   }
 }
 

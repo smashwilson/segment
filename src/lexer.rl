@@ -21,7 +21,11 @@
   false = 'false';
   string = '"' [^"]* '"';
 
-  identifier = [^ \t\r\n({.;"']+;
+  nonws = ^whitespace;
+  nonop = [^(:&|+\-*\/%\^];
+  alpha_u = [a-zA-Z_];
+
+  identifier = alpha_u nonws* nonop?;
   symbol = ':' identifier | ':' string;
 
   main := |*

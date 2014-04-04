@@ -28,6 +28,10 @@
 %type statement { seg_statement_node* }
 %type expr { seg_expr_node* }
 %type invocation { seg_expr_node* }
+%type block { seg_block_node* }
+%type parameters { seg_parameter_list* }
+%type commaparams { seg_parameter_list* }
+%type parameter { seg_parameter_list* }
 
 %extra_argument { seg_program_node *program_node }
 
@@ -92,8 +96,8 @@ expr (OUT) ::= INTEGER (L).
   seg_delete_token(L);
 
   OUT = malloc(sizeof(seg_expr_node));
-  OUT->kind = SEG_INTEGER;
-  OUT->expr.integer = inode;
+  OUT->child_kind = SEG_INTEGER;
+  OUT->child.integer = inode;
 }
 
 expr ::= FLOAT.
@@ -106,21 +110,44 @@ expr ::= SYMBOL.
 
 expr ::= LPAREN statement RPAREN.
 expr ::= IDENTIFIER.
-expr ::= block.
+expr (OUT) ::= block (B).
+{
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_BLOCK;
+  OUT->child.block = B;
+}
+
 expr ::= assignment.
 expr (OUT) ::= invocation (I). { OUT = I; }
 
 // Blocks
 
-block ::= LCURLY parameters statementlist RCURLY.
+block (OUT) ::= LCURLY parameters (PARAMS) statementlist (BODY) RCURLY.
+{
+  OUT = malloc(sizeof(seg_block_node));
+  OUT->parameters = PARAMS;
+  OUT->body = BODY;
+}
 
 parameters ::= .
-parameters ::= BAR commaparams BAR.
+parameters (OUT) ::= BAR commaparams (IN) BAR. { OUT = IN; }
 
-commaparams ::= parameter.
-commaparams ::= commaparams COMMA parameter.
+commaparams (OUT) ::= parameter (IN). { OUT = IN; }
+commaparams (OUT) ::= commaparams (LIST) COMMA parameter (NEW).
+{
+  /* Parameters are pushed in reverse order. */
+  LIST->next = NEW;
+  OUT = NEW;
+}
 
-parameter ::= IDENTIFIER.
+parameter (OUT) ::= IDENTIFIER (ID).
+{
+  OUT = malloc(sizeof(seg_parameter_list));
+  OUT->name = seg_token_as_string(ID);
+  OUT->next = NULL;
+  seg_delete_token(ID);
+}
+
 parameter ::= IDENTIFIER ASSIGNMENT expr.
 
 // Assignment
@@ -141,10 +168,11 @@ invocation (OUT) ::= expr (LHS) ANDLIKE (AND) expr (RHS).
   seg_delete_token(AND);
   op->left = LHS;
   op->right = RHS;
+  printf("\nop: %p, rhs: %p\n", op, RHS);
 
   OUT = malloc(sizeof(seg_expr_node));
-  OUT->expr.binop = op;
-  OUT->kind = SEG_BINOP;
+  OUT->child_kind = SEG_BINOP;
+  OUT->child.binop = op;
 }
 
 invocation ::= expr ORLIKE expr.
@@ -158,8 +186,8 @@ invocation (OUT) ::= expr (LHS) PLUSLIKE (PLUS) expr (RHS).
   op->right = RHS;
 
   OUT = malloc(sizeof(seg_expr_node));
-  OUT->expr.binop = op;
-  OUT->kind = SEG_BINOP;
+  OUT->child_kind = SEG_BINOP;
+  OUT->child.binop = op;
 }
 
 invocation ::= expr MINUSLIKE expr.

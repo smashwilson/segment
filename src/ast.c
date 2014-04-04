@@ -14,6 +14,9 @@ struct seg_ast_visitor {
   seg_expr_handler visit_expr_pre;
   seg_expr_handler visit_expr_post;
 
+  seg_block_handler visit_block_pre;
+  seg_block_handler visit_block_post;
+
   seg_statement_handler visit_statement_pre;
   seg_statement_handler visit_statement_post;
 
@@ -73,6 +76,18 @@ void seg_ast_visit_expr(
   }
 }
 
+void seg_ast_visit_block(
+  seg_ast_visitor visitor,
+  seg_visit_when when,
+  seg_block_handler visit
+) {
+  if (when == SEG_VISIT_PRE) {
+    visitor->visit_block_pre = visit;
+  } else {
+    visitor->visit_block_post = visit;
+  }
+}
+
 void seg_ast_visit_statement(
   seg_ast_visitor visitor,
   seg_visit_when when,
@@ -106,6 +121,12 @@ static void visit_expr(
   void *state
 );
 
+static void visit_statementlist(
+  seg_statementlist_node *root,
+  seg_ast_visitor visitor,
+  void *state
+);
+
 /* Visitor walking functions. */
 
 static void visit_integer(
@@ -129,6 +150,16 @@ static void visit_binop(
   (*(visitor->visit_binop_post))(root, state);
 }
 
+static void visit_block(
+  seg_block_node *root,
+  seg_ast_visitor visitor,
+  void *state
+) {
+  (*(visitor->visit_block_pre))(root, state);
+  visit_statementlist(root->body, visitor, state);
+  (*(visitor->visit_block_post))(root, state);
+}
+
 static void visit_expr(
   seg_expr_node *root,
   seg_ast_visitor visitor,
@@ -136,15 +167,18 @@ static void visit_expr(
 ) {
   (*(visitor->visit_expr_pre))(root, state);
 
-  switch(root->kind) {
+  switch(root->child_kind) {
   case SEG_INTEGER:
-      visit_integer(root->expr.integer, visitor, state);
-      break;
+    visit_integer(root->child.integer, visitor, state);
+    break;
   case SEG_BINOP:
-      visit_binop(root->expr.binop, visitor, state);
-      break;
+    visit_binop(root->child.binop, visitor, state);
+    break;
+  case SEG_BLOCK:
+    visit_block(root->child.block, visitor, state);
+    break;
   default:
-      fprintf(stderr, "Unexpected kind in expr: %d\n", root->kind);
+    fprintf(stderr, "Unexpected child_kind in expr: %d\n", root->child_kind);
   }
 
   (*(visitor->visit_expr_post))(root, state);

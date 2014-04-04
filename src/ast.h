@@ -9,18 +9,33 @@ typedef enum {
 
 typedef enum {
   SEG_INTEGER,
-  SEG_BINOP
+  SEG_BINOP,
+  SEG_BLOCK
 } seg_expr_kind;
 
 /* Forward Declarations */
 
 struct seg_expr_node;
 
+struct seg_statementlist_node;
+
 /* Literals */
 
 typedef struct {
   int value;
 } seg_integer_node;
+
+/* Blocks */
+
+typedef struct seg_parameter_list {
+  const char *name;
+  struct seg_parameter_list *next;
+} seg_parameter_list;
+
+typedef struct {
+  seg_parameter_list *parameters;
+  struct seg_statementlist_node *body;
+} seg_block_node;
 
 /* Invocation */
 
@@ -36,8 +51,9 @@ typedef struct seg_expr_node {
   union {
     seg_integer_node *integer;
     seg_binop_node *binop;
-  } expr;
-  seg_expr_kind kind;
+    seg_block_node *block;
+  } child;
+  seg_expr_kind child_kind;
 } seg_expr_node;
 
 typedef struct seg_statement_node {
@@ -49,7 +65,7 @@ typedef struct seg_statement_node {
   struct seg_statement_node *next;
 } seg_statement_node;
 
-typedef struct {
+typedef struct seg_statementlist_node {
   seg_statement_node *first;
   seg_statement_node *last;
 } seg_statementlist_node;
@@ -74,6 +90,7 @@ typedef enum {
 typedef void (*seg_integer_handler)(seg_integer_node *node, void *state);
 typedef void (*seg_binop_handler)(seg_binop_node *node, void *state);
 typedef void (*seg_expr_handler)(seg_expr_node *node, void *state);
+typedef void (*seg_block_handler)(seg_block_node *node, void *state);
 typedef void (*seg_statement_handler)(seg_statement_node *node, void *state);
 typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, void *state);
 
@@ -94,6 +111,12 @@ void seg_ast_visit_expr(
   seg_ast_visitor visitor,
   seg_visit_when when,
   seg_expr_handler visit
+);
+
+void seg_ast_visit_block(
+  seg_ast_visitor visitor,
+  seg_visit_when,
+  seg_block_handler visit
 );
 
 void seg_ast_visit_statement(

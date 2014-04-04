@@ -52,7 +52,7 @@
     '|' => { EMPTY(BAR); };
     ',' => { EMPTY(COMMA); };
 
-    identifier => { EMPTY(IDENTIFIER); };
+    identifier => { CAPTURE(IDENTIFIER); };
     '@' identifier => { EMPTY(IVAR); };
     '%' identifier => { EMPTY(TVAR); };
 

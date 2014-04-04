@@ -1,3 +1,4 @@
+CFLAGS=-std=c99
 OBJECTS=src/token.o src/ast.o src/ast_printer.o src/lexer.o src/segment.o
 
 bin/segment: src/grammar.c ${OBJECTS}

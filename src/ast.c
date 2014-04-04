@@ -7,27 +7,39 @@
 
 struct seg_ast_visitor {
   seg_integer_handler visit_integer;
-  seg_binop_handler visit_binop;
-  seg_expr_handler visit_expr;
-  seg_statement_handler visit_statement;
-  seg_statementlist_handler visit_statementlist;
+
+  seg_binop_handler visit_binop_pre;
+  seg_binop_handler visit_binop_post;
+
+  seg_expr_handler visit_expr_pre;
+  seg_expr_handler visit_expr_post;
+
+  seg_statement_handler visit_statement_pre;
+  seg_statement_handler visit_statement_post;
+
+  seg_statementlist_handler visit_statementlist_pre;
+  seg_statementlist_handler visit_statementlist_post;
 };
 
-static void visit_integer_null(seg_integer_node *node, seg_visit_when when, void *state) { }
-static void visit_binop_null(seg_binop_node *node, seg_visit_when when, void *state) { }
-static void visit_expr_null(seg_expr_node *node, seg_visit_when when, void *state) { }
-static void visit_statement_null(seg_statement_node *node, seg_visit_when when, void *state) { }
-static void visit_statementlist_null(seg_statementlist_node *node, seg_visit_when when, void *state) { }
+static void visit_null(void *node, void *state) { }
 
 seg_ast_visitor seg_new_ast_visitor()
 {
   seg_ast_visitor visitor = malloc(sizeof(struct seg_ast_visitor));
 
-  visitor->visit_integer = &visit_integer_null;
-  visitor->visit_binop = &visit_binop_null;
-  visitor->visit_expr = &visit_expr_null;
-  visitor->visit_statement = &visit_statement_null;
-  visitor->visit_statementlist = &visit_statementlist_null;
+  visitor->visit_integer = (seg_integer_handler) &visit_null;
+
+  visitor->visit_binop_pre = (seg_binop_handler) &visit_null;
+  visitor->visit_binop_post = (seg_binop_handler) &visit_null;
+
+  visitor->visit_expr_pre = (seg_expr_handler) &visit_null;
+  visitor->visit_expr_post = (seg_expr_handler) &visit_null;
+
+  visitor->visit_statement_pre = (seg_statement_handler) &visit_null;
+  visitor->visit_statement_post = (seg_statement_handler) &visit_null;
+
+  visitor->visit_statementlist_pre = (seg_statementlist_handler) &visit_null;
+  visitor->visit_statementlist_post = (seg_statementlist_handler) &visit_null;
 
   return visitor;
 }
@@ -37,24 +49,52 @@ void seg_ast_visit_integer(seg_ast_visitor visitor, seg_integer_handler visit)
   visitor->visit_integer = visit;
 }
 
-void seg_ast_visit_binop(seg_ast_visitor visitor, seg_binop_handler visit)
+void seg_ast_visit_binop(
+  seg_ast_visitor visitor,
+  seg_visit_when when,
+  seg_binop_handler visit)
 {
-  visitor->visit_binop = visit;
+  if (when == SEG_VISIT_PRE) {
+    visitor->visit_binop_pre = visit;
+  } else {
+    visitor->visit_binop_post = visit;
+  }
 }
 
-void seg_ast_visit_expr(seg_ast_visitor visitor, seg_expr_handler visit)
-{
-  visitor->visit_expr = visit;
+void seg_ast_visit_expr(
+  seg_ast_visitor visitor,
+  seg_visit_when when,
+  seg_expr_handler visit
+) {
+  if (when == SEG_VISIT_PRE) {
+    visitor->visit_expr_pre = visit;
+  } else {
+    visitor->visit_expr_post = visit;
+  }
 }
 
-void seg_ast_visit_statement(seg_ast_visitor visitor, seg_statement_handler visit)
-{
-  visitor->visit_statement = visit;
+void seg_ast_visit_statement(
+  seg_ast_visitor visitor,
+  seg_visit_when when,
+  seg_statement_handler visit
+) {
+  if (when == SEG_VISIT_PRE) {
+    visitor->visit_statement_pre = visit;
+  } else {
+    visitor->visit_statement_post = visit;
+  }
 }
 
-void seg_ast_visit_statementlist(seg_ast_visitor visitor, seg_statementlist_handler visit)
-{
-  visitor->visit_statementlist = visit;
+void seg_ast_visit_statementlist(
+  seg_ast_visitor visitor,
+  seg_visit_when when,
+  seg_statementlist_handler visit
+) {
+  if (when == SEG_VISIT_PRE) {
+    visitor->visit_statementlist_pre = visit;
+  } else {
+    visitor->visit_statementlist_post = visit;
+  }
 }
 
 /* Forward declarations of visitor walking functions that are used
@@ -73,7 +113,7 @@ static void visit_integer(
   seg_ast_visitor visitor,
   void *state
 ) {
-  (*(visitor->visit_integer))(root, SEG_VISIT_POST, state);
+  (*(visitor->visit_integer))(root, state);
 }
 
 static void visit_binop(
@@ -81,12 +121,12 @@ static void visit_binop(
   seg_ast_visitor visitor,
   void *state
 ) {
-  (*(visitor->visit_binop))(root, SEG_VISIT_PRE, state);
+  (*(visitor->visit_binop_pre))(root, state);
 
   visit_expr(root->left, visitor, state);
   visit_expr(root->right, visitor, state);
 
-  (*(visitor->visit_binop))(root, SEG_VISIT_POST, state);
+  (*(visitor->visit_binop_post))(root, state);
 }
 
 static void visit_expr(
@@ -94,7 +134,7 @@ static void visit_expr(
   seg_ast_visitor visitor,
   void *state
 ) {
-  (*(visitor->visit_expr))(root, SEG_VISIT_PRE, state);
+  (*(visitor->visit_expr_pre))(root, state);
 
   switch(root->kind) {
   case SEG_INTEGER:
@@ -107,7 +147,7 @@ static void visit_expr(
       fprintf(stderr, "Unexpected kind in expr: %d\n", root->kind);
   }
 
-  (*(visitor->visit_expr))(root, SEG_VISIT_POST, state);
+  (*(visitor->visit_expr_post))(root, state);
 }
 
 static void visit_statement(
@@ -115,7 +155,7 @@ static void visit_statement(
   seg_ast_visitor visitor,
   void *state
 ) {
-  (*(visitor->visit_statement))(root, SEG_VISIT_PRE, state);
+  (*(visitor->visit_statement_pre))(root, state);
 
   switch(root->child_kind) {
   case SEG_EXPR:
@@ -125,7 +165,7 @@ static void visit_statement(
       fprintf(stderr, "Unexpected child_kind in statement: %d\n", root->child_kind);
   }
 
-  (*(visitor->visit_statement))(root, SEG_VISIT_POST, state);
+  (*(visitor->visit_statement_post))(root, state);
 }
 
 static void visit_statementlist(
@@ -133,7 +173,7 @@ static void visit_statementlist(
     seg_ast_visitor visitor,
     void *state
 ) {
-  (*(visitor->visit_statementlist))(root, SEG_VISIT_PRE, state);
+  (*(visitor->visit_statementlist_pre))(root, state);
 
   seg_statement_node *current = root->first;
   while (current != NULL) {
@@ -141,7 +181,7 @@ static void visit_statementlist(
     current = current->next;
   }
 
-  (*(visitor->visit_statementlist))(root, SEG_VISIT_POST, state);
+  (*(visitor->visit_statementlist_post))(root, state);
 }
 
 void seg_ast_visit(

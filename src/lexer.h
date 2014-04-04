@@ -6,6 +6,6 @@
 /**
  * Parse a coherent chunk of segment code and return its AST.
  */
-int segment_parse(char *content, off_t length);
+int seg_parse(char *content, off_t length);
 
 #endif

@@ -38,7 +38,7 @@ int main(int argc, const char **argv)
   }
 
   printf("Beginning parse:\n");
-  res = segment_parse((char*) content, istat.st_size);
+  res = seg_parse((char*) content, istat.st_size);
   printf("Parse complete: %d\n", res);
 
   return 0;

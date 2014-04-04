@@ -123,6 +123,7 @@ invocation (OUT) ::= expr (LHS) ANDLIKE (AND) expr (RHS).
 {
   seg_binop_node *op = malloc(sizeof(seg_binop_node));
   op->selector = seg_token_as_string(AND);
+  seg_delete_token(AND);
   op->left = LHS;
   op->right = RHS;
 
@@ -132,7 +133,20 @@ invocation (OUT) ::= expr (LHS) ANDLIKE (AND) expr (RHS).
 }
 
 invocation ::= expr ORLIKE expr.
-invocation ::= expr PLUSLIKE expr.
+
+invocation (OUT) ::= expr (LHS) PLUSLIKE (PLUS) expr (RHS).
+{
+  seg_binop_node *op = malloc(sizeof(seg_binop_node));
+  op->selector = seg_token_as_string(PLUS);
+  seg_delete_token(PLUS);
+  op->left = LHS;
+  op->right = RHS;
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->expr.binop = op;
+  OUT->kind = SEG_BINOP;
+}
+
 invocation ::= expr MINUSLIKE expr.
 invocation ::= expr MULTLIKE expr.
 invocation ::= expr DIVLIKE expr.

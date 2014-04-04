@@ -6,8 +6,10 @@
 #include "grammar.h"
 #include "grammar.c"
 
-#define EMPTY(CODE) Parse(parser, CODE, NULL, &program)
-#define CAPTURE(CODE) Parse(parser, CODE, seg_new_token(ts, te), &program)
+#define REPORT(CODE) printf("t: " #CODE " ")
+
+#define EMPTY(CODE) REPORT(CODE); Parse(parser, CODE, NULL, &program)
+#define CAPTURE(CODE) REPORT(CODE); Parse(parser, CODE, seg_new_token(ts, te), &program)
 
 %%{
   machine segment_lexer;
@@ -57,9 +59,9 @@
 
     identifier ':' => { EMPTY(KEYWORD); };
 
-    identifier? '&' => { EMPTY(ANDLIKE); };
+    identifier? '&' => { CAPTURE(ANDLIKE); };
     identifier? '|' => { EMPTY(ORLIKE); };
-    identifier? '+' => { EMPTY(PLUSLIKE); };
+    identifier? '+' => { CAPTURE(PLUSLIKE); };
     identifier? '-' => { EMPTY(MINUSLIKE); };
     identifier? '*' => { EMPTY(MULTLIKE); };
     identifier? '/' => { EMPTY(DIVLIKE); };

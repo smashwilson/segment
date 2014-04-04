@@ -12,7 +12,7 @@ static void print_prefix(printer_state *pstate)
     for (int i = 0; i < pstate->depth - 1; i++) {
         fputs("| ", pstate->out);
     }
-    if (pstate->depth > 1) {
+    if (pstate->depth > 0) {
         fputs("|-", pstate->out);
     }
 }
@@ -23,6 +23,7 @@ static void print_integer(seg_integer_node *node, void *state)
     print_prefix(pstate);
 
     fprintf(pstate->out, "INTEGER: %d\n", node->value);
+    pstate->depth--;
 }
 
 static void print_binop(seg_binop_node *node, void *state)
@@ -31,6 +32,7 @@ static void print_binop(seg_binop_node *node, void *state)
     print_prefix(pstate);
 
     fprintf(pstate->out, "BINOP: %s\n", node->selector);
+    pstate->depth++;
 }
 
 static void print_expr(seg_expr_node *node, void *state)
@@ -39,6 +41,7 @@ static void print_expr(seg_expr_node *node, void *state)
     print_prefix(pstate);
 
     fputs("EXPR\n", pstate->out);
+    pstate->depth++;
 }
 
 static void print_statement(seg_statement_node *node, void *state)
@@ -47,6 +50,7 @@ static void print_statement(seg_statement_node *node, void *state)
     print_prefix(pstate);
 
     fputs("STATEMENT\n", pstate->out);
+    pstate->depth++;
 }
 
 static void print_statementlist(seg_statementlist_node *node, void *state)
@@ -55,6 +59,7 @@ static void print_statementlist(seg_statementlist_node *node, void *state)
     print_prefix(pstate);
 
     fputs("STATEMENTLIST\n", pstate->out);
+    pstate->depth++;
 }
 
 void seg_print_ast(seg_statementlist_node *root, FILE *outf)

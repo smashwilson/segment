@@ -1,9 +1,10 @@
 %include {
-    #include <assert.h>
-    #include <stdlib.h>
+  #include <assert.h>
+  #include <stdlib.h>
+  #include <stdio.h>
 
-    #include "ast.h"
-    #include "token.h"
+  #include "ast.h"
+  #include "token.h"
 }
 
 // Grammar definition for segment.
@@ -61,7 +62,7 @@ statementlist (OUT) ::= statement (NEW) SEMI statementlist (LIST).
 statement (OUT) ::= expr (E).
 {
   OUT = malloc(sizeof(seg_statement_node));
-  OUT->child_kind = EXPR;
+  OUT->child_kind = SEG_EXPR;
   OUT->child.expr = E;
 }
 
@@ -76,7 +77,7 @@ expr (OUT) ::= INTEGER (L).
   seg_delete_token(L);
 
   OUT = malloc(sizeof(seg_expr_node));
-  OUT->kind = INTEGER;
+  OUT->kind = SEG_INTEGER;
   OUT->expr.integer = inode;
 }
 
@@ -127,7 +128,7 @@ invocation (OUT) ::= expr (LHS) ANDLIKE (AND) expr (RHS).
 
   OUT = malloc(sizeof(seg_expr_node));
   OUT->expr.binop = op;
-  OUT->kind = BINOP;
+  OUT->kind = SEG_BINOP;
 }
 
 invocation ::= expr ORLIKE expr.

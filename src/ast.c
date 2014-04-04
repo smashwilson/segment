@@ -100,10 +100,10 @@ static void visit_expr(
   (*(visitor->visit_expr))(root, state);
 
   switch(root->kind) {
-  case INTEGER:
+  case SEG_INTEGER:
       visit_integer(root->expr.integer, visitor, state);
       break;
-  case BINOP:
+  case SEG_BINOP:
       visit_binop(root->expr.binop, visitor, state);
       break;
   default:
@@ -119,11 +119,11 @@ static void visit_statement(
   (*(visitor->visit_statement))(root, state);
 
   switch(root->child_kind) {
-  case EXPR:
+  case SEG_EXPR:
       visit_expr(root->child.expr, visitor, state);
       break;
   default:
-      fprintf(stderr, "Unexpected child_kind in statement: %d", root->child_kind);
+      fprintf(stderr, "Unexpected child_kind in statement: %d\n", root->child_kind);
   }
 }
 
@@ -136,8 +136,8 @@ static void visit_statementlist(
 
   seg_statement_node *current = root->first;
   while (current != NULL) {
-      visit_statement(current, visitor, state);
-      current = current->next;
+    visit_statement(current, visitor, state);
+    current = current->next;
   }
 }
 

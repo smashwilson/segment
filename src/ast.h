@@ -4,12 +4,12 @@
 /* Kind Tag Enums */
 
 typedef enum {
-  EXPR
+  SEG_EXPR
 } seg_statement_kind;
 
 typedef enum {
-  INTEGER,
-  BINOP
+  SEG_INTEGER,
+  SEG_BINOP
 } seg_expr_kind;
 
 /* Forward Declarations */

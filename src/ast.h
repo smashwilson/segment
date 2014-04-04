@@ -76,9 +76,9 @@ void seg_ast_visit_statement(seg_ast_visitor visitor, seg_statement_handler visi
 void seg_ast_visit_statementlist(seg_ast_visitor visitor, seg_statementlist_handler visit);
 
 void seg_ast_visit(
-    seg_ast_visitor visitor,
-    seg_statementlist_node *root,
-    void *state
+  seg_ast_visitor visitor,
+  seg_statementlist_node *root,
+  void *state
 );
 
 void seg_delete_ast_visitor(seg_ast_visitor visitor);

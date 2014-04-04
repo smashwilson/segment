@@ -39,25 +39,40 @@ program (OUT) ::= statementlist (LIST).
   OUT = LIST;
 }
 
-statementlist (OUT) ::= .
+statementlist (OUT) ::= statement (ONLY).
 {
   OUT = malloc(sizeof(seg_statementlist_node));
-  OUT->first = NULL;
+  OUT->first = ONLY;
+  OUT->last = ONLY;
 }
 
-statementlist (OUT) ::= statement (NEW) NEWLINE statementlist (LIST).
+statementlist (OUT) ::= statementlist (LIST) NEWLINE statement (NEW).
 {
-  NEW->next = LIST->first;
-  LIST->first = NEW;
+  if (NEW != NULL) {
+    if (LIST->last != NULL) {
+      LIST->last->next = NEW;
+    } else {
+      LIST->first = NEW;
+    }
+    LIST->last = NEW;
+  }
   OUT = LIST;
 }
 
-statementlist (OUT) ::= statement (NEW) SEMI statementlist (LIST).
+statementlist (OUT) ::= statementlist (LIST) SEMI statement (NEW).
 {
-  NEW->next = LIST->first;
-  LIST->first = NEW;
+  if (NEW != NULL) {
+    if (LIST->last != NULL) {
+      LIST->last->next = NEW;
+    } else {
+      LIST->first = NEW;
+    }
+    LIST->last = NEW;
+  }
   OUT = LIST;
 }
+
+statement (OUT) ::= . { OUT = NULL; }
 
 statement (OUT) ::= expr (E).
 {

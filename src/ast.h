@@ -51,6 +51,7 @@ typedef struct seg_statement_node {
 
 typedef struct {
   seg_statement_node *first;
+  seg_statement_node *last;
 } seg_statementlist_node;
 
 typedef struct {

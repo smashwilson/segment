@@ -1,4 +1,4 @@
-OBJECTS=src/token.o src/lexer.o src/segment.o
+OBJECTS=src/token.o src/ast.o src/lexer.o src/segment.o
 
 bin/segment: src/grammar.c ${OBJECTS}
 	mkdir -p bin/

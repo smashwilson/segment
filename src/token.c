@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
@@ -25,7 +26,7 @@ long seg_token_as_integer(seg_token *tok)
   long v = strtol(tok->start, &tok->end, 10);
 
   if (errno) {
-    perror();
+    perror("Unable to parse token as integer");
     return 0L;
   }
 

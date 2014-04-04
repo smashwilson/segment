@@ -1,4 +1,10 @@
-CFLAGS=-std=c99
+ifdef DEBUG
+	EXTRA=-g
+else
+	EXTRA=
+endif
+
+CFLAGS=-std=c99 ${EXTRA}
 OBJECTS=src/token.o src/ast.o src/ast_printer.o src/lexer.o src/segment.o
 
 bin/segment: src/grammar.c ${OBJECTS}

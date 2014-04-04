@@ -1,0 +1,24 @@
+#!/bin/bash
+set -o errexit
+rm -f ./core
+
+ulimit -c unlimited
+echo -e ">> building >>>>>>>>>>>>>>>>>\n"
+make clean bin/segment DEBUG=1
+echo -e "\n>> executing >>>>>>>>>>>>>>>>\n"
+
+set +o errexit
+bin/segment examples/input.seg
+EXITCODE=$?
+set -o errexit
+
+if [ -e core ]; then
+  echo -e "\n>> stack >>>>>>>>>>>>>>>>>>>>\n"
+  gdb --batch --eval-command=bt bin/segment ./core
+else
+  echo -e "\n>> exited with ${EXITCODE} >>>>>>>>>>>>\n"
+fi
+
+if [ -z ${KEEP_CORE} ]; then
+  rm ./core
+fi

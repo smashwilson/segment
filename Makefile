@@ -4,7 +4,7 @@ bin/segment: src/grammar.c ${OBJECTS}
 	mkdir -p bin/
 	gcc ${OBJECTS} -o bin/segment
 
-src/lexer.c: src/lexer.rl
+src/lexer.c: src/lexer.rl src/grammar.c
 	ragel -C -G2 src/lexer.rl
 
 src/grammar.c: src/grammar.y

@@ -1,4 +1,8 @@
 %include { #include <assert.h> }
+%include { #include <stdlib.h> }
+
+%include { #include "ast.h" }
+%include { #include "token.h" }
 
 // Grammar definition for segment.
 
@@ -12,32 +16,75 @@
 %left MULTLIKE DIVLIKE MODLIKE.
 %right EXPLIKE NOTLIKE.
 
+// Nonterminal and token types.
+
+%token_type { seg_token* }
+
+%type program { seg_statementlist_node* }
+%type statementlist { seg_statementlist_node* }
+%type statement { seg_statement_node* }
+%type expr { seg_expr_node* }
+%type invocation { seg_expr_node* }
+
 // Grammar definition.
 
-program ::= statementlist.
+program (OUT) ::= statementlist (LIST). { OUT = LIST; }
 
-statementlist ::= .
-statementlist ::= statement NEWLINE statementlist.
-statementlist ::= statement SEMI statementlist.
+statementlist (OUT) ::= .
+{
+  OUT = malloc(sizeof(seg_statementlist_node));
+  OUT->first = NULL;
+}
 
-statement ::= expr.
+statementlist (OUT) ::= statement (NEW) NEWLINE statementlist (LIST).
+{
+  NEW->next = LIST->first;
+  LIST->first = NEW;
+  OUT = LIST;
+}
+
+statementlist (OUT) ::= statement (NEW) SEMI statementlist (LIST).
+{
+  NEW->next = LIST->first;
+  LIST->first = NEW;
+  OUT = LIST;
+}
+
+statement (OUT) ::= expr (E).
+{
+  OUT = malloc(sizeof(seg_statement_node));
+  OUT->child_kind = EXPR;
+  OUT->child.expr = E;
+}
+
 statement ::= spaceinvocation.
-
-expr ::= LPAREN statement RPAREN.
-expr ::= literal.
-expr ::= IDENTIFIER.
-expr ::= block.
-expr ::= assignment.
-expr ::= invocation.
 
 // Literals
 
-literal ::= INTEGER.
-literal ::= FLOAT.
-literal ::= TRUE.
-literal ::= FALSE.
-literal ::= STRING.
-literal ::= SYMBOL.
+expr (OUT) ::= INTEGER (L).
+{
+  seg_integer_node *inode = malloc(sizeof(seg_integer_node));
+  inode->value = seg_token_as_integer(L);
+  seg_delete_token(L);
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->kind = INTEGER;
+  OUT->expr.integer = inode;
+}
+
+expr ::= FLOAT.
+expr ::= TRUE.
+expr ::= FALSE.
+expr ::= STRING.
+expr ::= SYMBOL.
+
+// Compound Expressions
+
+expr ::= LPAREN statement RPAREN.
+expr ::= IDENTIFIER.
+expr ::= block.
+expr ::= assignment.
+expr (OUT) ::= invocation (I). { OUT = I; }
 
 // Blocks
 
@@ -63,7 +110,18 @@ lhs ::= TVAR.
 
 // Binary operators
 
-invocation ::= expr ANDLIKE expr.
+invocation (OUT) ::= expr (LHS) ANDLIKE (AND) expr (RHS).
+{
+  seg_binop_node *op = malloc(sizeof(seg_binop_node));
+  op->selector = seg_token_as_string(AND);
+  op->left = LHS;
+  op->right = RHS;
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->expr.binop = op;
+  OUT->kind = BINOP;
+}
+
 invocation ::= expr ORLIKE expr.
 invocation ::= expr PLUSLIKE expr.
 invocation ::= expr MINUSLIKE expr.

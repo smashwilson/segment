@@ -53,6 +53,10 @@ typedef struct {
   seg_statement_node *first;
 } seg_statementlist_node;
 
+typedef struct {
+  seg_statementlist_node *root;
+} seg_program_node;
+
 /* Visitor */
 
 typedef struct seg_ast_visitor* seg_ast_visitor;

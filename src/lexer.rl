@@ -6,8 +6,8 @@
 #include "grammar.h"
 #include "grammar.c"
 
-#define EMPTY(CODE) Parse(parser, CODE, NULL)
-#define CAPTURE(CODE) Parse(parser, CODE, seg_new_token(ts, te))
+#define EMPTY(CODE) Parse(parser, CODE, NULL, &program)
+#define CAPTURE(CODE) Parse(parser, CODE, seg_new_token(ts, te), &program)
 
 %%{
   machine segment_lexer;
@@ -70,7 +70,7 @@
 
 %% write data nofinal;
 
-int seg_parse(char *content, off_t length)
+seg_statementlist_node *seg_parse(char *content, off_t length)
 {
   /* Variables used by Ragel. */
   int cs, act;
@@ -79,8 +79,11 @@ int seg_parse(char *content, off_t length)
   const char *pe = content + length;
   const char *eof = pe;
 
+  /* Parser state */
   int lexer_error = 0;
   void *parser = ParseAlloc(malloc);
+  seg_program_node program;
+  program.root = NULL;
 
   %% write init;
 
@@ -89,10 +92,10 @@ int seg_parse(char *content, off_t length)
   if (cs == segment_lexer_error) {
     lexer_error = 1;
   } else {
-    Parse(parser, 0, NULL);
+    Parse(parser, 0, NULL, &program);
   }
 
   ParseFree(parser, free);
 
-  return lexer_error;
+  return program.root;
 }

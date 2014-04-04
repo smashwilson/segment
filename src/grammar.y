@@ -1,8 +1,10 @@
-%include { #include <assert.h> }
-%include { #include <stdlib.h> }
+%include {
+    #include <assert.h>
+    #include <stdlib.h>
 
-%include { #include "ast.h" }
-%include { #include "token.h" }
+    #include "ast.h"
+    #include "token.h"
+}
 
 // Grammar definition for segment.
 
@@ -26,9 +28,15 @@
 %type expr { seg_expr_node* }
 %type invocation { seg_expr_node* }
 
+%extra_argument { seg_program_node *program_node }
+
 // Grammar definition.
 
-program (OUT) ::= statementlist (LIST). { OUT = LIST; }
+program (OUT) ::= statementlist (LIST).
+{
+  program_node->root = LIST;
+  OUT = LIST;
+}
 
 statementlist (OUT) ::= .
 {

@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 
 #include "lexer.h"
+#include "ast_printer.h"
 
 int main(int argc, const char **argv)
 {
@@ -38,8 +39,9 @@ int main(int argc, const char **argv)
   }
 
   printf("Beginning parse:\n");
-  res = seg_parse((char*) content, istat.st_size);
-  printf("Parse complete: %d\n", res);
+  seg_statementlist_node *root = seg_parse((char*) content, istat.st_size);
+  puts("Parse complete.\n");
+  seg_print_ast(root, stdout);
 
   return 0;
 }

@@ -3,9 +3,11 @@
 
 #include <sys/types.h>
 
+#include "ast.h"
+
 /**
  * Parse a coherent chunk of segment code and return its AST.
  */
-int seg_parse(char *content, off_t length);
+seg_statementlist_node *seg_parse(char *content, off_t length);
 
 #endif

@@ -61,11 +61,20 @@ typedef struct {
 
 typedef struct seg_ast_visitor* seg_ast_visitor;
 
-typedef void (*seg_integer_handler)(seg_integer_node *node, void *state);
-typedef void (*seg_binop_handler)(seg_binop_node *node, void *state);
-typedef void (*seg_expr_handler)(seg_expr_node *node, void *state);
-typedef void (*seg_statement_handler)(seg_statement_node *node, void *state);
-typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, void *state);
+/*
+  Determine if a visit handler is being invoked before or after any child nodes
+  have been visited.
+ */
+typedef enum {
+  SEG_VISIT_PRE,
+  SEG_VISIT_POST
+} seg_visit_when;
+
+typedef void (*seg_integer_handler)(seg_integer_node *node, seg_visit_when when, void *state);
+typedef void (*seg_binop_handler)(seg_binop_node *node, seg_visit_when when, void *state);
+typedef void (*seg_expr_handler)(seg_expr_node *node, seg_visit_when when, void *state);
+typedef void (*seg_statement_handler)(seg_statement_node *node, seg_visit_when when, void *state);
+typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, seg_visit_when when, void *state);
 
 seg_ast_visitor seg_new_ast_visitor();
 

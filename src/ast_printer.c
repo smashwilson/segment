@@ -17,49 +17,69 @@ static void print_prefix(printer_state *pstate)
     }
 }
 
-static void print_integer(seg_integer_node *node, void *state)
+static void print_integer(seg_integer_node *node, seg_visit_when when, void *state)
 {
     printer_state *pstate = (printer_state *) state;
+    if (when != SEG_VISIT_POST) {
+      return;
+    }
+
     print_prefix(pstate);
 
     fprintf(pstate->out, "INTEGER: %d\n", node->value);
     pstate->depth--;
 }
 
-static void print_binop(seg_binop_node *node, void *state)
+static void print_binop(seg_binop_node *node, seg_visit_when when, void *state)
 {
     printer_state *pstate = (printer_state *) state;
-    print_prefix(pstate);
+    if (when == SEG_VISIT_PRE) {
+      print_prefix(pstate);
 
-    fprintf(pstate->out, "BINOP: %s\n", node->selector);
-    pstate->depth++;
+      fprintf(pstate->out, "BINOP: %s\n", node->selector);
+      pstate->depth++;
+    } else {
+      pstate->depth--;
+    }
 }
 
-static void print_expr(seg_expr_node *node, void *state)
+static void print_expr(seg_expr_node *node, seg_visit_when when, void *state)
 {
     printer_state *pstate = (printer_state *) state;
-    print_prefix(pstate);
+    if (when == SEG_VISIT_PRE) {
+      print_prefix(pstate);
 
-    fputs("EXPR\n", pstate->out);
-    pstate->depth++;
+      fputs("EXPR\n", pstate->out);
+      pstate->depth++;
+    } else {
+      pstate->depth--;
+    }
 }
 
-static void print_statement(seg_statement_node *node, void *state)
+static void print_statement(seg_statement_node *node, seg_visit_when when, void *state)
 {
     printer_state *pstate = (printer_state *) state;
-    print_prefix(pstate);
+    if (when == SEG_VISIT_PRE) {
+      print_prefix(pstate);
 
-    fputs("STATEMENT\n", pstate->out);
-    pstate->depth++;
+      fputs("STATEMENT\n", pstate->out);
+      pstate->depth++;
+    } else {
+      pstate->depth--;
+    }
 }
 
-static void print_statementlist(seg_statementlist_node *node, void *state)
+static void print_statementlist(seg_statementlist_node *node, seg_visit_when when, void *state)
 {
     printer_state *pstate = (printer_state *) state;
-    print_prefix(pstate);
+    if (when == SEG_VISIT_PRE) {
+      print_prefix(pstate);
 
-    fputs("STATEMENTLIST\n", pstate->out);
-    pstate->depth++;
+      fputs("STATEMENTLIST\n", pstate->out);
+      pstate->depth++;
+    } else {
+      pstate->depth--;
+    }
 }
 
 void seg_print_ast(seg_statementlist_node *root, FILE *outf)

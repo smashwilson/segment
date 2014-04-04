@@ -13,11 +13,11 @@ struct seg_ast_visitor {
   seg_statementlist_handler visit_statementlist;
 };
 
-static void visit_integer_null(seg_integer_node *node, void *state) { }
-static void visit_binop_null(seg_binop_node *node, void *state) { }
-static void visit_expr_null(seg_expr_node *node, void *state) { }
-static void visit_statement_null(seg_statement_node *node, void *state) { }
-static void visit_statementlist_null(seg_statementlist_node *node, void *state) { }
+static void visit_integer_null(seg_integer_node *node, seg_visit_when when, void *state) { }
+static void visit_binop_null(seg_binop_node *node, seg_visit_when when, void *state) { }
+static void visit_expr_null(seg_expr_node *node, seg_visit_when when, void *state) { }
+static void visit_statement_null(seg_statement_node *node, seg_visit_when when, void *state) { }
+static void visit_statementlist_null(seg_statementlist_node *node, seg_visit_when when, void *state) { }
 
 seg_ast_visitor seg_new_ast_visitor()
 {
@@ -73,7 +73,7 @@ static void visit_integer(
   seg_ast_visitor visitor,
   void *state
 ) {
-  (*(visitor->visit_integer))(root, state);
+  (*(visitor->visit_integer))(root, SEG_VISIT_POST, state);
 }
 
 static void visit_binop(
@@ -81,15 +81,12 @@ static void visit_binop(
   seg_ast_visitor visitor,
   void *state
 ) {
-  /* TODO the ordering is wrong here.
-     If we're evaluating, we'll want to visit the binop after the
-     lhs and rhs. Printing needs this order, though.
-     Maybe a visitor flag?
-  */
-  (*(visitor->visit_binop))(root, state);
+  (*(visitor->visit_binop))(root, SEG_VISIT_PRE, state);
 
   visit_expr(root->left, visitor, state);
   visit_expr(root->right, visitor, state);
+
+  (*(visitor->visit_binop))(root, SEG_VISIT_POST, state);
 }
 
 static void visit_expr(
@@ -97,7 +94,7 @@ static void visit_expr(
   seg_ast_visitor visitor,
   void *state
 ) {
-  (*(visitor->visit_expr))(root, state);
+  (*(visitor->visit_expr))(root, SEG_VISIT_PRE, state);
 
   switch(root->kind) {
   case SEG_INTEGER:
@@ -109,6 +106,8 @@ static void visit_expr(
   default:
       fprintf(stderr, "Unexpected kind in expr: %d\n", root->kind);
   }
+
+  (*(visitor->visit_expr))(root, SEG_VISIT_POST, state);
 }
 
 static void visit_statement(
@@ -116,7 +115,7 @@ static void visit_statement(
   seg_ast_visitor visitor,
   void *state
 ) {
-  (*(visitor->visit_statement))(root, state);
+  (*(visitor->visit_statement))(root, SEG_VISIT_PRE, state);
 
   switch(root->child_kind) {
   case SEG_EXPR:
@@ -125,6 +124,8 @@ static void visit_statement(
   default:
       fprintf(stderr, "Unexpected child_kind in statement: %d\n", root->child_kind);
   }
+
+  (*(visitor->visit_statement))(root, SEG_VISIT_POST, state);
 }
 
 static void visit_statementlist(
@@ -132,13 +133,15 @@ static void visit_statementlist(
     seg_ast_visitor visitor,
     void *state
 ) {
-  (*(visitor->visit_statementlist))(root, state);
+  (*(visitor->visit_statementlist))(root, SEG_VISIT_PRE, state);
 
   seg_statement_node *current = root->first;
   while (current != NULL) {
     visit_statement(current, visitor, state);
     current = current->next;
   }
+
+  (*(visitor->visit_statementlist))(root, SEG_VISIT_POST, state);
 }
 
 void seg_ast_visit(

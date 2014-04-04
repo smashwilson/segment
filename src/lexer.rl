@@ -1,9 +1,13 @@
 #include <stdlib.h>
 
+#include "ast.h"
+#include "token.h"
+
 #include "grammar.h"
 #include "grammar.c"
 
-#define EMIT(CODE) Parse(parser, CODE, 0)
+#define EMPTY(CODE) Parse(parser, CODE, NULL)
+#define CAPTURE(CODE) Parse(parser, CODE, seg_new_token(ts, te))
 
 %%{
   machine segment_lexer;
@@ -23,41 +27,41 @@
   main := |*
     comment;
 
-    integer => { EMIT(INTEGER); };
-    float => { EMIT(FLOAT); };
-    true => { EMIT(TRUE); };
-    false => { EMIT(FALSE); };
-    string => { EMIT(STRING); };
-    symbol => { EMIT(SYMBOL); };
+    integer => { CAPTURE(INTEGER); };
+    float => { EMPTY(FLOAT); };
+    true => { EMPTY(TRUE); };
+    false => { EMPTY(FALSE); };
+    string => { EMPTY(STRING); };
+    symbol => { EMPTY(SYMBOL); };
 
-    '(' => { EMIT(LPAREN); };
-    ')' => { EMIT(RPAREN); };
-    '{' => { EMIT(LCURLY); };
-    '}' => { EMIT(RCURLY); };
-    ';' => { EMIT(SEMI); };
-    '\n' => { EMIT(NEWLINE); };
-    '=' => { EMIT(ASSIGNMENT); };
-    '.' => { EMIT(PERIOD); };
-    '|' => { EMIT(BAR); };
-    ',' => { EMIT(COMMA); };
+    '(' => { EMPTY(LPAREN); };
+    ')' => { EMPTY(RPAREN); };
+    '{' => { EMPTY(LCURLY); };
+    '}' => { EMPTY(RCURLY); };
+    ';' => { EMPTY(SEMI); };
+    '\n' => { EMPTY(NEWLINE); };
+    '=' => { EMPTY(ASSIGNMENT); };
+    '.' => { EMPTY(PERIOD); };
+    '|' => { EMPTY(BAR); };
+    ',' => { EMPTY(COMMA); };
 
-    identifier => { EMIT(IDENTIFIER); };
-    '@' identifier => { EMIT(IVAR); };
-    '%' identifier => { EMIT(TVAR); };
+    identifier => { EMPTY(IDENTIFIER); };
+    '@' identifier => { EMPTY(IVAR); };
+    '%' identifier => { EMPTY(TVAR); };
 
-    identifier '(' => { EMIT(METHODNAME); };
+    identifier '(' => { EMPTY(METHODNAME); };
 
-    identifier ':' => { EMIT(KEYWORD); };
+    identifier ':' => { EMPTY(KEYWORD); };
 
-    identifier? '&' => { EMIT(ANDLIKE); };
-    identifier? '|' => { EMIT(ORLIKE); };
-    identifier? '+' => { EMIT(PLUSLIKE); };
-    identifier? '-' => { EMIT(MINUSLIKE); };
-    identifier? '*' => { EMIT(MULTLIKE); };
-    identifier? '/' => { EMIT(DIVLIKE); };
-    identifier? '%' => { EMIT(MODLIKE); };
-    identifier? '^' => { EMIT(EXPLIKE); };
-    '!' => { EMIT(NOTLIKE); };
+    identifier? '&' => { EMPTY(ANDLIKE); };
+    identifier? '|' => { EMPTY(ORLIKE); };
+    identifier? '+' => { EMPTY(PLUSLIKE); };
+    identifier? '-' => { EMPTY(MINUSLIKE); };
+    identifier? '*' => { EMPTY(MULTLIKE); };
+    identifier? '/' => { EMPTY(DIVLIKE); };
+    identifier? '%' => { EMPTY(MODLIKE); };
+    identifier? '^' => { EMPTY(EXPLIKE); };
+    '!' => { EMPTY(NOTLIKE); };
 
     whitespace;
   *|;
@@ -82,7 +86,7 @@ int seg_parse(char *content, off_t length)
 
   %% write exec;
 
-  if (cs == 0) {
+  if (cs == segment_lexer_error) {
     lexer_error = 1;
   } else {
     Parse(parser, 0, NULL);

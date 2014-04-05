@@ -11,6 +11,7 @@ ROOTDIR=${BASEDIR}/..
 prefix="\033["
 WHITE="${prefix}1;37m"
 LTGREEN="${prefix}1;32m"
+LTRED="${prefix}1;31m"
 DKRED="${prefix}0;31m"
 RESET="${prefix}0m"
 
@@ -50,7 +51,7 @@ for SRCFILE in ${BASEDIR}/ast/*.seg; do
       [ -z ${AST_KEEP} ] && rm -f ${ACTUAL_AST} ${AST_DIFF}
       let PASSCOUNT=PASSCOUNT+1
     else
-      echo -e " ${DKRED}fail${RESET}"
+      echo -e " ${LTRED}fail${RESET}"
       FAILFILES="${FAILFILES} ${SRCFILE}"
       let FAILCOUNT=FAILCOUNT+1
     fi
@@ -67,9 +68,9 @@ let TOTALCOUNT=PASSCOUNT+FAILCOUNT+ERRORCOUNT
 
 echo
 echo -ne "Summary: of ${WHITE}${TOTALCOUNT}"
-pluralize ${TOTALCOUNT} tests
+pluralize ${TOTALCOUNT} test
 echo -ne ${RESET}
 [[ ${PASSCOUNT} -ne 0 ]] && echo -ne ", ${LTGREEN}${PASSCOUNT} passed${RESET}"
-[[ ${FAILCOUNT} -ne 0 ]] && echo -ne ", ${DKRED}${FAILCOUNT} failed${RESET}"
+[[ ${FAILCOUNT} -ne 0 ]] && echo -ne ", ${LTRED}${FAILCOUNT} failed${RESET}"
 [[ ${ERRORCOUNT} -ne 0 ]] && echo -ne ", ${DKRED}${ERRORCOUNT} caused errors${RESET}"
 echo "."

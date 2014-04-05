@@ -1,16 +1,31 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 
 #include "ast.h"
 #include "token.h"
+#include "segment.h"
 
 #include "grammar.h"
 #include "grammar.c"
 
-#define REPORT(NAME) printf("t: " #NAME " ")
+static void report(const char *name, const char *ts, const char *te) {
+  int length = (int) (te - ts);
+  printf("tok: %s [%.*s]\n", name, length, ts);
+}
 
-#define EMPTY(CODE) REPORT(#CODE); Parse(parser, CODE, NULL, &program)
-#define CAPTURE(CODE) REPORT(#CODE); Parse(parser, CODE, seg_new_token(ts, te), &program)
+#define EMPTY(CODE) \
+  if (opts->lexer_debug) { \
+    report(#CODE, ts, te);\
+  };\
+  Parse(parser, CODE, NULL, &program)
+
+#define CAPTURE(CODE) \
+  if (opts->lexer_debug) { \
+    report(#CODE, ts, te);\
+  };\
+  Parse(parser, CODE, seg_new_token(ts, te), &program)
 
 %%{
   machine segment_lexer;
@@ -23,13 +38,19 @@
   true = 'true';
   false = 'false';
   string = '"' [^"]* '"';
+  # Syntax highlight fix. '
+
+  control = [(){};=.|,%@];
+  op = [&|+\-*/%^];
 
   nonws = ^whitespace;
-  nonop = [^(:&|+\-*\/%\^\n\t ];
-  istart = [^(){};.|,\n\t ];
-  alpha_u = [a-zA-Z_];
+  noncontrol = ^control;
+  nonop = ^op;
 
-  identifier = istart nonws* nonop;
+  iboundary = noncontrol & nonop & nonws;
+  imiddle = nonws;
+
+  identifier = iboundary imiddle iboundary | iboundary;
   symbol = ':' identifier | ':' string;
 
   main := |*
@@ -78,7 +99,7 @@
 
 %% write data nofinal;
 
-seg_statementlist_node *seg_parse(char *content, off_t length)
+seg_statementlist_node *seg_parse(char *content, off_t length, seg_options *opts)
 {
   /* Variables used by Ragel. */
   int cs, act;
@@ -93,6 +114,10 @@ seg_statementlist_node *seg_parse(char *content, off_t length)
   seg_program_node program;
   program.root = NULL;
 
+  if (opts->verbose) {
+    puts("Starting lexer.");
+  }
+
   %% write init;
 
   %% write exec;
@@ -101,6 +126,10 @@ seg_statementlist_node *seg_parse(char *content, off_t length)
     lexer_error = 1;
   } else {
     Parse(parser, 0, NULL, &program);
+  }
+
+  if (opts->verbose) {
+    puts("Lexing complete.");
   }
 
   ParseFree(parser, free);

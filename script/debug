@@ -9,7 +9,7 @@ make clean bin/segment DEBUG=1
 echo -e "\n>> executing >>>>>>>>>>>>>>>>\n"
 
 set +e
-bin/segment examples/input.seg
+bin/segment --lexer-debug --ast-debug --verbose examples/input.seg
 EXITCODE=$?
 set -e
 

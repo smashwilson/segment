@@ -40,7 +40,13 @@ int main(int argc, const char **argv)
 
   printf("Beginning parse:\n");
   seg_statementlist_node *root = seg_parse((char*) content, istat.st_size);
-  puts("Parse complete.\n");
+  puts("\nParse complete.\n");
+
+  if (root == NULL) {
+    fputs("Syntax error!", stderr);
+    return 1;
+  }
+
   seg_print_ast(root, stdout);
 
   return 0;

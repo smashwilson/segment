@@ -168,7 +168,6 @@ invocation (OUT) ::= expr (LHS) ANDLIKE (AND) expr (RHS).
   seg_delete_token(AND);
   op->left = LHS;
   op->right = RHS;
-  printf("\nop: %p, rhs: %p\n", op, RHS);
 
   OUT = malloc(sizeof(seg_expr_node));
   OUT->child_kind = SEG_BINOP;

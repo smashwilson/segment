@@ -14,6 +14,21 @@ LTGREEN="${prefix}1;32m"
 DKRED="${prefix}0;31m"
 RESET="${prefix}0m"
 
+# Output functions.
+
+pluralize () {
+  echo -n "$1 $2"
+  [[ $1 -ne 1 ]] && echo -n "s"
+}
+
+# Accumulate filenames of failing tests for a final report.
+
+PASSCOUNT=0
+FAILFILES=
+FAILCOUNT=0
+ERRORFILES=
+ERRORCOUNT=0
+
 for SRCFILE in ${BASEDIR}/ast/*.seg; do
   EXPECTED_AST=${SRCFILE}.ast
   ACTUAL_AST=${SRCFILE}.ast.actual
@@ -31,12 +46,28 @@ for SRCFILE in ${BASEDIR}/ast/*.seg; do
     if [[ ${DIFF_CODE} -eq 0 ]]; then
       echo -e " ${LTGREEN}pass${RESET}"
       [ -z ${AST_KEEP} ] && rm -f ${ACTUAL_AST} ${AST_DIFF}
+      let PASSCOUNT=PASSCOUNT+1
     else
-      # Failed
       echo -e " ${DKRED}fail${RESET}"
+      FAILFILES="${FAILFILES} ${SRCFILE}"
+      let FAILCOUNT=FAILCOUNT+1
     fi
   else
     # Parse error
     echo -e " ${DKRED}error${RESET} (${PARSE_CODE})"
+    ERRORFILES="${ERRORFILES} ${SRCFILE}"
+    let ERRORCOUNT=ERRORCOUNT+1
   fi
 done
+
+# Print a summary of this run.
+let TOTALCOUNT=PASSCOUNT+FAILCOUNT+ERRORCOUNT
+
+echo
+echo -ne "Summary: of ${WHITE}${TOTALCOUNT}"
+pluralize ${TOTALCOUNT} tests
+echo -ne ${RESET}
+[[ ${PASSCOUNT} -ne 0 ]] && echo -ne ", ${LTGREEN}${PASSCOUNT} passed${RESET}"
+[[ ${FAILCOUNT} -ne 0 ]] && echo -ne ", ${DKRED}${FAILCOUNT} failed${RESET}"
+[[ ${ERRORCOUNT} -ne 0 ]] && echo -ne ", ${DKRED}${ERRORCOUNT} caused errors${RESET}"
+echo "."

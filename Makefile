@@ -17,5 +17,10 @@ src/lexer.c: src/lexer.rl src/grammar.c
 src/grammar.c: src/grammar.y
 	cd src && lemon -s grammar.y
 
+.PHONY: clean
 clean:
 	rm -f src/*.o src/grammar.c src/grammar.h src/grammar.out src/lexer.c
+
+.PHONY: test
+test:
+	./tests/all.sh

@@ -13,7 +13,7 @@ seg_token *seg_new_token(const char *start, char *end)
   return tok;
 }
 
-const char *seg_token_as_string(seg_token *tok)
+char *seg_token_as_string(seg_token *tok)
 {
   size_t length = tok->end - tok->start;
   char *v = malloc(length);

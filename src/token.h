@@ -14,7 +14,7 @@ seg_token *seg_new_token(const char *start, char *end);
 /*
  * Copy this token into a null-terminated string.
  */
-const char *seg_token_as_string(seg_token *tok);
+char *seg_token_as_string(seg_token *tok);
 
 /*
  * Interpret this token as an integer.

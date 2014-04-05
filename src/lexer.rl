@@ -80,13 +80,16 @@ static void report(const char *name, const char *ts, const char *te) {
 
     '(' => { EMPTY(LPAREN); };
     ')' => { EMPTY(RPAREN); };
-    '{' => { EMPTY(LCURLY); };
-    '}' => { EMPTY(RCURLY); };
     ';' => { EMPTY(SEMI); };
     '\n' => { EMPTY(NEWLINE); };
     '=' => { EMPTY(ASSIGNMENT); };
     '.' => { EMPTY(PERIOD); };
     ',' => { EMPTY(COMMA); };
+
+    # Eat whitespace and newlines at the start of a block.
+    # Otherwise, the extraneous NEWLINE tokens will confuse the parser.
+    '{' (whitespace | [\r\n])* => { EMPTY(BLOCKSTART); };
+    '}' => { EMPTY(BLOCKEND); };
 
     '|' => {
       EMPTY(BAR);

@@ -122,7 +122,7 @@ expr (OUT) ::= invocation (I). { OUT = I; }
 
 // Blocks
 
-block (OUT) ::= LCURLY parameters (PARAMS) statementlist (BODY) RCURLY.
+block (OUT) ::= BLOCKSTART parameters (PARAMS) statementlist (BODY) BLOCKEND.
 {
   OUT = malloc(sizeof(seg_block_node));
   OUT->parameters = PARAMS;
@@ -136,7 +136,7 @@ commaparams (OUT) ::= parameter (IN). { OUT = IN; }
 commaparams (OUT) ::= commaparams (LIST) COMMA parameter (NEW).
 {
   /* Parameters are pushed in reverse order. */
-  LIST->next = NEW;
+  NEW->next = LIST;
   OUT = NEW;
 }
 

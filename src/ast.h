@@ -4,10 +4,6 @@
 /* Kind Tag Enums */
 
 typedef enum {
-  SEG_EXPR
-} seg_statement_kind;
-
-typedef enum {
   SEG_INTEGER,
   SEG_BINOP,
   SEG_BLOCK
@@ -54,20 +50,12 @@ typedef struct seg_expr_node {
     seg_block_node *block;
   } child;
   seg_expr_kind child_kind;
+  struct seg_expr_node *next;
 } seg_expr_node;
 
-typedef struct seg_statement_node {
-  union {
-    seg_expr_node *expr;
-  } child;
-  seg_statement_kind child_kind;
-
-  struct seg_statement_node *next;
-} seg_statement_node;
-
 typedef struct seg_statementlist_node {
-  seg_statement_node *first;
-  seg_statement_node *last;
+  seg_expr_node *first;
+  seg_expr_node *last;
 } seg_statementlist_node;
 
 typedef struct {
@@ -89,9 +77,8 @@ typedef enum {
 
 typedef void (*seg_integer_handler)(seg_integer_node *node, void *state);
 typedef void (*seg_binop_handler)(seg_binop_node *node, void *state);
-typedef void (*seg_expr_handler)(seg_expr_node *node, void *state);
 typedef void (*seg_block_handler)(seg_block_node *node, void *state);
-typedef void (*seg_statement_handler)(seg_statement_node *node, void *state);
+typedef void (*seg_expr_handler)(seg_expr_node *node, void *state);
 typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, void *state);
 
 seg_ast_visitor seg_new_ast_visitor();
@@ -107,22 +94,16 @@ void seg_ast_visit_binop(
   seg_binop_handler visit
 );
 
-void seg_ast_visit_expr(
-  seg_ast_visitor visitor,
-  seg_visit_when when,
-  seg_expr_handler visit
-);
-
 void seg_ast_visit_block(
   seg_ast_visitor visitor,
   seg_visit_when,
   seg_block_handler visit
 );
 
-void seg_ast_visit_statement(
+void seg_ast_visit_expr(
   seg_ast_visitor visitor,
   seg_visit_when when,
-  seg_statement_handler visit
+  seg_expr_handler visit
 );
 
 void seg_ast_visit_statementlist(

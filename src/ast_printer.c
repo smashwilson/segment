@@ -34,15 +34,6 @@ static void print_binop(seg_binop_node *node, void *state)
   pstate->depth++;
 }
 
-static void print_expr(seg_expr_node *node, void *state)
-{
-  printer_state *pstate = (printer_state *) state;
-  print_prefix(pstate);
-
-  fputs("EXPR\n", pstate->out);
-  pstate->depth++;
-}
-
 static void print_block(seg_block_node *node, void *state)
 {
   printer_state *pstate = (printer_state *) state;
@@ -75,12 +66,12 @@ static void print_block(seg_block_node *node, void *state)
   pstate->depth++;
 }
 
-static void print_statement(seg_statement_node *node, void *state)
+static void print_expr(seg_expr_node *node, void *state)
 {
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  fputs("STATEMENT\n", pstate->out);
+  fputs("EXPR\n", pstate->out);
   pstate->depth++;
 }
 
@@ -112,14 +103,11 @@ void seg_print_ast(seg_statementlist_node *root, FILE *outf)
     seg_ast_visit_binop(visitor, SEG_VISIT_PRE, &print_binop);
     seg_ast_visit_binop(visitor, SEG_VISIT_POST, (seg_binop_handler) &pop_depth);
 
-    seg_ast_visit_expr(visitor, SEG_VISIT_PRE, &print_expr);
-    seg_ast_visit_expr(visitor, SEG_VISIT_POST, (seg_expr_handler) &pop_depth);
-
     seg_ast_visit_block(visitor, SEG_VISIT_PRE, &print_block);
     seg_ast_visit_block(visitor, SEG_VISIT_POST, (seg_block_handler) &pop_depth);
 
-    seg_ast_visit_statement(visitor, SEG_VISIT_PRE, &print_statement);
-    seg_ast_visit_statement(visitor, SEG_VISIT_POST, (seg_statement_handler) &pop_depth);
+    seg_ast_visit_expr(visitor, SEG_VISIT_PRE, &print_expr);
+    seg_ast_visit_expr(visitor, SEG_VISIT_POST, (seg_expr_handler) &pop_depth);
 
     seg_ast_visit_statementlist(visitor, SEG_VISIT_PRE, &print_statementlist);
     seg_ast_visit_statementlist(visitor, SEG_VISIT_POST, (seg_statementlist_handler) &pop_depth);

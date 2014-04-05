@@ -25,7 +25,7 @@
 
 %type program { seg_statementlist_node* }
 %type statementlist { seg_statementlist_node* }
-%type statement { seg_statement_node* }
+%type statement { seg_expr_node* }
 %type expr { seg_expr_node* }
 %type invocation { seg_expr_node* }
 %type block { seg_block_node* }
@@ -76,15 +76,8 @@ statementlist (OUT) ::= statementlist (LIST) SEMI statement (NEW).
   OUT = LIST;
 }
 
-statement (OUT) ::= . { OUT = NULL; }
-
-statement (OUT) ::= expr (E).
-{
-  OUT = malloc(sizeof(seg_statement_node));
-  OUT->child_kind = SEG_EXPR;
-  OUT->child.expr = E;
-}
-
+statement ::= .
+statement (OUT) ::= expr (IN). { OUT = IN; }
 statement ::= spaceinvocation.
 
 // Literals

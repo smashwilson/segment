@@ -7,3 +7,5 @@ lexer.c
 *.o
 
 bin/
+
+default.seg

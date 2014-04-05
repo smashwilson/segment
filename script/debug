@@ -3,13 +3,15 @@ set -e
 rm -f ./core
 clear
 
+INFILE=${1:-default.seg}
+
 ulimit -c unlimited
 echo -e ">> building >>>>>>>>>>>>>>>>>\n"
 make clean bin/segment DEBUG=1
 echo -e "\n>> executing >>>>>>>>>>>>>>>>\n"
 
 set +e
-bin/segment --lexer-debug --ast-debug --verbose examples/input.seg
+bin/segment --lexer-debug --ast-debug --verbose ${INFILE}
 EXITCODE=$?
 set -e
 

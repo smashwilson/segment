@@ -60,7 +60,10 @@ static void print_block(seg_block_node *node, void *state)
   }
 
   while(current != NULL) {
-    fprintf(pstate->out, "%s ", current->name);
+    if (current != initial) {
+      fputc(' ', pstate->out);
+    }
+    fprintf(pstate->out, "%s", current->name);
     current = current->next;
   }
 

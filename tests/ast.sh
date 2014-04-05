@@ -36,8 +36,10 @@ for SRCFILE in ${BASEDIR}/ast/*.seg; do
 
   echo -ne "ast: ${WHITE}${SRCFILE}${RESET} .."
 
-  ${ROOTDIR}/bin/segment --ast-debug ${SRCFILE} > ${ACTUAL_AST}
+  exec 3> /dev/stderr 2> /dev/null
+  ${ROOTDIR}/bin/segment --ast-debug ${SRCFILE} > ${ACTUAL_AST} 2> /dev/null
   PARSE_CODE=$?
+  exec 2>&3
 
   if [[ ${PARSE_CODE} -eq 0 ]]; then
     diff ${EXPECTED_AST} ${ACTUAL_AST} > ${AST_DIFF}

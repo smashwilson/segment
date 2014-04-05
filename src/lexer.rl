@@ -24,16 +24,16 @@ static void report(const char *name, const char *ts, const char *te, seg_options
 }
 
 #define EMPTY(CODE) \
-  if (opts->lexer_debug) { \
-    report(#CODE, ts, te);\
-  };\
-  Parse(parser, CODE, NULL, &program)
+  do { \
+    report(#CODE, ts, te, opts); \
+    Parse(parser, CODE, NULL, &program); \
+  } while (0)
 
 #define CAPTURE(CODE) \
-  if (opts->lexer_debug) { \
-    report(#CODE, ts, te);\
-  };\
-  Parse(parser, CODE, seg_new_token(ts, te), &program)
+  do { \
+    report(#CODE, ts, te, opts); \
+    Parse(parser, CODE, seg_new_token(ts, te), &program); \
+  } while (0)
 
 %%{
   machine segment_lexer;

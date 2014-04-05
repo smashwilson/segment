@@ -5,6 +5,7 @@
 set -e
 
 BASEDIR=`dirname $0`
-ROOTDIR=${BASEDIR}/..
+
+source ${BASEDIR}/helpers.sh
 
 ${BASEDIR}/ast.sh

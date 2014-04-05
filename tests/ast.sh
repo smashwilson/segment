@@ -3,24 +3,12 @@
 # Parse all source files in ast/. Compare the AST generated from each with the corresponding .ast
 # file. If they differ, write the diff to a .diff file.
 
+# Directories.
+
 BASEDIR=`dirname $0`
 ROOTDIR=${BASEDIR}/..
 
-# Shell colors.
-
-prefix="\033["
-WHITE="${prefix}1;37m"
-LTGREEN="${prefix}1;32m"
-LTRED="${prefix}1;31m"
-DKRED="${prefix}0;31m"
-RESET="${prefix}0m"
-
-# Output functions.
-
-pluralize () {
-  echo -n "$1 $2"
-  [[ $1 -ne 1 ]] && echo -n "s"
-}
+source ${BASEDIR}/helpers.sh
 
 # Accumulate filenames of failing tests for a final report.
 
@@ -35,7 +23,7 @@ for SRCFILE in ${BASEDIR}/ast/*.seg; do
   ACTUAL_AST=${SRCFILE}.ast.actual
   AST_DIFF=${SRCFILE%.*}.diff
 
-  echo -ne "ast: ${WHITE}${SRCFILE}${RESET} .."
+  echo -ne "ast: ${HIGHLIGHT}${SRCFILE}${RESET} .."
 
   exec 3> /dev/stderr 2> /dev/null
   ${ROOTDIR}/bin/segment --ast-debug ${SRCFILE} > ${ACTUAL_AST} 2> /dev/null
@@ -47,17 +35,17 @@ for SRCFILE in ${BASEDIR}/ast/*.seg; do
     DIFF_CODE=$?
 
     if [[ ${DIFF_CODE} -eq 0 ]]; then
-      echo -e " ${LTGREEN}pass${RESET}"
+      echo -e " ${SUCCESS}pass${RESET}"
       [ -z ${AST_KEEP} ] && rm -f ${ACTUAL_AST} ${AST_DIFF}
       let PASSCOUNT=PASSCOUNT+1
     else
-      echo -e " ${LTRED}fail${RESET}"
+      echo -e " ${FAILURE}fail${RESET}"
       FAILFILES="${FAILFILES} ${SRCFILE}"
       let FAILCOUNT=FAILCOUNT+1
     fi
   else
     # Parse error
-    echo -e " ${DKRED}error${RESET} (${PARSE_CODE})"
+    echo -e " ${ERROR}error${RESET} (${PARSE_CODE})"
     ERRORFILES="${ERRORFILES} ${SRCFILE}"
     let ERRORCOUNT=ERRORCOUNT+1
   fi
@@ -67,31 +55,31 @@ done
 let TOTALCOUNT=PASSCOUNT+FAILCOUNT+ERRORCOUNT
 
 echo
-echo -ne "Summary: of ${WHITE}"
-pluralize ${TOTALCOUNT} test
+echo -ne "Summary: of ${HIGHLIGHT}"
+echo_pluralize ${TOTALCOUNT} test
 echo -ne ${RESET}
-[[ ${PASSCOUNT} -ne 0 ]] && echo -ne ", ${LTGREEN}${PASSCOUNT} passed${RESET}"
-[[ ${FAILCOUNT} -ne 0 ]] && echo -ne ", ${LTRED}${FAILCOUNT} failed${RESET}"
-[[ ${ERRORCOUNT} -ne 0 ]] && echo -ne ", ${DKRED}${ERRORCOUNT} caused errors${RESET}"
+[[ ${PASSCOUNT} -ne 0 ]] && echo -ne ", ${SUCCESS}${PASSCOUNT} passed${RESET}"
+[[ ${FAILCOUNT} -ne 0 ]] && echo -ne ", ${FAILURE}${FAILCOUNT} failed${RESET}"
+[[ ${ERRORCOUNT} -ne 0 ]] && echo -ne ", ${ERROR}${ERRORCOUNT} caused errors${RESET}"
 echo "."
 
 if [ -n ${FAILFILES} ]; then
   echo
-  pluralize ${FAILCOUNT} "failing test"
+  echo_pluralize ${FAILCOUNT} "failing test"
   echo ":"
 
   for FAILFILE in ${FAILFILES}; do
-    echo -e " ${LTRED}cat ${FAILFILE%.*}.diff${RESET} # ${WHITE}${FAILFILE}${RESET}"
+    echo -e " ${FAILURE}cat ${FAILFILE%.*}.diff${RESET} # ${HIGHLIGHT}${FAILFILE}${RESET}"
   done
 fi
 
 if [[ -n ${ERRORFILES} ]]; then
   echo
-  pluralize ${ERRORCOUNT} error
+  echo_pluralize ${ERRORCOUNT} error
   echo ":"
 
   for ERRORFILE in ${ERRORFILES}; do
-    echo -e " ${DKRED}script/debug ${ERRORFILE}${RESET} # ${WHITE}${ERRORFILE}${RESET}"
+    echo -e " ${ERROR}script/debug ${ERRORFILE}${RESET} # ${HIGHLIGHT}${ERRORFILE}${RESET}"
   done
 fi
 

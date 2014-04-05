@@ -7,10 +7,10 @@
 #include "grammar.h"
 #include "grammar.c"
 
-#define REPORT(CODE) printf("t: " #CODE " ")
+#define REPORT(NAME) printf("t: " #NAME " ")
 
-#define EMPTY(CODE) REPORT(CODE); Parse(parser, CODE, NULL, &program)
-#define CAPTURE(CODE) REPORT(CODE); Parse(parser, CODE, seg_new_token(ts, te), &program)
+#define EMPTY(CODE) REPORT(#CODE); Parse(parser, CODE, NULL, &program)
+#define CAPTURE(CODE) REPORT(#CODE); Parse(parser, CODE, seg_new_token(ts, te), &program)
 
 %%{
   machine segment_lexer;
@@ -25,10 +25,11 @@
   string = '"' [^"]* '"';
 
   nonws = ^whitespace;
-  nonop = [^(:&|+\-*\/%\^];
+  nonop = [^(:&|+\-*\/%\^\n\t ];
+  istart = [^(){};.|,\n\t ];
   alpha_u = [a-zA-Z_];
 
-  identifier = alpha_u nonws* nonop?;
+  identifier = istart nonws* nonop;
   symbol = ':' identifier | ':' string;
 
   main := |*
@@ -52,10 +53,6 @@
     '|' => { EMPTY(BAR); };
     ',' => { EMPTY(COMMA); };
 
-    identifier => { CAPTURE(IDENTIFIER); };
-    '@' identifier => { EMPTY(IVAR); };
-    '%' identifier => { EMPTY(TVAR); };
-
     identifier '(' => { EMPTY(METHODNAME); };
 
     identifier ':' => { EMPTY(KEYWORD); };
@@ -69,6 +66,10 @@
     identifier? '%' => { EMPTY(MODLIKE); };
     identifier? '^' => { EMPTY(EXPLIKE); };
     '!' => { EMPTY(NOTLIKE); };
+
+    identifier => { CAPTURE(IDENTIFIER); };
+    '@' identifier => { EMPTY(IVAR); };
+    '%' identifier => { EMPTY(TVAR); };
 
     whitespace;
   *|;

@@ -1,5 +1,4 @@
-# This is a bunch of statements!
-
 {
+  |a, b|
   3 + 4
 }

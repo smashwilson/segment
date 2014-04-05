@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "lexer.h"
 #include "ast.h"
 #include "token.h"
 #include "segment.h"
@@ -43,15 +44,29 @@ static void report(const char *name, const char *ts, const char *te) {
   control = [(){};=.|,%@];
   op = [&|+\-*/%^];
 
-  nonws = ^whitespace;
+  nonws = ^whitespace & [^\r\n];
   noncontrol = ^control;
   nonop = ^op;
+  nonnumeric = [^0-9];
 
-  iboundary = noncontrol & nonop & nonws;
+  iboundary = nonws & noncontrol & nonnumeric;
   imiddle = nonws;
 
-  identifier = iboundary imiddle iboundary | iboundary;
+  identifier = iboundary imiddle* iboundary | iboundary;
   symbol = ':' identifier | ':' string;
+
+  blockargs := |*
+    comment;
+    whitespace;
+    [\r\n];
+
+    identifier => { CAPTURE(IDENTIFIER); };
+    ',' => { EMPTY(COMMA); };
+    '|' => {
+      EMPTY(BAR);
+      fret;
+    };
+  *|;
 
   main := |*
     comment;
@@ -71,8 +86,12 @@ static void report(const char *name, const char *ts, const char *te) {
     '\n' => { EMPTY(NEWLINE); };
     '=' => { EMPTY(ASSIGNMENT); };
     '.' => { EMPTY(PERIOD); };
-    '|' => { EMPTY(BAR); };
     ',' => { EMPTY(COMMA); };
+
+    '|' => {
+      EMPTY(BAR);
+      fcall blockargs;
+    };
 
     identifier '(' => { EMPTY(METHODNAME); };
 
@@ -94,6 +113,26 @@ static void report(const char *name, const char *ts, const char *te) {
 
     whitespace;
   *|;
+
+  # Stack management
+
+  prepush {
+    if (top >= stack_size) {
+      if (opts->verbose) {
+        printf("Growing stack from %d to %d.\n", stack_size, stack_size + RAGEL_STACK_INCR);
+      }
+      stack = realloc(stack, stack_size + RAGEL_STACK_INCR);
+    }
+  }
+
+  postpop {
+    if (stack_size - top >= RAGEL_STACK_INCR) {
+      if (opts->verbose) {
+        printf("Shrinking stack from %d to %d.\n", stack_size, stack_size - RAGEL_STACK_INCR);
+      }
+      stack = realloc(stack, stack_size - RAGEL_STACK_INCR);
+    }
+  }
 }%%
 /* Syntax Highlighting */
 
@@ -102,11 +141,14 @@ static void report(const char *name, const char *ts, const char *te) {
 seg_statementlist_node *seg_parse(char *content, off_t length, seg_options *opts)
 {
   /* Variables used by Ragel. */
-  int cs, act;
+  int cs, act, top;
   char *ts, *te;
   char *p = content;
   const char *pe = content + length;
   const char *eof = pe;
+
+  int *stack = malloc(sizeof(int) * RAGEL_INIT_STACK_SIZE);
+  int stack_size = RAGEL_INIT_STACK_SIZE;
 
   /* Parser state */
   int lexer_error = 0;

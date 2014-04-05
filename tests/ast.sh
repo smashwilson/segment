@@ -74,3 +74,23 @@ echo -ne ${RESET}
 [[ ${FAILCOUNT} -ne 0 ]] && echo -ne ", ${LTRED}${FAILCOUNT} failed${RESET}"
 [[ ${ERRORCOUNT} -ne 0 ]] && echo -ne ", ${DKRED}${ERRORCOUNT} caused errors${RESET}"
 echo "."
+
+if [ -n ${FAILFILES} ]; then
+  echo
+  pluralize ${FAILCOUNT} "failing test"
+  echo ":"
+
+  for FAILFILE in ${FAILFILES}; do
+    echo -e " ${LTRED}cat ${FAILFILE%.*}.diff${RESET} # ${WHITE}${FAILFILE}${RESET}"
+  done
+fi
+
+if [[ -n ${ERRORFILES} ]]; then
+  echo
+  pluralize ${ERRORCOUNT} error
+  echo ":"
+
+  for ERRORFILE in ${ERRORFILES}; do
+    echo -e " ${DKRED}script/debug ${ERRORFILE}${RESET} # ${WHITE}${ERRORFILE}${RESET}"
+  done
+fi

@@ -67,7 +67,7 @@ done
 let TOTALCOUNT=PASSCOUNT+FAILCOUNT+ERRORCOUNT
 
 echo
-echo -ne "Summary: of ${WHITE}${TOTALCOUNT}"
+echo -ne "Summary: of ${WHITE}"
 pluralize ${TOTALCOUNT} test
 echo -ne ${RESET}
 [[ ${PASSCOUNT} -ne 0 ]] && echo -ne ", ${LTGREEN}${PASSCOUNT} passed${RESET}"

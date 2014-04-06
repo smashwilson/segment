@@ -8,6 +8,8 @@
 struct seg_ast_visitor {
   seg_integer_handler visit_integer;
 
+  seg_var_handler visit_var;
+
   seg_binop_handler visit_binop_pre;
   seg_binop_handler visit_binop_post;
 
@@ -28,6 +30,8 @@ seg_ast_visitor seg_new_ast_visitor()
   seg_ast_visitor visitor = malloc(sizeof(struct seg_ast_visitor));
 
   visitor->visit_integer = (seg_integer_handler) &visit_null;
+
+  visitor->visit_var = (seg_var_handler) &visit_null;
 
   visitor->visit_binop_pre = (seg_binop_handler) &visit_null;
   visitor->visit_binop_post = (seg_binop_handler) &visit_null;
@@ -59,6 +63,11 @@ void seg_ast_visit_binop(
   } else {
     visitor->visit_binop_post = visit;
   }
+}
+
+void seg_ast_visit_var(seg_ast_visitor visitor, seg_var_handler visit)
+{
+  visitor->visit_var = visit;
 }
 
 void seg_ast_visit_block(
@@ -122,6 +131,11 @@ static void visit_integer(
   (*(visitor->visit_integer))(root, state);
 }
 
+static void visit_var(seg_var_node *root, seg_ast_visitor visitor, void *state)
+{
+  (*(visitor->visit_var))(root, state);
+}
+
 static void visit_binop(
   seg_binop_node *root,
   seg_ast_visitor visitor,
@@ -155,6 +169,9 @@ static void visit_expr(
   switch(root->child_kind) {
   case SEG_INTEGER:
     visit_integer(root->child.integer, visitor, state);
+    break;
+  case SEG_VAR:
+    visit_var(root->child.var, visitor, state);
     break;
   case SEG_BINOP:
     visit_binop(root->child.binop, visitor, state);

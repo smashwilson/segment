@@ -25,6 +25,14 @@ static void print_integer(seg_integer_node *node, void *state)
   fprintf(pstate->out, "INTEGER: %d\n", node->value);
 }
 
+static void print_var(seg_var_node *node, void *state)
+{
+  printer_state *pstate = (printer_state *) state;
+  print_prefix(pstate);
+
+  fprintf(pstate->out, "VAR: %*s\n", (int) node->length, node->varname);
+}
+
 static void print_binop(seg_binop_node *node, void *state)
 {
   printer_state *pstate = (printer_state *) state;
@@ -99,6 +107,8 @@ void seg_print_ast(seg_statementlist_node *root, FILE *outf)
     seg_ast_visitor visitor = seg_new_ast_visitor();
 
     seg_ast_visit_integer(visitor, &print_integer);
+
+    seg_ast_visit_var(visitor, &print_var);
 
     seg_ast_visit_binop(visitor, SEG_VISIT_PRE, &print_binop);
     seg_ast_visit_binop(visitor, SEG_VISIT_POST, (seg_binop_handler) &pop_depth);

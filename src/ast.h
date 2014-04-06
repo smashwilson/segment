@@ -5,6 +5,7 @@
 
 typedef enum {
   SEG_INTEGER,
+  SEG_VAR,
   SEG_BINOP,
   SEG_BLOCK
 } seg_expr_kind;
@@ -20,6 +21,13 @@ struct seg_statementlist_node;
 typedef struct {
   int value;
 } seg_integer_node;
+
+/* Variable References */
+
+typedef struct {
+  const char *varname;
+  size_t length;
+} seg_var_node;
 
 /* Blocks */
 
@@ -46,8 +54,9 @@ typedef struct {
 typedef struct seg_expr_node {
   union {
     seg_integer_node *integer;
-    seg_binop_node *binop;
+    seg_var_node *var;
     seg_block_node *block;
+    seg_binop_node *binop;
   } child;
   seg_expr_kind child_kind;
   struct seg_expr_node *next;
@@ -77,6 +86,7 @@ typedef enum {
 
 typedef void (*seg_integer_handler)(seg_integer_node *node, void *state);
 typedef void (*seg_binop_handler)(seg_binop_node *node, void *state);
+typedef void (*seg_var_handler)(seg_var_node *node, void *state);
 typedef void (*seg_block_handler)(seg_block_node *node, void *state);
 typedef void (*seg_expr_handler)(seg_expr_node *node, void *state);
 typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, void *state);

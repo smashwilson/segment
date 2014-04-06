@@ -103,7 +103,17 @@ expr ::= SYMBOL.
 // Compound Expressions
 
 expr ::= LPAREN statement RPAREN.
-expr ::= IDENTIFIER.
+expr (OUT) ::= IDENTIFIER (V).
+{
+  seg_var_node *varnode = malloc(sizeof(seg_var_node));
+  varnode->varname = seg_token_as_string(V, &(varnode->length));
+  seg_delete_token(V);
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_VAR;
+  OUT->child.var = varnode;
+}
+
 expr (OUT) ::= block (B).
 {
   OUT = malloc(sizeof(seg_expr_node));

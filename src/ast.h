@@ -33,6 +33,7 @@ typedef struct {
 
 typedef struct seg_parameter_list {
   const char *name;
+  size_t length;
   struct seg_parameter_list *next;
 } seg_parameter_list;
 
@@ -45,6 +46,7 @@ typedef struct {
 
 typedef struct {
   const char *selector;
+  size_t length;
   struct seg_expr_node *left;
   struct seg_expr_node *right;
 } seg_binop_node;

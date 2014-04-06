@@ -30,7 +30,7 @@ static void print_var(seg_var_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  fprintf(pstate->out, "VAR: %*s\n", (int) node->length, node->varname);
+  fprintf(pstate->out, "VAR: %.*s\n", (int) node->length, node->varname);
 }
 
 static void print_binop(seg_binop_node *node, void *state)
@@ -38,7 +38,7 @@ static void print_binop(seg_binop_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  fprintf(pstate->out, "BINOP: %s\n", node->selector);
+  fprintf(pstate->out, "BINOP: %.*s\n", (int) node->length, node->selector);
   pstate->depth++;
 }
 
@@ -62,7 +62,7 @@ static void print_block(seg_block_node *node, void *state)
     if (current != initial) {
       fputc(' ', pstate->out);
     }
-    fprintf(pstate->out, "%s", current->name);
+    fprintf(pstate->out, "%.*s", (int) current->length, current->name);
     current = current->next;
   }
 

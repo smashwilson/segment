@@ -5,29 +5,34 @@
 
 #include "token.h"
 
-seg_token *seg_new_token(const char *start, char *end)
+seg_token *seg_new_token(const char *start, const char *end)
 {
   seg_token *tok = malloc(sizeof(seg_token));
   tok->start = start;
-  tok->end = end;
+  tok->length = end - start;
   return tok;
 }
 
-char *seg_token_as_string(seg_token *tok)
+char *seg_token_as_string(seg_token *tok, size_t *length)
 {
-  size_t length = tok->end - tok->start;
-  char *v = malloc(length);
-  strncpy(v, tok->start, length);
+  char *v = malloc(tok->length);
+  strncpy(v, tok->start, tok->length);
+  *length = tok->length;
   return v;
 }
 
 long seg_token_as_integer(seg_token *tok)
 {
-  long v = strtol(tok->start, &tok->end, 10);
+  char *end = (char*) 0x1;
+  long v = strtol(tok->start, &end, 10);
 
   if (errno) {
     perror("Unable to parse token as integer");
     return 0L;
+  }
+
+  if (end != tok->start + tok->length) {
+    fprintf(stderr, "Warning: INTEGER had unexpected length\n");
   }
 
   return v;

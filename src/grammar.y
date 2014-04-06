@@ -147,7 +147,7 @@ commaparams (OUT) ::= commaparams (LIST) COMMA parameter (NEW).
 parameter (OUT) ::= IDENTIFIER (ID).
 {
   OUT = malloc(sizeof(seg_parameter_list));
-  OUT->name = seg_token_as_string(ID);
+  OUT->name = seg_token_as_string(ID, &(OUT->length));
   OUT->next = NULL;
   seg_delete_token(ID);
 }

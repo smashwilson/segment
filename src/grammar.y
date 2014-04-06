@@ -26,6 +26,7 @@
 
 %type program { seg_statementlist_node* }
 %type statementlist { seg_statementlist_node* }
+%type maybestatement { seg_expr_node* }
 %type statement { seg_expr_node* }
 %type expr { seg_expr_node* }
 %type invocation { seg_expr_node* }
@@ -49,14 +50,14 @@ program (OUT) ::= statementlist (LIST).
   OUT = LIST;
 }
 
-statementlist (OUT) ::= statement (ONLY).
+statementlist (OUT) ::= maybestatement (ONLY).
 {
   OUT = malloc(sizeof(seg_statementlist_node));
   OUT->first = ONLY;
   OUT->last = ONLY;
 }
 
-statementlist (OUT) ::= statementlist (LIST) NEWLINE statement (NEW).
+statementlist (OUT) ::= statementlist (LIST) NEWLINE maybestatement (NEW).
 {
   if (NEW != NULL) {
     if (LIST->last != NULL) {
@@ -69,7 +70,7 @@ statementlist (OUT) ::= statementlist (LIST) NEWLINE statement (NEW).
   OUT = LIST;
 }
 
-statementlist (OUT) ::= statementlist (LIST) SEMI statement (NEW).
+statementlist (OUT) ::= statementlist (LIST) SEMI maybestatement (NEW).
 {
   if (NEW != NULL) {
     if (LIST->last != NULL) {
@@ -82,7 +83,9 @@ statementlist (OUT) ::= statementlist (LIST) SEMI statement (NEW).
   OUT = LIST;
 }
 
-statement ::= .
+maybestatement ::= .
+maybestatement (OUT) ::= statement (IN). { OUT = IN; }
+
 statement (OUT) ::= expr (IN). { OUT = IN; }
 
 // Literals

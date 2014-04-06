@@ -48,18 +48,21 @@ static void report(const char *name, const char *ts, const char *te, seg_options
   string = '"' [^"]* '"';
   # Syntax highlight fix. '
 
-  control = [(){};=.|,%@];
+  control = [(){};=.|,];
+  sigil = [%@];
   op = [&|+\-*/%^];
 
   nonws = ^whitespace & [^\r\n];
   noncontrol = ^control;
+  nonsigil = ^sigil;
   nonop = ^op;
   nonnumeric = [^0-9];
 
-  iboundary = nonws & noncontrol & nonnumeric;
-  imiddle = nonws;
+  iend = nonws & noncontrol & nonnumeric;
+  istart = iend & nonsigil;
+  imiddle = nonws & noncontrol;
 
-  identifier = iboundary imiddle* iboundary | iboundary;
+  identifier = istart imiddle* iend | iend;
   symbol = ':' identifier | ':' string;
 
   blockargs := |*

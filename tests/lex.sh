@@ -23,7 +23,7 @@ ERRORCOUNT=0
 for SRCFILE in ${BASEDIR}/lexer/*.seg; do
   EXPECTED_LEX=${SRCFILE}.lex
   ACTUAL_LEX=${SRCFILE}.lex.actual
-  LEX_DIFF=${SRCFILE%.*}.diff
+  LEX_DIFF=${SRCFILE}.diff
 
   echo -ne "lex: ${HIGHLIGHT}${SRCFILE}${RESET} .."
 

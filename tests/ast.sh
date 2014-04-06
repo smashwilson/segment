@@ -21,7 +21,7 @@ ERRORCOUNT=0
 for SRCFILE in ${BASEDIR}/ast/*.seg; do
   EXPECTED_AST=${SRCFILE}.ast
   ACTUAL_AST=${SRCFILE}.ast.actual
-  AST_DIFF=${SRCFILE%.*}.diff
+  AST_DIFF=${SRCFILE}.diff
 
   echo -ne "ast: ${HIGHLIGHT}${SRCFILE}${RESET} .."
 

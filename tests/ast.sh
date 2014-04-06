@@ -55,7 +55,7 @@ done
 print_summary
 
 print_failure () {
-  echo -e " ${FAILURE}cat ${1%.*}.diff${RESET} # ${HIGHLIGHT}${1}${RESET}"
+  echo -e " ${FAILURE}cat ${1}.diff${RESET} # ${HIGHLIGHT}${1}${RESET}"
 }
 
 print_error () {

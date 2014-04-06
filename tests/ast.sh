@@ -47,10 +47,8 @@ for SRCFILE in ${BASEDIR}/ast/*.seg; do
     continue
   fi
 
-  exec 3> /dev/stderr 2> /dev/null
   diff ${EXPECTED_AST} ${ACTUAL_AST} > ${AST_DIFF}
   DIFF_CODE=$?
-  exec 2>&3
 
   if [[ ${DIFF_CODE} -eq 0 ]]; then
     echo -e " ${SUCCESS}pass${RESET}"

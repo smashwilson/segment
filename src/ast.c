@@ -53,10 +53,7 @@ void seg_ast_visit_integer(seg_ast_visitor visitor, seg_integer_handler visit)
   visitor->visit_integer = visit;
 }
 
-void seg_ast_visit_binop(
-  seg_ast_visitor visitor,
-  seg_visit_when when,
-  seg_binop_handler visit)
+void seg_ast_visit_binop(seg_ast_visitor visitor, seg_visit_when when, seg_binop_handler visit)
 {
   if (when == SEG_VISIT_PRE) {
     visitor->visit_binop_pre = visit;
@@ -70,11 +67,8 @@ void seg_ast_visit_var(seg_ast_visitor visitor, seg_var_handler visit)
   visitor->visit_var = visit;
 }
 
-void seg_ast_visit_block(
-  seg_ast_visitor visitor,
-  seg_visit_when when,
-  seg_block_handler visit
-) {
+void seg_ast_visit_block(seg_ast_visitor visitor, seg_visit_when when, seg_block_handler visit)
+{
   if (when == SEG_VISIT_PRE) {
     visitor->visit_block_pre = visit;
   } else {
@@ -82,11 +76,8 @@ void seg_ast_visit_block(
   }
 }
 
-void seg_ast_visit_expr(
-  seg_ast_visitor visitor,
-  seg_visit_when when,
-  seg_expr_handler visit
-) {
+void seg_ast_visit_expr(seg_ast_visitor visitor, seg_visit_when when, seg_expr_handler visit)
+{
   if (when == SEG_VISIT_PRE) {
     visitor->visit_expr_pre = visit;
   } else {
@@ -109,25 +100,13 @@ void seg_ast_visit_statementlist(
 /* Forward declarations of visitor walking functions that are used
    recursively. */
 
-static void visit_expr(
-  seg_expr_node *root,
-  seg_ast_visitor visitor,
-  void *state
-);
-
-static void visit_statementlist(
-  seg_statementlist_node *root,
-  seg_ast_visitor visitor,
-  void *state
-);
+static void visit_expr(seg_expr_node *root, seg_ast_visitor visitor, void *state);
+static void visit_statementlist(seg_statementlist_node *root, seg_ast_visitor visitor, void *state);
 
 /* Visitor walking functions. */
 
-static void visit_integer(
-  seg_integer_node *root,
-  seg_ast_visitor visitor,
-  void *state
-) {
+static void visit_integer(seg_integer_node *root, seg_ast_visitor visitor, void *state)
+{
   (*(visitor->visit_integer))(root, state);
 }
 
@@ -136,11 +115,8 @@ static void visit_var(seg_var_node *root, seg_ast_visitor visitor, void *state)
   (*(visitor->visit_var))(root, state);
 }
 
-static void visit_binop(
-  seg_binop_node *root,
-  seg_ast_visitor visitor,
-  void *state
-) {
+static void visit_binop(seg_binop_node *root, seg_ast_visitor visitor, void *state)
+{
   (*(visitor->visit_binop_pre))(root, state);
 
   visit_expr(root->left, visitor, state);
@@ -149,21 +125,15 @@ static void visit_binop(
   (*(visitor->visit_binop_post))(root, state);
 }
 
-static void visit_block(
-  seg_block_node *root,
-  seg_ast_visitor visitor,
-  void *state
-) {
+static void visit_block(seg_block_node *root, seg_ast_visitor visitor, void *state)
+{
   (*(visitor->visit_block_pre))(root, state);
   visit_statementlist(root->body, visitor, state);
   (*(visitor->visit_block_post))(root, state);
 }
 
-static void visit_expr(
-  seg_expr_node *root,
-  seg_ast_visitor visitor,
-  void *state
-) {
+static void visit_expr(seg_expr_node *root, seg_ast_visitor visitor, void *state)
+{
   (*(visitor->visit_expr_pre))(root, state);
 
   switch(root->child_kind) {
@@ -186,11 +156,8 @@ static void visit_expr(
   (*(visitor->visit_expr_post))(root, state);
 }
 
-static void visit_statementlist(
-    seg_statementlist_node *root,
-    seg_ast_visitor visitor,
-    void *state
-) {
+static void visit_statementlist(seg_statementlist_node *root, seg_ast_visitor visitor, void *state)
+{
   (*(visitor->visit_statementlist_pre))(root, state);
 
   seg_expr_node *current = root->first;
@@ -202,11 +169,8 @@ static void visit_statementlist(
   (*(visitor->visit_statementlist_post))(root, state);
 }
 
-void seg_ast_visit(
-    seg_ast_visitor visitor,
-    seg_statementlist_node *root,
-    void *state
-) {
+void seg_ast_visit(seg_ast_visitor visitor, seg_statementlist_node *root, void *state)
+{
   visit_statementlist(root, visitor, state);
 }
 

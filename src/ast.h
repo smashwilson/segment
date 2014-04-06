@@ -93,28 +93,11 @@ typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, void *st
 
 seg_ast_visitor seg_new_ast_visitor();
 
-void seg_ast_visit_integer(
-  seg_ast_visitor visitor,
-  seg_integer_handler visit
-);
-
-void seg_ast_visit_binop(
-  seg_ast_visitor visitor,
-  seg_visit_when when,
-  seg_binop_handler visit
-);
-
-void seg_ast_visit_block(
-  seg_ast_visitor visitor,
-  seg_visit_when,
-  seg_block_handler visit
-);
-
-void seg_ast_visit_expr(
-  seg_ast_visitor visitor,
-  seg_visit_when when,
-  seg_expr_handler visit
-);
+void seg_ast_visit_integer(seg_ast_visitor visitor, seg_integer_handler visit);
+void seg_ast_visit_binop(seg_ast_visitor visitor, seg_visit_when when, seg_binop_handler visit);
+void seg_ast_visit_var(seg_ast_visitor visitor, seg_var_handler);
+void seg_ast_visit_block(seg_ast_visitor visitor, seg_visit_when, seg_block_handler visit);
+void seg_ast_visit_expr(seg_ast_visitor visitor, seg_visit_when when, seg_expr_handler visit);
 
 void seg_ast_visit_statementlist(
   seg_ast_visitor visitor,

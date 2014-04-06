@@ -1,3 +1,4 @@
+var.method(1, 2, 3)
+method(4, 5, 6)
 puts 1 2 3
 receiver.something 45 78 96
-self.blerb (3 + 4)

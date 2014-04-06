@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Parse all source files in ast/. Compare the AST generated from each with the corresponding .ast
-# file. If they differ, write the diff to a .diff file.
+# Lex all source files in lexer/. Compare the lexer output with the corresponding .lex file. If
+# they differ, write the diff to a .diff file.
 
 # Directories.
 
@@ -18,25 +18,27 @@ FAILCOUNT=0
 ERRORFILES=
 ERRORCOUNT=0
 
-for SRCFILE in ${BASEDIR}/ast/*.seg; do
-  EXPECTED_AST=${SRCFILE}.ast
-  ACTUAL_AST=${SRCFILE}.ast.actual
-  AST_DIFF=${SRCFILE%.*}.diff
+# Give each file to the lexer.
 
-  echo -ne "ast: ${HIGHLIGHT}${SRCFILE}${RESET} .."
+for SRCFILE in ${BASEDIR}/lexer/*.seg; do
+  EXPECTED_LEX=${SRCFILE}.lex
+  ACTUAL_LEX=${SRCFILE}.lex.actual
+  LEX_DIFF=${SRCFILE%.*}.diff
+
+  echo -ne "lex: ${HIGHLIGHT}${SRCFILE}${RESET} .."
 
   exec 3> /dev/stderr 2> /dev/null
-  ${ROOTDIR}/bin/segment --ast-debug ${SRCFILE} > ${ACTUAL_AST} 2> /dev/null
-  PARSE_CODE=$?
+  ${ROOTDIR}/bin/segment --lexer-debug ${SRCFILE} > ${ACTUAL_LEX} 2> /dev/null
+  LEX_CODE=$?
   exec 2>&3
 
-  if [[ ${PARSE_CODE} -eq 0 ]]; then
-    diff ${EXPECTED_AST} ${ACTUAL_AST} > ${AST_DIFF}
+  if [[ ${LEX_CODE} -eq 0 ]]; then
+    diff ${EXPECTED_LEX} ${ACTUAL_LEX} > ${LEX_DIFF}
     DIFF_CODE=$?
 
     if [[ ${DIFF_CODE} -eq 0 ]]; then
       echo -e " ${SUCCESS}pass${RESET}"
-      [ -z ${AST_KEEP} ] && rm -f ${ACTUAL_AST} ${AST_DIFF}
+      [ -z ${LEX_KEEP} ] && rm -f ${ACTUAL_LEX} ${LEX_DIFF}
       let PASSCOUNT=PASSCOUNT+1
     else
       echo -e " ${FAILURE}fail${RESET}"
@@ -45,7 +47,7 @@ for SRCFILE in ${BASEDIR}/ast/*.seg; do
     fi
   else
     # Parse error
-    echo -e " ${ERROR}error${RESET} (${PARSE_CODE})"
+    echo -e " ${ERROR}error${RESET} (${LEX_CODE})"
     ERRORFILES="${ERRORFILES} ${SRCFILE}"
     let ERRORCOUNT=ERRORCOUNT+1
   fi

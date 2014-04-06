@@ -5,7 +5,7 @@ else
 endif
 
 CFLAGS=-std=c99 ${EXTRA}
-OBJECTS=src/token.o src/ast.o src/ast_printer.o src/lexer.o src/segment.o
+OBJECTS=src/token.o src/ast.o src/ast_printer.o src/parse_helpers.o src/lexer.o src/segment.o
 
 bin/segment: src/grammar.c ${OBJECTS}
 	mkdir -p bin/
@@ -17,5 +17,10 @@ src/lexer.c: src/lexer.rl src/grammar.c
 src/grammar.c: src/grammar.y
 	cd src && lemon -s grammar.y
 
+.PHONY: clean
 clean:
 	rm -f src/*.o src/grammar.c src/grammar.h src/grammar.out src/lexer.c
+
+.PHONY: test
+test:
+	./tests/all.sh

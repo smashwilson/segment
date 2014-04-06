@@ -5,6 +5,7 @@
 
   #include "ast.h"
   #include "token.h"
+  #include "parse_helpers.h"
 }
 
 // Grammar definition for segment.
@@ -154,39 +155,14 @@ lhs ::= TVAR.
 
 // Binary operators
 
-invocation (OUT) ::= expr (LHS) ANDLIKE (AND) expr (RHS).
-{
-  seg_binop_node *op = malloc(sizeof(seg_binop_node));
-  op->selector = seg_token_as_string(AND);
-  seg_delete_token(AND);
-  op->left = LHS;
-  op->right = RHS;
-
-  OUT = malloc(sizeof(seg_expr_node));
-  OUT->child_kind = SEG_BINOP;
-  OUT->child.binop = op;
-}
-
-invocation ::= expr ORLIKE expr.
-
-invocation (OUT) ::= expr (LHS) PLUSLIKE (PLUS) expr (RHS).
-{
-  seg_binop_node *op = malloc(sizeof(seg_binop_node));
-  op->selector = seg_token_as_string(PLUS);
-  seg_delete_token(PLUS);
-  op->left = LHS;
-  op->right = RHS;
-
-  OUT = malloc(sizeof(seg_expr_node));
-  OUT->child_kind = SEG_BINOP;
-  OUT->child.binop = op;
-}
-
-invocation ::= expr MINUSLIKE expr.
-invocation ::= expr MULTLIKE expr.
-invocation ::= expr DIVLIKE expr.
-invocation ::= expr MODLIKE expr.
-invocation ::= expr EXPLIKE expr.
+invocation (OUT) ::= expr (LHS) ANDLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) ORLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) PLUSLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) MINUSLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) MULTLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) DIVLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) MODLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) EXPLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
 
 // Unary operators
 

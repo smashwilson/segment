@@ -11,22 +11,29 @@
 #include "grammar.h"
 #include "grammar.c"
 
-static void report(const char *name, const char *ts, const char *te) {
+static void report(const char *name, const char *ts, const char *te, seg_options *opts) {
+  if (! opts->lexer_debug) {
+    return ;
+  }
   int length = (int) (te - ts);
-  printf("tok: %s [%.*s]\n", name, length, ts);
+  if (*ts == '\n' && length == 1) {
+    printf("tok: %s [\\n]\n", name);
+  } else {
+    printf("tok: %s [%.*s]\n", name, length, ts);
+  }
 }
 
 #define EMPTY(CODE) \
-  if (opts->lexer_debug) { \
-    report(#CODE, ts, te);\
-  };\
-  Parse(parser, CODE, NULL, &program)
+  do { \
+    report(#CODE, ts, te, opts); \
+    Parse(parser, CODE, NULL, &program); \
+  } while (0)
 
 #define CAPTURE(CODE) \
-  if (opts->lexer_debug) { \
-    report(#CODE, ts, te);\
-  };\
-  Parse(parser, CODE, seg_new_token(ts, te), &program)
+  do { \
+    report(#CODE, ts, te, opts); \
+    Parse(parser, CODE, seg_new_token(ts, te), &program); \
+  } while (0)
 
 %%{
   machine segment_lexer;
@@ -101,13 +108,13 @@ static void report(const char *name, const char *ts, const char *te) {
     identifier ':' => { EMPTY(KEYWORD); };
 
     identifier? '&' => { CAPTURE(ANDLIKE); };
-    identifier? '|' => { EMPTY(ORLIKE); };
+    identifier? '|' => { CAPTURE(ORLIKE); };
     identifier? '+' => { CAPTURE(PLUSLIKE); };
-    identifier? '-' => { EMPTY(MINUSLIKE); };
-    identifier? '*' => { EMPTY(MULTLIKE); };
-    identifier? '/' => { EMPTY(DIVLIKE); };
-    identifier? '%' => { EMPTY(MODLIKE); };
-    identifier? '^' => { EMPTY(EXPLIKE); };
+    identifier? '-' => { CAPTURE(MINUSLIKE); };
+    identifier? '*' => { CAPTURE(MULTLIKE); };
+    identifier? '/' => { CAPTURE(DIVLIKE); };
+    identifier? '%' => { CAPTURE(MODLIKE); };
+    identifier? '^' => { CAPTURE(EXPLIKE); };
     '!' => { EMPTY(NOTLIKE); };
 
     identifier => { CAPTURE(IDENTIFIER); };

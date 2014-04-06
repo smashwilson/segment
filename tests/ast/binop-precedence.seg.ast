@@ -1,0 +1,11 @@
+STATEMENTLIST
+|-EXPR
+| |-BINOP: +
+| | |-EXPR
+| | | |-INTEGER: 3
+| | |-EXPR
+| | | |-BINOP: *
+| | | | |-EXPR
+| | | | | |-INTEGER: 4
+| | | | |-EXPR
+| | | | | |-INTEGER: 7

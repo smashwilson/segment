@@ -108,13 +108,13 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     identifier ':' => { EMPTY(KEYWORD); };
 
     identifier? '&' => { CAPTURE(ANDLIKE); };
-    identifier? '|' => { EMPTY(ORLIKE); };
+    identifier? '|' => { CAPTURE(ORLIKE); };
     identifier? '+' => { CAPTURE(PLUSLIKE); };
-    identifier? '-' => { EMPTY(MINUSLIKE); };
-    identifier? '*' => { EMPTY(MULTLIKE); };
-    identifier? '/' => { EMPTY(DIVLIKE); };
-    identifier? '%' => { EMPTY(MODLIKE); };
-    identifier? '^' => { EMPTY(EXPLIKE); };
+    identifier? '-' => { CAPTURE(MINUSLIKE); };
+    identifier? '*' => { CAPTURE(MULTLIKE); };
+    identifier? '/' => { CAPTURE(DIVLIKE); };
+    identifier? '%' => { CAPTURE(MODLIKE); };
+    identifier? '^' => { CAPTURE(EXPLIKE); };
     '!' => { EMPTY(NOTLIKE); };
 
     identifier => { CAPTURE(IDENTIFIER); };

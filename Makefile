@@ -5,7 +5,7 @@ else
 endif
 
 CFLAGS=-std=c99 ${EXTRA}
-OBJECTS=src/token.o src/ast.o src/ast_printer.o src/lexer.o src/segment.o
+OBJECTS=src/token.o src/ast.o src/ast_printer.o src/parse_helpers.o src/lexer.o src/segment.o
 
 bin/segment: src/grammar.c ${OBJECTS}
 	mkdir -p bin/

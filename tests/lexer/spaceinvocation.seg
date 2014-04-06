@@ -1,0 +1,3 @@
+puts 1 2 3
+receiver.something 45 78 96
+self.blerb (3 + 4)

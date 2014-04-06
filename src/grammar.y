@@ -79,7 +79,6 @@ statementlist (OUT) ::= statementlist (LIST) SEMI statement (NEW).
 
 statement ::= .
 statement (OUT) ::= expr (IN). { OUT = IN; }
-statement ::= spaceinvocation.
 
 // Literals
 
@@ -188,11 +187,11 @@ invocation ::= METHODNAME commaargs RPAREN.
 
 // Space method call, explicit receiver
 
-spaceinvocation ::= receiver IDENTIFIER spaceargs.
+statement ::= receiver IDENTIFIER spaceargs.
 
 // Space method call, implicit receiver
 
-spaceinvocation ::= IDENTIFIER spaceargs.
+statement ::= IDENTIFIER spaceargs.
 
 receiver ::= expr PERIOD.
 

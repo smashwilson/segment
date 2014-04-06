@@ -205,6 +205,7 @@ statement (OUT) ::= IDENTIFIER (SEL) spaceargs (ARGS).
 
 // Argument lists.
 
+commaargs ::=.
 commaargs (OUT) ::= commaarg (IN). { OUT = IN; }
 commaargs (OUT) ::= commaargs (LIST) COMMA commaarg (NEW).
 {

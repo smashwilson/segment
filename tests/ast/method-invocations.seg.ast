@@ -64,3 +64,47 @@ STATEMENTLIST
 | | | | | |-INTEGER: 6
 | | | | |-EXPR
 | | | | | |-INTEGER: 89
+|-EXPR
+| |-METHODCALL: method
+| | |-EXPR
+| | | |-VAR: self
+|-EXPR
+| |-METHODCALL: three
+| | |-EXPR
+| | | |-METHODCALL: two
+| | | | |-EXPR
+| | | | | |-METHODCALL: one
+| | | | | | |-EXPR
+| | | | | | | |-VAR: self
+|-EXPR
+| |-METHODCALL: one
+| | |-EXPR
+| | | |-VAR: self
+| | |-EXPR
+| | | |-METHODCALL: puts
+| | | | |-EXPR
+| | | | | |-VAR: self
+| | | | |-EXPR
+| | | | | |-INTEGER: 3
+| | | | |-EXPR
+| | | | | |-INTEGER: 4
+| | |-EXPR
+| | | |-METHODCALL: gets
+| | | | |-EXPR
+| | | | | |-VAR: self
+| | | | |-EXPR
+| | | | | |-INTEGER: 42
+|-EXPR
+| |-METHODCALL: method
+| | |-EXPR
+| | | |-METHODCALL: foo
+| | | | |-EXPR
+| | | | | |-VAR: self
+| | | | |-EXPR
+| | | | | |-INTEGER: 1
+| | |-EXPR
+| | | |-METHODCALL: bar
+| | | | |-EXPR
+| | | | | |-VAR: self
+| | | | |-EXPR
+| | | | | |-INTEGER: 2

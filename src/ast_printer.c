@@ -3,8 +3,8 @@
 #include "ast_printer.h"
 
 typedef struct {
-    FILE *out;
-    int depth;
+  FILE *out;
+  int depth;
 } printer_state;
 
 static void print_prefix(printer_state *pstate)

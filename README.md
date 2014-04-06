@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/smashwilson/segment.svg)](https://travis-ci.org/smashwilson/segment)
+
 Most programmers, at some point, daydream about writing their own programming language. This one's mine.
 
 ## What's all this then

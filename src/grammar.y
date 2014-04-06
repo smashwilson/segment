@@ -34,6 +34,11 @@
 %type commaparams { seg_parameter_list* }
 %type parameter { seg_parameter_list* }
 
+%type commaargs { seg_arg_list* }
+%type commaarg  { seg_arg_list* }
+%type spaceargs { seg_arg_list* }
+%type spacearg  { seg_arg_list* }
+
 %extra_argument { seg_program_node *program_node }
 
 // Grammar definition.
@@ -101,7 +106,7 @@ expr ::= SYMBOL.
 
 // Compound Expressions
 
-expr ::= LPAREN statement RPAREN.
+expr (OUT) ::= LPAREN statement (IN) RPAREN. { OUT = IN; }
 expr (OUT) ::= IDENTIFIER (V).
 {
   seg_var_node *varnode = malloc(sizeof(seg_var_node));
@@ -127,8 +132,10 @@ expr (OUT) ::= invocation (I). { OUT = I; }
 
 block (OUT) ::= BLOCKSTART parameters (PARAMS) statementlist (BODY) BLOCKEND.
 {
+  seg_parameter_list *params = seg_reverse_params(PARAMS);
+
   OUT = malloc(sizeof(seg_block_node));
-  OUT->parameters = PARAMS;
+  OUT->parameters = params;
   OUT->body = BODY;
 }
 
@@ -179,32 +186,68 @@ invocation ::= NOTLIKE expr.
 
 // Paren method call, explicit receiver
 
-invocation ::= receiver METHODNAME commaargs RPAREN.
+expr (OUT) ::= expr (R) PERIOD METHODNAME (MN) commaargs (ARGS) RPAREN.
+{
+  seg_arg_list *args = seg_reverse_args(ARGS);
+  OUT = seg_parse_methodcall(R, MN, 1, args);
+}
 
 // Paren method call, implicit receiver
 
-invocation ::= METHODNAME commaargs RPAREN.
+expr (OUT) ::= METHODNAME (MN) commaargs (ARGS) RPAREN.
+{
+  seg_arg_list *args = seg_reverse_args(ARGS);
+  OUT = seg_parse_methodcall(seg_implicit_self(), MN, 1, args);
+}
 
 // Space method call, explicit receiver
 
-statement ::= receiver IDENTIFIER spaceargs.
+statement (OUT) ::= expr (R) PERIOD IDENTIFIER (SEL) spaceargs (ARGS).
+{
+  seg_arg_list *args = seg_reverse_args(ARGS);
+  OUT = seg_parse_methodcall(R, SEL, 0, args);
+}
 
 // Space method call, implicit receiver
 
-statement ::= IDENTIFIER spaceargs.
-
-receiver ::= expr PERIOD.
+statement (OUT) ::= IDENTIFIER (SEL) spaceargs (ARGS).
+{
+  seg_arg_list *args = seg_reverse_args(ARGS);
+  OUT = seg_parse_methodcall(seg_implicit_self(), SEL, 0, args);
+}
 
 // Argument lists.
 
-commaargs ::= .
-commaargs ::= commaargs COMMA commaarg.
+commaargs (OUT) ::= commaarg (IN). { OUT = IN; }
+commaargs (OUT) ::= commaargs (LIST) COMMA commaarg (NEW).
+{
+  NEW->next = LIST;
+  OUT = NEW;
+}
 
-commaarg ::= statement.
-commaarg ::= KEYWORD statement.
+commaarg (OUT) ::= statement (V).
+{
+  OUT = seg_parse_arg(V, NULL);
+}
 
-spaceargs ::= spacearg.
-spaceargs ::= spaceargs spacearg.
+commaarg (OUT) ::= KEYWORD (KW) statement (V).
+{
+  OUT = seg_parse_arg(V, KW);
+}
 
-spacearg ::= expr.
-spacearg ::= KEYWORD expr.
+spaceargs (OUT) ::= spacearg (IN). { OUT = IN; }
+spaceargs (OUT) ::= spaceargs (LIST) spacearg (NEW).
+{
+  NEW->next = LIST;
+  OUT = NEW;
+}
+
+spacearg (OUT) ::= expr (V).
+{
+  OUT = seg_parse_arg(V, NULL);
+}
+
+spacearg (OUT) ::= KEYWORD (KW) expr (V).
+{
+  OUT = seg_parse_arg(V, KW);
+}

@@ -106,9 +106,9 @@ static void report(const char *name, const char *ts, const char *te, seg_options
       fcall blockargs;
     };
 
-    identifier '(' => { EMPTY(METHODNAME); };
+    identifier '(' => { CAPTURE(METHODNAME); };
 
-    identifier ':' => { EMPTY(KEYWORD); };
+    identifier ':' => { CAPTURE(KEYWORD); };
 
     identifier? '&' => { CAPTURE(ANDLIKE); };
     identifier? '|' => { CAPTURE(ORLIKE); };
@@ -121,8 +121,8 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     '!' => { EMPTY(NOTLIKE); };
 
     identifier => { CAPTURE(IDENTIFIER); };
-    '@' identifier => { EMPTY(IVAR); };
-    '%' identifier => { EMPTY(TVAR); };
+    '@' identifier => { CAPTURE(IVAR); };
+    '%' identifier => { CAPTURE(TVAR); };
 
     whitespace;
   *|;

@@ -1,0 +1,66 @@
+STATEMENTLIST
+|-EXPR
+| |-METHODCALL: method
+| | |-EXPR
+| | | |-VAR: thing
+| | |-EXPR
+| | | |-INTEGER: 1
+| | |-EXPR
+| | | |-INTEGER: 2
+| | |-EXPR
+| | | |-INTEGER: 3
+|-EXPR
+| |-METHODCALL: method
+| | |-EXPR
+| | | |-VAR: self
+| | |-EXPR
+| | | |-INTEGER: 3
+| | |-EXPR
+| | | |-INTEGER: 2
+| | |-EXPR
+| | | |-INTEGER: 1
+|-EXPR
+| |-METHODCALL: puts
+| | |-EXPR
+| | | |-VAR: file
+| | |-EXPR
+| | | |-INTEGER: 4
+| | |-EXPR
+| | | |-INTEGER: 5
+| | |-EXPR
+| | | |-INTEGER: 6
+|-EXPR
+| |-METHODCALL: puts
+| | |-EXPR
+| | | |-VAR: self
+| | |-EXPR
+| | | |-INTEGER: 7
+| | |-EXPR
+| | | |-INTEGER: 8
+| | |-EXPR
+| | | |-INTEGER: 9
+|-EXPR
+| |-METHODCALL: blerb
+| | |-EXPR
+| | | |-VAR: self
+| | |-EXPR
+| | | |-METHODCALL: -
+| | | | |-EXPR
+| | | | | |-INTEGER: 7
+| | | | |-EXPR
+| | | | | |-INTEGER: 8
+| | |-EXPR
+| | | |-BLOCK: without parameters
+| | | | |-STATEMENTLIST
+| | | | | |-EXPR
+| | | | | | |-METHODCALL: +
+| | | | | | | |-EXPR
+| | | | | | | | |-INTEGER: 3
+| | | | | | | |-EXPR
+| | | | | | | | |-INTEGER: 4
+| | |-EXPR
+| | | |-METHODCALL: &and&
+| | | | |-EXPR
+| | | | | |-INTEGER: 6
+| | | | |-EXPR
+| | | | | |-INTEGER: 89

@@ -1,0 +1,10 @@
+STATEMENTLIST
+|-EXPR
+| |-BLOCK: [☃Ж中𐍆]
+| | |-STATEMENTLIST
+| | | |-EXPR
+| | | | |-BINOP: *
+| | | | | |-EXPR
+| | | | | | |-VAR: ☃Ж中𐍆
+| | | | | |-EXPR
+| | | | | | |-INTEGER: 4

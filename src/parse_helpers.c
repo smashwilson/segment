@@ -3,6 +3,24 @@
 #include "parse_helpers.h"
 #include "ast.h"
 
+seg_statementlist_node *seg_append_statement(seg_statementlist_node *list, seg_expr_node *maybe)
+{
+  if (maybe != NULL) {
+    if (list->last != NULL) {
+      /* Append maybe to the end of a non-empty list. */
+      list->last->next = maybe;
+    } else {
+      /* This is the first statement. */
+      list->first = maybe;
+    }
+
+    /* The new non-empty statement is now the last statement in the list. */
+    list->last = maybe;
+  }
+
+  return list;
+}
+
 seg_expr_node *seg_parse_binop(seg_expr_node *lhs, seg_token *op, seg_expr_node *rhs)
 {
   seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));

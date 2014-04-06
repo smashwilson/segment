@@ -57,30 +57,14 @@ statementlist (OUT) ::= maybestatement (ONLY).
   OUT->last = ONLY;
 }
 
-statementlist (OUT) ::= statementlist (LIST) NEWLINE maybestatement (NEW).
+statementlist (OUT) ::= statementlist (LIST) NEWLINE maybestatement (MAYBE).
 {
-  if (NEW != NULL) {
-    if (LIST->last != NULL) {
-      LIST->last->next = NEW;
-    } else {
-      LIST->first = NEW;
-    }
-    LIST->last = NEW;
-  }
-  OUT = LIST;
+  OUT = seg_append_statement(LIST, MAYBE);
 }
 
-statementlist (OUT) ::= statementlist (LIST) SEMI maybestatement (NEW).
+statementlist (OUT) ::= statementlist (LIST) SEMI maybestatement (MAYBE).
 {
-  if (NEW != NULL) {
-    if (LIST->last != NULL) {
-      LIST->last->next = NEW;
-    } else {
-      LIST->first = NEW;
-    }
-    LIST->last = NEW;
-  }
-  OUT = LIST;
+  OUT = seg_append_statement(LIST, MAYBE);
 }
 
 maybestatement ::= .

@@ -165,14 +165,14 @@ lhs ::= TVAR.
 
 // Binary operators
 
-invocation (OUT) ::= expr (LHS) ANDLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) ORLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) PLUSLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) MINUSLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) MULTLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) DIVLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) MODLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) EXPLIKE (OP) expr (RHS). { OUT = parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) ANDLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) ORLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) PLUSLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) MINUSLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) MULTLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) DIVLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) MODLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) EXPLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
 
 // Unary operators
 

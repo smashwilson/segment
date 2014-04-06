@@ -33,12 +33,12 @@ static void print_var(seg_var_node *node, void *state)
   fprintf(pstate->out, "VAR: %.*s\n", (int) node->length, node->varname);
 }
 
-static void print_binop(seg_binop_node *node, void *state)
+static void print_methodcall(seg_methodcall_node *node, void *state)
 {
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  fprintf(pstate->out, "BINOP: %.*s\n", (int) node->length, node->selector);
+  fprintf(pstate->out, "METHODCALL: %.*s\n", (int) node->length, node->selector);
   pstate->depth++;
 }
 
@@ -110,8 +110,8 @@ void seg_print_ast(seg_statementlist_node *root, FILE *outf)
 
     seg_ast_visit_var(visitor, &print_var);
 
-    seg_ast_visit_binop(visitor, SEG_VISIT_PRE, &print_binop);
-    seg_ast_visit_binop(visitor, SEG_VISIT_POST, (seg_binop_handler) &pop_depth);
+    seg_ast_visit_methodcall(visitor, SEG_VISIT_PRE, &print_methodcall);
+    seg_ast_visit_methodcall(visitor, SEG_VISIT_POST, (seg_methodcall_handler) &pop_depth);
 
     seg_ast_visit_block(visitor, SEG_VISIT_PRE, &print_block);
     seg_ast_visit_block(visitor, SEG_VISIT_POST, (seg_block_handler) &pop_depth);

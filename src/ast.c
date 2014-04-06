@@ -10,8 +10,8 @@ struct seg_ast_visitor {
 
   seg_var_handler visit_var;
 
-  seg_binop_handler visit_binop_pre;
-  seg_binop_handler visit_binop_post;
+  seg_methodcall_handler visit_methodcall_pre;
+  seg_methodcall_handler visit_methodcall_post;
 
   seg_block_handler visit_block_pre;
   seg_block_handler visit_block_post;
@@ -33,8 +33,8 @@ seg_ast_visitor seg_new_ast_visitor()
 
   visitor->visit_var = (seg_var_handler) &visit_null;
 
-  visitor->visit_binop_pre = (seg_binop_handler) &visit_null;
-  visitor->visit_binop_post = (seg_binop_handler) &visit_null;
+  visitor->visit_methodcall_pre = (seg_methodcall_handler) &visit_null;
+  visitor->visit_methodcall_post = (seg_methodcall_handler) &visit_null;
 
   visitor->visit_expr_pre = (seg_expr_handler) &visit_null;
   visitor->visit_expr_post = (seg_expr_handler) &visit_null;
@@ -53,12 +53,15 @@ void seg_ast_visit_integer(seg_ast_visitor visitor, seg_integer_handler visit)
   visitor->visit_integer = visit;
 }
 
-void seg_ast_visit_binop(seg_ast_visitor visitor, seg_visit_when when, seg_binop_handler visit)
-{
+void seg_ast_visit_methodcall(
+  seg_ast_visitor visitor,
+  seg_visit_when when,
+  seg_methodcall_handler visit
+) {
   if (when == SEG_VISIT_PRE) {
-    visitor->visit_binop_pre = visit;
+    visitor->visit_methodcall_pre = visit;
   } else {
-    visitor->visit_binop_post = visit;
+    visitor->visit_methodcall_post = visit;
   }
 }
 
@@ -115,14 +118,19 @@ static void visit_var(seg_var_node *root, seg_ast_visitor visitor, void *state)
   (*(visitor->visit_var))(root, state);
 }
 
-static void visit_binop(seg_binop_node *root, seg_ast_visitor visitor, void *state)
+static void visit_methodcall(seg_methodcall_node *root, seg_ast_visitor visitor, void *state)
 {
-  (*(visitor->visit_binop_pre))(root, state);
+  (*(visitor->visit_methodcall_pre))(root, state);
 
-  visit_expr(root->left, visitor, state);
-  visit_expr(root->right, visitor, state);
+  visit_expr(root->receiver, visitor, state);
 
-  (*(visitor->visit_binop_post))(root, state);
+  seg_arg_list *current = root->args;
+  while (current != NULL) {
+    visit_expr(current->value, visitor, state);
+    current = current->next;
+  }
+
+  (*(visitor->visit_methodcall_post))(root, state);
 }
 
 static void visit_block(seg_block_node *root, seg_ast_visitor visitor, void *state)
@@ -143,8 +151,8 @@ static void visit_expr(seg_expr_node *root, seg_ast_visitor visitor, void *state
   case SEG_VAR:
     visit_var(root->child.var, visitor, state);
     break;
-  case SEG_BINOP:
-    visit_binop(root->child.binop, visitor, state);
+  case SEG_METHODCALL:
+    visit_methodcall(root->child.methodcall, visitor, state);
     break;
   case SEG_BLOCK:
     visit_block(root->child.block, visitor, state);

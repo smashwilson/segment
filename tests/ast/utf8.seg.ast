@@ -3,7 +3,7 @@ STATEMENTLIST
 | |-BLOCK: [☃Ж中𐍆]
 | | |-STATEMENTLIST
 | | | |-EXPR
-| | | | |-BINOP: *
+| | | | |-METHODCALL: *
 | | | | | |-EXPR
 | | | | | | |-VAR: ☃Ж中𐍆
 | | | | | |-EXPR

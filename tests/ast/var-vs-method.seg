@@ -1,0 +1,17 @@
+# Unadorned identifiers are parsed as references to variable references if they
+# appear in the argument list of an enclosing block, or as a method call with
+# an implicit self receiver otherwise.
+
+{
+  |arg0, arg1|
+  arg0
+  method
+  inner
+
+  {
+    |inner|
+    arg1
+    method
+    inner
+  }
+}

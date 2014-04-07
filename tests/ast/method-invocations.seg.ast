@@ -69,6 +69,18 @@ STATEMENTLIST
 | | |-EXPR
 | | | |-VAR: self
 |-EXPR
+| |-METHODCALL: another
+| | |-EXPR
+| | | |-VAR: self
+|-EXPR
+| |-METHODCALL: three
+| | |-EXPR
+| | | |-METHODCALL: two
+| | | | |-EXPR
+| | | | | |-METHODCALL: one
+| | | | | | |-EXPR
+| | | | | | | |-VAR: self
+|-EXPR
 | |-METHODCALL: three
 | | |-EXPR
 | | | |-METHODCALL: two

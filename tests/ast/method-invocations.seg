@@ -17,11 +17,13 @@ blerb (7 - 8) {
   3 + 4
 } (6 &and& 89)
 
-# Empty parenthesis arguments
+# Empty parenthesis and space arguments
 method()
+another
 
 # Method chaining
 one().two().three()
+one.two.three
 
 # Parenthesis arguments are statements, so they can also use space invocation.
 one(puts 3 4, gets 42)

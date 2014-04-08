@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "parse_helpers.h"
 #include "ast.h"
@@ -28,6 +29,20 @@ void seg_parser_popcontext(seg_parser_state *state)
   }
 }
 
+void seg_parser_addparam(seg_parser_state *state, seg_parameter_list *param)
+{
+  seg_parser_contextp context = state->context;
+  if (context == NULL) {
+    fputs("Warning: block parameter encountered outside of a block.\n", stderr);
+    fputs("How did you even do that?\n", stderr);
+    return;
+  }
+
+  seg_block_node *block = context->block;
+  param->next = block->parameters;
+  block->parameters = param;
+}
+
 int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t length)
 {
   /*
@@ -43,6 +58,8 @@ int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t len
       if (cparam->length == length && ! memcmp(identifier, cparam->name, length)) {
         return 1;
       }
+
+      cparam = cparam->next;
     }
 
     current = current->parent;

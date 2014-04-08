@@ -26,6 +26,11 @@ void seg_parser_pushcontext(seg_parser_state *state, seg_block_node *block);
 void seg_parser_popcontext(seg_parser_state *state);
 
 /*
+ * Add a parameter to the current block.
+ */
+void seg_parser_addparam(seg_parser_state *state, seg_parameter_list *param);
+
+/*
  * Return true iff `identifier` is used as a block argument in the current or a parent block.
  */
 int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t length);

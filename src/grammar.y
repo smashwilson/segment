@@ -97,13 +97,29 @@ expr ::= SYMBOL.
 expr (OUT) ::= LPAREN statement (IN) RPAREN. { OUT = IN; }
 expr (OUT) ::= IDENTIFIER (V).
 {
-  seg_var_node *varnode = malloc(sizeof(seg_var_node));
-  varnode->varname = seg_token_as_string(V, &(varnode->length));
+  size_t length;
+  const char *name = seg_token_as_string(V, &length);
   seg_delete_token(V);
 
   OUT = malloc(sizeof(seg_expr_node));
-  OUT->child_kind = SEG_VAR;
-  OUT->child.var = varnode;
+
+  if (seg_parser_isarg(parser_state, name, length)) {
+    seg_var_node *varnode = malloc(sizeof(seg_var_node));
+    varnode->varname = name;
+    varnode->length = length;
+
+    OUT->child_kind = SEG_VAR;
+    OUT->child.var = varnode;
+  } else {
+    seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
+    methodcall->selector = name;
+    methodcall->length = length;
+    methodcall->receiver = seg_implicit_self();
+    methodcall->args = NULL;
+
+    OUT->child_kind = SEG_METHODCALL;
+    OUT->child.methodcall = methodcall;
+  }
 }
 
 expr (OUT) ::= block (B).
@@ -120,6 +136,10 @@ expr (OUT) ::= invocation (I). { OUT = I; }
 
 block (OUT) ::= blockstart (BLK) parameters (PARAMS) statementlist (BODY) BLOCKEND.
 {
+  /*
+    Parameters are pushed in reverse order.
+    This restores them to the correct order.
+  */
   seg_parameter_list *params = seg_reverse_params(PARAMS);
 
   OUT = BLK;
@@ -132,18 +152,23 @@ block (OUT) ::= blockstart (BLK) parameters (PARAMS) statementlist (BODY) BLOCKE
 blockstart (OUT) ::= BLOCKSTART.
 {
   OUT = malloc(sizeof(seg_block_node));
+  OUT->parameters = NULL;
+  OUT->body = NULL;
+
   seg_parser_pushcontext(parser_state, OUT);
 }
 
 parameters ::= .
-parameters (OUT) ::= BAR commaparams (IN) BAR. { OUT = IN; }
+parameters ::= BAR commaparams BAR.
 
-commaparams (OUT) ::= parameter (IN). { OUT = IN; }
-commaparams (OUT) ::= commaparams (LIST) COMMA parameter (NEW).
+commaparams ::= parameter (IN).
 {
-  /* Parameters are pushed in reverse order. */
-  NEW->next = LIST;
-  OUT = NEW;
+  seg_parser_addparam(parser_state, IN);
+}
+
+commaparams ::= commaparams COMMA parameter (NEW).
+{
+  seg_parser_addparam(parser_state, NEW);
 }
 
 parameter (OUT) ::= IDENTIFIER (ID).

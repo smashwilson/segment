@@ -1,6 +1,6 @@
 STATEMENTLIST
 |-EXPR
-| |-BLOCK: [arg0, arg1]
+| |-BLOCK: [arg0 arg1]
 | | |-STATEMENTLIST
 | | | |-EXPR
 | | | | |-VAR: arg0

@@ -2,7 +2,7 @@ STATEMENTLIST
 |-EXPR
 | |-METHODCALL: method
 | | |-EXPR
-| | | |-VAR: thing
+| | | |-INTEGER: 4
 | | |-EXPR
 | | | |-INTEGER: 1
 | | |-EXPR
@@ -22,7 +22,7 @@ STATEMENTLIST
 |-EXPR
 | |-METHODCALL: puts
 | | |-EXPR
-| | | |-VAR: file
+| | | |-INTEGER: 7
 | | |-EXPR
 | | | |-INTEGER: 4
 | | |-EXPR

@@ -16,7 +16,7 @@ STATEMENTLIST
 | | | | |-BLOCK: [inner]
 | | | | | |-STATEMENTLIST
 | | | | | | |-EXPR
-| | | | | | | |-VAR: arg0
+| | | | | | | |-VAR: arg1
 | | | | | | |-EXPR
 | | | | | | | |-METHODCALL: method
 | | | | | | | | |-EXPR

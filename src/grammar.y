@@ -134,17 +134,17 @@ expr (OUT) ::= invocation (I). { OUT = I; }
 
 // Blocks
 
-block (OUT) ::= blockstart (BLK) parameters (PARAMS) statementlist (BODY) BLOCKEND.
+block (OUT) ::= blockstart (BLK) parameters statementlist (BODY) BLOCKEND.
 {
+  OUT = BLK;
+  OUT->body = BODY;
+
   /*
     Parameters are pushed in reverse order.
     This restores them to the correct order.
   */
-  seg_parameter_list *params = seg_reverse_params(PARAMS);
-
-  OUT = BLK;
+  seg_parameter_list *params = seg_reverse_params(OUT->parameters);
   OUT->parameters = params;
-  OUT->body = BODY;
 
   seg_parser_popcontext(parser_state);
 }

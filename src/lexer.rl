@@ -58,11 +58,12 @@ static void report(const char *name, const char *ts, const char *te, seg_options
   nonop = ^op;
   nonnumeric = [^0-9];
 
-  iend = nonws & noncontrol & nonnumeric;
-  istart = iend & nonsigil;
   imiddle = nonws & noncontrol;
+  istart = imiddle & nonsigil & nonnumeric;
+  iend = imiddle;
+  ionly = istart & iend;
 
-  identifier = istart imiddle* iend | iend;
+  identifier = istart imiddle* iend | ionly;
   symbol = ':' identifier | ':' string;
 
   blockargs := |*

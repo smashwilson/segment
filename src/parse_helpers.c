@@ -13,4 +13,5 @@ seg_expr_node *parse_binop(seg_expr_node *lhs, seg_token *tok, seg_expr_node *rh
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_BINOP;
   out->child.binop = op;
+  return out;
 }

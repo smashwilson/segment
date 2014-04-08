@@ -1,7 +1,55 @@
 #include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
 
 #include "parse_helpers.h"
 #include "ast.h"
+
+struct seg_parser_context {
+  seg_block_node *block;
+  seg_parser_contextp parent;
+};
+
+void seg_parser_pushcontext(seg_parser_state *state, seg_block_node *block)
+{
+  seg_parser_contextp head = malloc(sizeof(struct seg_parser_context));
+  head->block = block;
+  head->parent = state->context;
+
+  state->context = head;
+}
+
+void seg_parser_popcontext(seg_parser_state *state)
+{
+  seg_parser_contextp head = state->context;
+  if (head != NULL) {
+    state->context = head->parent;
+    free(head);
+  }
+}
+
+int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t length)
+{
+  /*
+   Even if you're nesting blocks like a crazy person a simple linear scan should do the trick
+   here.
+  */
+  seg_parser_contextp current = state->context;
+  while (current != NULL) {
+    /* Match "identifier" to any strings in this block's parameter list. */
+    seg_parameter_list *cparam = current->block->parameters;
+
+    while (cparam != NULL) {
+      if (cparam->length == length && ! memcmp(identifier, cparam->name, length)) {
+        return 1;
+      }
+    }
+
+    current = current->parent;
+  }
+
+  return 0;
+}
 
 seg_statementlist_node *seg_append_statement(seg_statementlist_node *list, seg_expr_node *maybe)
 {

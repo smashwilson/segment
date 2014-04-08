@@ -1,6 +1,8 @@
 #ifndef AST_H
 #define AST_H
 
+#include <stddef.h>
+
 /* Kind Tag Enums */
 
 typedef enum {
@@ -77,10 +79,6 @@ typedef struct seg_statementlist_node {
   seg_expr_node *first;
   seg_expr_node *last;
 } seg_statementlist_node;
-
-typedef struct {
-  seg_statementlist_node *root;
-} seg_program_node;
 
 /* Visitor */
 

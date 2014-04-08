@@ -30,6 +30,7 @@
 %type statement { seg_expr_node* }
 %type expr { seg_expr_node* }
 %type invocation { seg_expr_node* }
+%type blockstart { seg_block_node* }
 %type block { seg_block_node* }
 %type parameters { seg_parameter_list* }
 %type commaparams { seg_parameter_list* }
@@ -40,13 +41,13 @@
 %type spaceargs { seg_arg_list* }
 %type spacearg  { seg_arg_list* }
 
-%extra_argument { seg_program_node *program_node }
+%extra_argument { seg_parser_state *parser_state }
 
 // Grammar definition.
 
 program (OUT) ::= statementlist (LIST).
 {
-  program_node->root = LIST;
+  parser_state->root = LIST;
   OUT = LIST;
 }
 
@@ -117,13 +118,21 @@ expr (OUT) ::= invocation (I). { OUT = I; }
 
 // Blocks
 
-block (OUT) ::= BLOCKSTART parameters (PARAMS) statementlist (BODY) BLOCKEND.
+block (OUT) ::= blockstart (BLK) parameters (PARAMS) statementlist (BODY) BLOCKEND.
 {
   seg_parameter_list *params = seg_reverse_params(PARAMS);
 
-  OUT = malloc(sizeof(seg_block_node));
+  OUT = BLK;
   OUT->parameters = params;
   OUT->body = BODY;
+
+  seg_parser_popcontext(parser_state);
+}
+
+blockstart (OUT) ::= BLOCKSTART.
+{
+  OUT = malloc(sizeof(seg_block_node));
+  seg_parser_pushcontext(parser_state, OUT);
 }
 
 parameters ::= .

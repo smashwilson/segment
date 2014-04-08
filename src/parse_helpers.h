@@ -1,8 +1,34 @@
 #ifndef PARSE_HELPERS
 #define PARSE_HELPERS
 
+#include <stddef.h>
+
 #include "ast.h"
 #include "token.h"
+
+struct seg_parser_context;
+typedef struct seg_parser_context *seg_parser_contextp;
+
+typedef struct {
+  seg_statementlist_node *root;
+  seg_parser_contextp context;
+} seg_parser_state;
+
+/*
+ * Push a new `seg_parser_context` onto the stack each time a new block is opened. Notice that the
+ * parser context stack should initially be empty (that is, `NULL`).
+ */
+void seg_parser_pushcontext(seg_parser_state *state, seg_block_node *block);
+
+/*
+ * Pop the top `seg_parser_context` from the context stack.
+ */
+void seg_parser_popcontext(seg_parser_state *state);
+
+/*
+ * Return true iff `identifier` is used as a block argument in the current or a parent block.
+ */
+int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t length);
 
 /*
  * Append a new statement to a statement list. If `maybe` is NULL, return the original list

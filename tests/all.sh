@@ -12,3 +12,6 @@ ${BASEDIR}/lex.sh
 echo
 
 ${BASEDIR}/ast.sh
+echo
+
+${BASEDIR}/suite

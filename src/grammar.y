@@ -12,7 +12,7 @@
 
 // Operators and operator precedence.
 
-%left PERIOD IDENTIFIER.
+%left PERIOD.
 %left ANDLIKE.
 %left ORLIKE.
 %right ASSIGNMENT.
@@ -30,6 +30,7 @@
 %type statement { seg_expr_node* }
 %type expr { seg_expr_node* }
 %type invocation { seg_expr_node* }
+%type spaceinvocation { seg_expr_node* }
 %type blockstart { seg_block_node* }
 %type block { seg_block_node* }
 %type parameters { seg_parameter_list* }
@@ -72,6 +73,7 @@ maybestatement ::= .
 maybestatement (OUT) ::= statement (IN). { OUT = IN; }
 
 statement (OUT) ::= expr (IN). { OUT = IN; }
+statement (OUT) ::= spaceinvocation (IN). { OUT = IN; }
 
 // Literals
 
@@ -207,7 +209,7 @@ invocation ::= NOTLIKE expr.
 
 // Paren method call, explicit receiver
 
-expr (OUT) ::= expr (R) PERIOD METHODNAME (MN) commaargs (ARGS) RPAREN.
+invocation (OUT) ::= expr (R) PERIOD METHODNAME (MN) commaargs (ARGS) RPAREN.
 {
   seg_arg_list *args = seg_reverse_args(ARGS);
   OUT = seg_parse_methodcall(R, MN, 1, args);
@@ -215,15 +217,22 @@ expr (OUT) ::= expr (R) PERIOD METHODNAME (MN) commaargs (ARGS) RPAREN.
 
 // Paren method call, implicit receiver
 
-expr (OUT) ::= METHODNAME (MN) commaargs (ARGS) RPAREN.
+invocation (OUT) ::= METHODNAME (MN) commaargs (ARGS) RPAREN.
 {
   seg_arg_list *args = seg_reverse_args(ARGS);
   OUT = seg_parse_methodcall(seg_implicit_self(), MN, 1, args);
 }
 
+// Space method call, no arguments.
+
+invocation (OUT) ::= expr (R) PERIOD IDENTIFIER (SEL).
+{
+  OUT = seg_parse_methodcall(R, SEL, 0, NULL);
+}
+
 // Space method call, explicit receiver
 
-statement (OUT) ::= expr (R) PERIOD IDENTIFIER (SEL) spaceargs (ARGS).
+spaceinvocation (OUT) ::= expr (R) PERIOD IDENTIFIER (SEL) spaceargs (ARGS).
 {
   seg_arg_list *args = seg_reverse_args(ARGS);
   OUT = seg_parse_methodcall(R, SEL, 0, args);
@@ -231,7 +240,7 @@ statement (OUT) ::= expr (R) PERIOD IDENTIFIER (SEL) spaceargs (ARGS).
 
 // Space method call, implicit receiver
 
-statement (OUT) ::= IDENTIFIER (SEL) spaceargs (ARGS).
+spaceinvocation (OUT) ::= IDENTIFIER (SEL) spaceargs (ARGS).
 {
   seg_arg_list *args = seg_reverse_args(ARGS);
   OUT = seg_parse_methodcall(seg_implicit_self(), SEL, 0, args);

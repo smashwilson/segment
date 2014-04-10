@@ -1,13 +1,15 @@
 #ifndef AST_H
 #define AST_H
 
+#include <stddef.h>
+
 /* Kind Tag Enums */
 
 typedef enum {
   SEG_INTEGER,
   SEG_VAR,
-  SEG_BINOP,
-  SEG_BLOCK
+  SEG_BLOCK,
+  SEG_METHODCALL
 } seg_expr_kind;
 
 /* Forward Declarations */
@@ -42,14 +44,23 @@ typedef struct {
   struct seg_statementlist_node *body;
 } seg_block_node;
 
-/* Invocation */
+/* Method Invocation */
+
+typedef struct seg_arg_list {
+  /* Keyword will most often be left as NULL. */
+  const char *keyword;
+  size_t length;
+
+  struct seg_expr_node *value;
+  struct seg_arg_list *next;
+} seg_arg_list;
 
 typedef struct {
+  struct seg_expr_node *receiver;
   const char *selector;
   size_t length;
-  struct seg_expr_node *left;
-  struct seg_expr_node *right;
-} seg_binop_node;
+  seg_arg_list *args;
+} seg_methodcall_node;
 
 /* Grouping Constructs */
 
@@ -58,7 +69,7 @@ typedef struct seg_expr_node {
     seg_integer_node *integer;
     seg_var_node *var;
     seg_block_node *block;
-    seg_binop_node *binop;
+    seg_methodcall_node *methodcall;
   } child;
   seg_expr_kind child_kind;
   struct seg_expr_node *next;
@@ -68,10 +79,6 @@ typedef struct seg_statementlist_node {
   seg_expr_node *first;
   seg_expr_node *last;
 } seg_statementlist_node;
-
-typedef struct {
-  seg_statementlist_node *root;
-} seg_program_node;
 
 /* Visitor */
 
@@ -87,7 +94,7 @@ typedef enum {
 } seg_visit_when;
 
 typedef void (*seg_integer_handler)(seg_integer_node *node, void *state);
-typedef void (*seg_binop_handler)(seg_binop_node *node, void *state);
+typedef void (*seg_methodcall_handler)(seg_methodcall_node *node, void *state);
 typedef void (*seg_var_handler)(seg_var_node *node, void *state);
 typedef void (*seg_block_handler)(seg_block_node *node, void *state);
 typedef void (*seg_expr_handler)(seg_expr_node *node, void *state);
@@ -96,7 +103,11 @@ typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, void *st
 seg_ast_visitor seg_new_ast_visitor();
 
 void seg_ast_visit_integer(seg_ast_visitor visitor, seg_integer_handler visit);
-void seg_ast_visit_binop(seg_ast_visitor visitor, seg_visit_when when, seg_binop_handler visit);
+void seg_ast_visit_methodcall(
+  seg_ast_visitor visitor,
+  seg_visit_when when,
+  seg_methodcall_handler visit
+);
 void seg_ast_visit_var(seg_ast_visitor visitor, seg_var_handler);
 void seg_ast_visit_block(seg_ast_visitor visitor, seg_visit_when, seg_block_handler visit);
 void seg_ast_visit_expr(seg_ast_visitor visitor, seg_visit_when when, seg_expr_handler visit);

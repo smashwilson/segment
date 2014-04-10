@@ -7,6 +7,7 @@
 #include "ast.h"
 #include "token.h"
 #include "segment.h"
+#include "parse_helpers.h"
 
 #include "grammar.h"
 #include "grammar.c"
@@ -26,13 +27,13 @@ static void report(const char *name, const char *ts, const char *te, seg_options
 #define EMPTY(CODE) \
   do { \
     report(#CODE, ts, te, opts); \
-    Parse(parser, CODE, NULL, &program); \
+    Parse(parser, CODE, NULL, &state); \
   } while (0)
 
 #define CAPTURE(CODE) \
   do { \
     report(#CODE, ts, te, opts); \
-    Parse(parser, CODE, seg_new_token(ts, te), &program); \
+    Parse(parser, CODE, seg_new_token(ts, te), &state); \
   } while (0)
 
 %%{
@@ -48,18 +49,22 @@ static void report(const char *name, const char *ts, const char *te, seg_options
   string = '"' [^"]* '"';
   # Syntax highlight fix. '
 
-  control = [(){};=.|,%@];
+  control = [(){};=.|,];
+  sigil = [%@];
   op = [&|+\-*/%^];
 
   nonws = ^whitespace & [^\r\n];
   noncontrol = ^control;
+  nonsigil = ^sigil;
   nonop = ^op;
   nonnumeric = [^0-9];
 
-  iboundary = nonws & noncontrol & nonnumeric;
-  imiddle = nonws;
+  imiddle = nonws & noncontrol;
+  istart = imiddle & nonsigil & nonnumeric;
+  iend = imiddle;
+  ionly = istart & iend;
 
-  identifier = iboundary imiddle* iboundary | iboundary;
+  identifier = istart imiddle* iend | ionly;
   symbol = ':' identifier | ':' string;
 
   blockargs := |*
@@ -103,9 +108,9 @@ static void report(const char *name, const char *ts, const char *te, seg_options
       fcall blockargs;
     };
 
-    identifier '(' => { EMPTY(METHODNAME); };
+    identifier '(' => { CAPTURE(METHODNAME); };
 
-    identifier ':' => { EMPTY(KEYWORD); };
+    identifier ':' => { CAPTURE(KEYWORD); };
 
     identifier? '&' => { CAPTURE(ANDLIKE); };
     identifier? '|' => { CAPTURE(ORLIKE); };
@@ -118,8 +123,8 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     '!' => { EMPTY(NOTLIKE); };
 
     identifier => { CAPTURE(IDENTIFIER); };
-    '@' identifier => { EMPTY(IVAR); };
-    '%' identifier => { EMPTY(TVAR); };
+    '@' identifier => { CAPTURE(IVAR); };
+    '%' identifier => { CAPTURE(TVAR); };
 
     whitespace;
   *|;
@@ -163,8 +168,9 @@ seg_statementlist_node *seg_parse(char *content, off_t length, seg_options *opts
   /* Parser state */
   int lexer_error = 0;
   void *parser = ParseAlloc(malloc);
-  seg_program_node program;
-  program.root = NULL;
+  seg_parser_state state;
+  state.root = NULL;
+  state.context = NULL;
 
   if (opts->verbose) {
     puts("Starting lexer.");
@@ -177,7 +183,7 @@ seg_statementlist_node *seg_parse(char *content, off_t length, seg_options *opts
   if (cs == segment_lexer_error) {
     lexer_error = 1;
   } else {
-    Parse(parser, 0, NULL, &program);
+    Parse(parser, 0, NULL, &state);
   }
 
   if (opts->verbose) {
@@ -186,5 +192,5 @@ seg_statementlist_node *seg_parse(char *content, off_t length, seg_options *opts
 
   ParseFree(parser, free);
 
-  return program.root;
+  return state.root;
 }

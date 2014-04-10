@@ -1,6 +1,6 @@
 STATEMENTLIST
 |-EXPR
-| |-BINOP: +
+| |-METHODCALL: +
 | | |-EXPR
 | | | |-INTEGER: 3
 | | |-EXPR

@@ -22,5 +22,5 @@ clean:
 	rm -f src/*.o src/grammar.c src/grammar.h src/grammar.out src/lexer.c
 
 .PHONY: test
-test:
+test: bin/segment
 	./tests/all.sh

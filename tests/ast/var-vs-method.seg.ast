@@ -1,0 +1,25 @@
+STATEMENTLIST
+|-EXPR
+| |-BLOCK: [arg0 arg1]
+| | |-STATEMENTLIST
+| | | |-EXPR
+| | | | |-VAR: arg0
+| | | |-EXPR
+| | | | |-METHODCALL: method
+| | | | | |-EXPR
+| | | | | | |-VAR: self
+| | | |-EXPR
+| | | | |-METHODCALL: inner
+| | | | | |-EXPR
+| | | | | | |-VAR: self
+| | | |-EXPR
+| | | | |-BLOCK: [inner]
+| | | | | |-STATEMENTLIST
+| | | | | | |-EXPR
+| | | | | | | |-VAR: arg1
+| | | | | | |-EXPR
+| | | | | | | |-METHODCALL: method
+| | | | | | | | |-EXPR
+| | | | | | | | | |-VAR: self
+| | | | | | |-EXPR
+| | | | | | | |-VAR: inner

@@ -1,18 +1,24 @@
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-#include <cmocka.h>
+#include <CUnit/CUnit.h>
+#include <CUnit/Basic.h>
 
-static void null_test_success(void **state)
-{
-  (void) state;
-}
+#include "ds/hashtable_tests.h"
 
 int main(void)
 {
-  const UnitTest tests[] = {
-    unit_test(null_test_success),
-  };
+  if (CU_initialize_registry() != CUE_SUCCESS) {
+    return CU_get_error();
+  }
 
-  return run_tests(tests);
+  if (
+    (initialize_hashtable_suite() == NULL)
+  ) {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+
+  CU_basic_set_mode(CU_BRM_VERBOSE);
+  CU_basic_run_tests();
+  CU_cleanup_registry();
+
+  return CU_get_error();
 }

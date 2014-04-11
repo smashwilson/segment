@@ -9,7 +9,7 @@ typedef void (*seg_hashtable_iterator)(const char *key, const void *value, void 
 /*
  * Allocate a new hash table with the specified initial capacity.
  */
-seg_hashtablep seg_new_hashtable(long capacity);
+seg_hashtablep seg_new_hashtable(unsigned long capacity);
 
 /*
  * Add a new item to the hashtable, expanding it if necessary. Return the value

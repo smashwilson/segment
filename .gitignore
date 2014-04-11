@@ -7,6 +7,6 @@ lexer.c
 *.o
 
 bin/
-tests/units
+tests/suite
 
 default.seg

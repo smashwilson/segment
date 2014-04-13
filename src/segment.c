@@ -110,9 +110,9 @@ static int process_file(const char *path, seg_options *opts)
     exit(1);
   }
 
-  seg_statementlist_node *root = seg_parse((char*) content, istat.st_size, opts);
+  seg_program *program = seg_parse((char*) content, istat.st_size, opts);
 
-  if (root == NULL) {
+  if (program->ast == NULL) {
     fputs("Syntax error!", stderr);
     return 1;
   }
@@ -126,7 +126,7 @@ static int process_file(const char *path, seg_options *opts)
       puts("Abstract syntax tree:\n");
     }
 
-    seg_print_ast(root, stdout);
+    seg_print_ast(program->ast, stdout);
   }
 
   return 0;
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 
   for (int i = 0; i < opts.src_count; i++) {
     res = process_file(opts.src_paths[i], &opts);
-    if (!res) {
+    if (res) {
       return res;
     }
   }

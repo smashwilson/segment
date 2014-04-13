@@ -6,6 +6,9 @@
   #include "ast.h"
   #include "token.h"
   #include "parse_helpers.h"
+  #include "symboltable.h"
+
+  #define INTERN(name, length) seg_symboltable_intern(state->symboltable, name, length)
 }
 
 // Grammar definition for segment.
@@ -42,13 +45,13 @@
 %type spaceargs { seg_arg_list* }
 %type spacearg  { seg_arg_list* }
 
-%extra_argument { seg_parser_state *parser_state }
+%extra_argument { seg_parser_state *state }
 
 // Grammar definition.
 
 program (OUT) ::= statementlist (LIST).
 {
-  parser_state->root = LIST;
+  state->root = LIST;
   OUT = LIST;
 }
 
@@ -105,18 +108,18 @@ expr (OUT) ::= IDENTIFIER (V).
 
   OUT = malloc(sizeof(seg_expr_node));
 
-  if (seg_parser_isarg(parser_state, name, length)) {
+  if (seg_parser_isarg(state, name, length)) {
+    seg_symbol *varname = INTERN(name, length);
+
     seg_var_node *varnode = malloc(sizeof(seg_var_node));
-    varnode->varname = name;
-    varnode->length = length;
+    varnode->varname = varname;
 
     OUT->child_kind = SEG_VAR;
     OUT->child.var = varnode;
   } else {
     seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
-    methodcall->selector = name;
-    methodcall->length = length;
-    methodcall->receiver = seg_implicit_self();
+    methodcall->selector = INTERN(name, length);
+    methodcall->receiver = seg_implicit_self(state);
     methodcall->args = NULL;
 
     OUT->child_kind = SEG_METHODCALL;
@@ -148,7 +151,7 @@ block (OUT) ::= blockstart (BLK) parameters statementlist (BODY) BLOCKEND.
   seg_parameter_list *params = seg_reverse_params(OUT->parameters);
   OUT->parameters = params;
 
-  seg_parser_popcontext(parser_state);
+  seg_parser_popcontext(state);
 }
 
 blockstart (OUT) ::= BLOCKSTART.
@@ -157,7 +160,7 @@ blockstart (OUT) ::= BLOCKSTART.
   OUT->parameters = NULL;
   OUT->body = NULL;
 
-  seg_parser_pushcontext(parser_state, OUT);
+  seg_parser_pushcontext(state, OUT);
 }
 
 parameters ::= .
@@ -165,20 +168,25 @@ parameters ::= BAR commaparams BAR.
 
 commaparams ::= parameter (IN).
 {
-  seg_parser_addparam(parser_state, IN);
+  seg_parser_addparam(state, IN);
 }
 
 commaparams ::= commaparams COMMA parameter (NEW).
 {
-  seg_parser_addparam(parser_state, NEW);
+  seg_parser_addparam(state, NEW);
 }
 
 parameter (OUT) ::= IDENTIFIER (ID).
 {
-  OUT = malloc(sizeof(seg_parameter_list));
-  OUT->name = seg_token_as_string(ID, &(OUT->length));
-  OUT->next = NULL;
+  char *name;
+  size_t length;
+
+  name = seg_token_as_string(ID, &length);
   seg_delete_token(ID);
+
+  OUT = malloc(sizeof(seg_parameter_list));
+  OUT->parameter = INTERN(name, length);
+  OUT->next = NULL;
 }
 
 parameter ::= IDENTIFIER ASSIGNMENT expr.
@@ -194,14 +202,45 @@ lhs ::= TVAR.
 
 // Binary operators
 
-invocation (OUT) ::= expr (LHS) ANDLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) ORLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) PLUSLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) MINUSLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) MULTLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) DIVLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) MODLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
-invocation (OUT) ::= expr (LHS) EXPLIKE (OP) expr (RHS). { OUT = seg_parse_binop(LHS, OP, RHS); }
+invocation (OUT) ::= expr (LHS) ANDLIKE (OP) expr (RHS).
+{
+  OUT = seg_parse_binop(state, LHS, OP, RHS);
+}
+
+invocation (OUT) ::= expr (LHS) ORLIKE (OP) expr (RHS).
+{
+  OUT = seg_parse_binop(state, LHS, OP, RHS);
+}
+
+invocation (OUT) ::= expr (LHS) PLUSLIKE (OP) expr (RHS).
+{
+  OUT = seg_parse_binop(state, LHS, OP, RHS);
+}
+
+invocation (OUT) ::= expr (LHS) MINUSLIKE (OP) expr (RHS).
+{
+  OUT = seg_parse_binop(state, LHS, OP, RHS);
+}
+
+invocation (OUT) ::= expr (LHS) MULTLIKE (OP) expr (RHS).
+{
+  OUT = seg_parse_binop(state, LHS, OP, RHS);
+}
+
+invocation (OUT) ::= expr (LHS) DIVLIKE (OP) expr (RHS).
+{
+  OUT = seg_parse_binop(state, LHS, OP, RHS);
+}
+
+invocation (OUT) ::= expr (LHS) MODLIKE (OP) expr (RHS).
+{
+  OUT = seg_parse_binop(state, LHS, OP, RHS);
+}
+
+invocation (OUT) ::= expr (LHS) EXPLIKE (OP) expr (RHS).
+{
+  OUT = seg_parse_binop(state, LHS, OP, RHS);
+}
 
 // Unary operators
 
@@ -212,7 +251,7 @@ invocation ::= NOTLIKE expr.
 invocation (OUT) ::= expr (R) PERIOD METHODNAME (MN) commaargs (ARGS) RPAREN.
 {
   seg_arg_list *args = seg_reverse_args(ARGS);
-  OUT = seg_parse_methodcall(R, MN, 1, args);
+  OUT = seg_parse_methodcall(state, R, MN, 1, args);
 }
 
 // Paren method call, implicit receiver
@@ -220,14 +259,14 @@ invocation (OUT) ::= expr (R) PERIOD METHODNAME (MN) commaargs (ARGS) RPAREN.
 invocation (OUT) ::= METHODNAME (MN) commaargs (ARGS) RPAREN.
 {
   seg_arg_list *args = seg_reverse_args(ARGS);
-  OUT = seg_parse_methodcall(seg_implicit_self(), MN, 1, args);
+  OUT = seg_parse_methodcall(state, seg_implicit_self(state), MN, 1, args);
 }
 
 // Space method call, no arguments.
 
 invocation (OUT) ::= expr (R) PERIOD IDENTIFIER (SEL).
 {
-  OUT = seg_parse_methodcall(R, SEL, 0, NULL);
+  OUT = seg_parse_methodcall(state, R, SEL, 0, NULL);
 }
 
 // Space method call, explicit receiver
@@ -235,7 +274,7 @@ invocation (OUT) ::= expr (R) PERIOD IDENTIFIER (SEL).
 spaceinvocation (OUT) ::= expr (R) PERIOD IDENTIFIER (SEL) spaceargs (ARGS).
 {
   seg_arg_list *args = seg_reverse_args(ARGS);
-  OUT = seg_parse_methodcall(R, SEL, 0, args);
+  OUT = seg_parse_methodcall(state, R, SEL, 0, args);
 }
 
 // Space method call, implicit receiver
@@ -243,7 +282,7 @@ spaceinvocation (OUT) ::= expr (R) PERIOD IDENTIFIER (SEL) spaceargs (ARGS).
 spaceinvocation (OUT) ::= IDENTIFIER (SEL) spaceargs (ARGS).
 {
   seg_arg_list *args = seg_reverse_args(ARGS);
-  OUT = seg_parse_methodcall(seg_implicit_self(), SEL, 0, args);
+  OUT = seg_parse_methodcall(state, seg_implicit_self(state), SEL, 0, args);
 }
 
 // Argument lists.
@@ -258,12 +297,12 @@ commaargs (OUT) ::= commaargs (LIST) COMMA commaarg (NEW).
 
 commaarg (OUT) ::= statement (V).
 {
-  OUT = seg_parse_arg(V, NULL);
+  OUT = seg_parse_arg(state, V, NULL);
 }
 
 commaarg (OUT) ::= KEYWORD (KW) statement (V).
 {
-  OUT = seg_parse_arg(V, KW);
+  OUT = seg_parse_arg(state, V, KW);
 }
 
 spaceargs (OUT) ::= spacearg (IN). { OUT = IN; }
@@ -275,10 +314,10 @@ spaceargs (OUT) ::= spaceargs (LIST) spacearg (NEW).
 
 spacearg (OUT) ::= expr (V).
 {
-  OUT = seg_parse_arg(V, NULL);
+  OUT = seg_parse_arg(state, V, NULL);
 }
 
 spacearg (OUT) ::= KEYWORD (KW) expr (V).
 {
-  OUT = seg_parse_arg(V, KW);
+  OUT = seg_parse_arg(state, V, KW);
 }

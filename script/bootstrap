@@ -8,12 +8,12 @@ has () {
 }
 
 if has brew; then
-  brew install ragel lemon icu4c
+  brew install ragel lemon cunit
   exit 0
 fi
 
 if has apt-get; then
-  sudo apt-get install -y ragel lemon libicu-dev
+  sudo apt-get install -y ragel lemon libcunit1-dev
   exit 0
 fi
 

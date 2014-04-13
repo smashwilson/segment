@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include "symboltable.h"
+
 /* Kind Tag Enums */
 
 typedef enum {
@@ -27,15 +29,13 @@ typedef struct {
 /* Variable References */
 
 typedef struct {
-  const char *varname;
-  size_t length;
+  seg_symbol *varname;
 } seg_var_node;
 
 /* Blocks */
 
 typedef struct seg_parameter_list {
-  const char *name;
-  size_t length;
+  seg_symbol *parameter;
   struct seg_parameter_list *next;
 } seg_parameter_list;
 
@@ -48,8 +48,7 @@ typedef struct {
 
 typedef struct seg_arg_list {
   /* Keyword will most often be left as NULL. */
-  const char *keyword;
-  size_t length;
+  seg_symbol *keyword;
 
   struct seg_expr_node *value;
   struct seg_arg_list *next;
@@ -57,8 +56,7 @@ typedef struct seg_arg_list {
 
 typedef struct {
   struct seg_expr_node *receiver;
-  const char *selector;
-  size_t length;
+  seg_symbol *selector;
   seg_arg_list *args;
 } seg_methodcall_node;
 

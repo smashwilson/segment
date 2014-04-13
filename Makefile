@@ -6,7 +6,7 @@ endif
 
 CORE_OBJECTS = src/token.o src/ast.o src/parse_helpers.o src/lexer.o src/symboltable.o
 CORE_OBJECTS += src/ds/hashtable.o src/ds/murmur.o
-CORE_OBJECTS += src/debug/ast_printer.o
+CORE_OBJECTS += src/debug/ast_printer.o src/debug/symbol_printer.o
 
 EXEC_OBJECTS = src/segment.o
 

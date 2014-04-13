@@ -12,6 +12,7 @@
 #include "segment.h"
 #include "lexer.h"
 #include "debug/ast_printer.h"
+#include "debug/symbol_printer.h"
 
 /*
  * Print a usage statement and exit with an exit code.
@@ -160,6 +161,18 @@ static int process_file(const char *path, seg_options *opts)
     }
 
     seg_print_ast(program->ast, stdout);
+  }
+
+  if (opts->symbol_debug) {
+    if (opts->verbose && (opts->lexer_debug || opts->ast_debug)) {
+      putchar('\n');
+    }
+
+    if (opts->verbose) {
+      puts("Symbol table contents:\n");
+    }
+
+    seg_print_symboltable(program->symboltable);
   }
 
   return 0;

@@ -26,6 +26,71 @@ struct seg_hashtable {
   bucket *buckets;
 };
 
+/* Internal utility methods. */
+
+void find_or_create_entry(
+  seg_hashtablep table,
+  const char *key,
+  size_t key_length,
+  entry **ent,
+  int *created
+) {
+  uint32_t hashcode = murmur3_32(key, (uint32_t) key_length, table->seed);
+  uint32_t bnum = hashcode % table->capacity;
+
+  bucket *buck = &(table->buckets[bnum]);
+  entry *e = NULL;
+  int bindex = 0;
+
+  if (buck->content == NULL) {
+    /* Create an empty bucket and return its first slot. */
+    buck->capacity = 4;
+    buck->length = 0;
+    buck->content = calloc(buck->capacity, sizeof(entry));
+
+    e = &(buck->content[0]);
+  } else {
+    /* Search for an item already present with this key. */
+    for (int i = 0; i < buck->length; i++) {
+      e = &(buck->content[i]);
+
+      if (
+        e->hashcode == hashcode && e->key_length == key_length &&
+        ! memcmp(e->key, key, key_length)
+      ) {
+        /* Found! Return this bucket and mark it as existing. */
+        *ent = e;
+        *created = 0;
+        return ;
+      }
+    }
+
+    /* Append and return a new entry at the bucket's end. */
+    bindex = buck->length;
+
+    if (buck->length >= buck->capacity) {
+      /* Expand an existing bucket that has filled. */
+      buck->capacity = buck->capacity * 2;
+      buck->content = realloc(buck->content, buck->capacity);
+      memset(buck->content, 0, sizeof(entry) * buck->capacity);
+    }
+
+    e = &(buck->content[bindex]);
+  }
+
+  /* We either created or extended a bucket. Initialize the new entry. */
+  buck->length++;
+
+  e->hashcode = hashcode;
+  e->key = key;
+  e->key_length = key_length;
+
+  *ent = e;
+  *created = 1;
+}
+
+/* Public API. */
+
 seg_hashtablep seg_new_hashtable(unsigned long capacity)
 {
   seg_hashtablep table = malloc(sizeof(struct seg_hashtable));
@@ -41,55 +106,18 @@ seg_hashtablep seg_new_hashtable(unsigned long capacity)
 
 void *seg_hashtable_put(seg_hashtablep table, const char *key, size_t key_length, void *value)
 {
-  uint32_t hashcode = murmur3_32(key, (uint32_t) key_length, table->seed);
-  uint32_t bnum = hashcode % table->capacity;
+  entry *ent;
+  int created;
+  void *result = NULL;
 
-  bucket *buck = &(table->buckets[bnum]);
-  int bindex = 0;
+  find_or_create_entry(table, key, key_length, &ent, &created);
 
-  if (buck->content == NULL) {
-    /* Create an empty bucket and store this item in its first slot. */
-    buck->capacity = 4;
-    buck->length = 0;
-    buck->content = calloc(buck->capacity, sizeof(entry));
-
-    bindex = 0;
-  } else {
-    /* Search for an item already present with this key. */
-    for (int i = 0; i < buck->length; i++) {
-      entry *ent = &(buck->content[i]);
-
-      if (
-        ent->hashcode == hashcode && ent->key_length == key_length &&
-        ! memcmp(ent->key, key, key_length)
-      ) {
-        /* Found! Replace the existing key with the new one and return the old-> */
-        void *v = ent->value;
-        ent->value = value;
-        return v;
-      }
-    }
-
-    /* Append this key-value pair at the end. */
-    bindex = buck->length;
-
-    if (buck->length >= buck->capacity) {
-      /* Expand an existing bucket that has filled. */
-      buck->capacity = buck->capacity * 2;
-      buck->content = realloc(buck->content, buck->capacity);
-      memset(buck->content, 0, sizeof(entry) * buck->capacity);
-    }
+  if (! created) {
+    result = ent->value;
   }
-
-  entry *ent = &(buck->content[bindex]);
-  ent->key = key;
-  ent->key_length = key_length;
-  ent->hashcode = hashcode;
   ent->value = value;
 
-  buck->length++;
-
-  return NULL;
+  return result;
 }
 
 void *seg_hashtable_putifabsent(

@@ -3,12 +3,11 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "hashtable_tests.h"
 #include "../unit.h"
 
 #include "../../../src/ds/hashtable.h"
 
-void test_hashtable_access(void)
+static void test_access(void)
 {
   seg_hashtablep table = seg_new_hashtable(10L);
 
@@ -33,7 +32,7 @@ void test_hashtable_access(void)
   seg_delete_hashtable(table);
 }
 
-void test_hashtable_putifabsent(void)
+static void test_putifabsent(void)
 {
   seg_hashtablep table = seg_new_hashtable(10L);
 
@@ -76,7 +75,7 @@ typedef struct {
   int incorrect;
 } iterator_state;
 
-void hashtable_iterator(const char *key, const size_t key_length, void *value, void *state)
+static void hashtable_iterator(const char *key, const size_t key_length, void *value, void *state)
 {
   iterator_state *s = (iterator_state *) state;
 
@@ -94,7 +93,7 @@ void hashtable_iterator(const char *key, const size_t key_length, void *value, v
   }
 }
 
-void test_hashtable_each(void)
+static void test_each(void)
 {
   iterator_state s;
   s.correct = 0;
@@ -115,7 +114,7 @@ void test_hashtable_each(void)
   seg_delete_hashtable(table);
 }
 
-void test_hashtable_resize(void)
+static void test_resize(void)
 {
   seg_hashtablep table = seg_new_hashtable(5L);
 
@@ -153,10 +152,10 @@ CU_pSuite initialize_hashtable_suite(void)
     return NULL;
   }
 
-  ADD_TEST(test_hashtable_access);
-  ADD_TEST(test_hashtable_putifabsent);
-  ADD_TEST(test_hashtable_each);
-  ADD_TEST(test_hashtable_resize);
+  ADD_TEST(test_access);
+  ADD_TEST(test_putifabsent);
+  ADD_TEST(test_each);
+  ADD_TEST(test_resize);
 
   return pSuite;
 }

@@ -1,8 +1,30 @@
 #ifndef HASH
 #define HASH
 
+#include <stddef.h>
+
 struct seg_hashtable;
 typedef struct seg_hashtable *seg_hashtablep;
+
+typedef struct {
+  /* The initial capacity of newly allocated buckets. */
+  size_t init_bucket_capacity;
+
+  /* Factor by which bucket capacity will increase when filled. */
+  size_t bucket_growth_factor;
+
+  /* Load factor at which automatic resizing will be triggered. */
+  float max_load;
+
+  /* Amount by which the table's bucket capacity will grow when `max_load_factor` is reached. */
+  size_t table_growth_factor;
+} seg_hashtable_settings;
+
+/* Default settings for a newly initialized table. */
+#define SEG_HT_INIT_BUCKET_CAPACITY 4
+#define SEG_HT_BUCKET_GROWTH_FACTOR 2
+#define SEG_HT_MAX_LOAD 0.75
+#define SEG_HT_TABLE_GROWTH_FACTOR 2
 
 typedef void (*seg_hashtable_iterator)(
   const char *key,
@@ -25,6 +47,11 @@ unsigned long seg_hashtable_count(seg_hashtablep table);
  * Return the current capacity of the hashtable.
  */
 size_t seg_hashtable_capacity(seg_hashtablep table);
+
+/*
+ * Retrieve the growth settings currently used by a hashtable. The settings are read-write.
+ */
+seg_hashtable_settings *seg_hashtable_get_settings(seg_hashtablep table);
 
 /*
  * Resize a hashtable's capacity. O(n). Invoked automatically during put operations if the table's

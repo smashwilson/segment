@@ -22,8 +22,9 @@ typedef struct {
 
 struct seg_hashtable {
   uint32_t seed;
-  unsigned long count;
+  uint64_t count;
   size_t capacity;
+  seg_hashtable_settings *settings;
   bucket *buckets;
 };
 
@@ -53,7 +54,7 @@ void find_or_create_entry(
 
   if (buck->content == NULL) {
     /* Create an empty bucket and return its first slot. */
-    buck->capacity = 4;
+    buck->capacity = table->settings->init_bucket_capacity;
     buck->length = 0;
     buck->content = calloc(buck->capacity, sizeof(entry));
 
@@ -79,7 +80,7 @@ void find_or_create_entry(
 
     if (buck->length >= buck->capacity) {
       /* Expand an existing bucket that has filled. */
-      buck->capacity = buck->capacity * 2;
+      buck->capacity = buck->capacity * table->settings->bucket_growth_factor;
       buck->content = realloc(buck->content, buck->capacity);
       memset(buck->content, 0, sizeof(entry) * buck->capacity);
     }
@@ -106,8 +107,8 @@ void find_or_create_entry(
 void trigger_dynamic_resize(seg_hashtablep table)
 {
   float load = table->count / (float) table->capacity;
-  if (load >= 0.75f) {
-    seg_hashtable_resize(table, table->capacity * 2);
+  if (load >= table->settings->max_load) {
+    seg_hashtable_resize(table, table->capacity * table->settings->table_growth_factor);
   }
 }
 
@@ -150,6 +151,13 @@ seg_hashtablep seg_new_hashtable(unsigned long capacity)
   table->capacity = capacity;
   table->count = 0L;
   table->seed = (uint32_t) ((intptr_t) table) % UINT32_MAX;
+
+  seg_hashtable_settings *settings = malloc(sizeof(seg_hashtable_settings));
+  settings->init_bucket_capacity = SEG_HT_INIT_BUCKET_CAPACITY;
+  settings->bucket_growth_factor = SEG_HT_BUCKET_GROWTH_FACTOR;
+  settings->max_load = SEG_HT_MAX_LOAD;
+  settings->table_growth_factor = SEG_HT_TABLE_GROWTH_FACTOR;
+  table->settings = settings;
 
   bucket *buckets = calloc(capacity, sizeof(bucket));
   table->buckets = buckets;
@@ -268,6 +276,7 @@ void seg_hashtable_each(seg_hashtablep table, seg_hashtable_iterator iter, void 
 
 void seg_delete_hashtable(seg_hashtablep table)
 {
+  free(table->settings);
   free(table->buckets);
   free(table);
 }

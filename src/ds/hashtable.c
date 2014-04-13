@@ -145,6 +145,11 @@ size_t seg_hashtable_capacity(seg_hashtablep table)
   return table->capacity;
 }
 
+seg_hashtable_settings *seg_hashtable_get_settings(seg_hashtablep table)
+{
+  return table->settings;
+}
+
 seg_hashtablep seg_new_hashtable(unsigned long capacity)
 {
   seg_hashtablep table = malloc(sizeof(struct seg_hashtable));

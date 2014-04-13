@@ -5,11 +5,13 @@ ifdef DEBUG
 endif
 
 CORE_OBJECTS = src/token.o src/ast.o src/ast_printer.o src/parse_helpers.o src/lexer.o
+CORE_OBJECTS += src/symboltable.o
 CORE_OBJECTS += src/ds/hashtable.o src/ds/murmur.o
 
 EXEC_OBJECTS = src/segment.o
 
 TEST_OBJECTS = tests/unit/suite.o
+TEST_OBJECTS += tests/unit/symboltable_tests.o
 TEST_OBJECTS += tests/unit/ds/hashtable_tests.o
 
 src/lexer.c: src/lexer.rl src/grammar.c

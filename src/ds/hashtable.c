@@ -126,7 +126,17 @@ void *seg_hashtable_putifabsent(
   size_t key_length,
   void *value
 ) {
-  return NULL;
+  entry *ent;
+  int created;
+
+  find_or_create_entry(table, key, key_length, &ent, &created);
+
+  if (! created) {
+    return ent->value;
+  } else {
+    ent->value = value;
+    return value;
+  }
 }
 
 void *seg_hashtable_get(seg_hashtablep table, const char *key, size_t key_length)

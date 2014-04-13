@@ -33,12 +33,12 @@ seg_symboltablep seg_new_symboltable();
  * Insert a new entry into the symboltable if it's not already present. Return the newly created
  * symbol or the previously existing one.
  */
-seg_symbol *seg_symboltable_add(seg_symboltablep table, const char *name, size_t length);
+seg_symbol *seg_symboltable_intern(seg_symboltablep table, const char *name, size_t length);
 
 /*
- * Return true if the symboltable contains a symbol with the specified name, or false otherwise.
+ * Access an existing symbol if one exists with the given name. Return NULL if it does not.
  */
-int seg_symboltable_has(seg_symboltablep table, const char *name, size_t length);
+seg_symbol *seg_symboltable_get(seg_symboltablep table, const char *name, size_t length);
 
 /*
  * Cleanly dispose of a symboltable allocated with `seg_new_symboltable`.

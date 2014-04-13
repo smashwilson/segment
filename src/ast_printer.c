@@ -30,7 +30,8 @@ static void print_var(seg_var_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  fprintf(pstate->out, "VAR: %.*s\n", (int) node->length, node->varname);
+  seg_symbol *varname = node->varname;
+  fprintf(pstate->out, "VAR: %.*s\n", (int) varname->length, varname->name);
 }
 
 static void print_methodcall(seg_methodcall_node *node, void *state)
@@ -38,7 +39,8 @@ static void print_methodcall(seg_methodcall_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  fprintf(pstate->out, "METHODCALL: %.*s\n", (int) node->length, node->selector);
+  seg_symbol *selector = node->selector;
+  fprintf(pstate->out, "METHODCALL: %.*s\n", (int) selector->length, selector->name);
   pstate->depth++;
 }
 
@@ -62,7 +64,9 @@ static void print_block(seg_block_node *node, void *state)
     if (current != initial) {
       fputc(' ', pstate->out);
     }
-    fprintf(pstate->out, "%.*s", (int) current->length, current->name);
+
+    seg_symbol *parameter = current->parameter;
+    fprintf(pstate->out, "%.*s", (int) parameter->length, parameter->name);
     current = current->next;
   }
 

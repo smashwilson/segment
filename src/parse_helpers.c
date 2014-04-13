@@ -49,13 +49,19 @@ int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t len
    Even if you're nesting blocks like a crazy person a simple linear scan should do the trick
    here.
   */
+  seg_symbol *existing = seg_symboltable_get(state->symboltable, identifier, length);
+  if (existing == NULL) {
+    /* If it wasn't intern'd, it's not an argument. */
+    return 0;
+  }
+
   seg_parser_contextp current = state->context;
   while (current != NULL) {
     /* Match "identifier" to any strings in this block's parameter list. */
     seg_parameter_list *cparam = current->block->parameters;
 
     while (cparam != NULL) {
-      if (cparam->length == length && ! memcmp(identifier, cparam->name, length)) {
+      if (cparam->parameter == existing) {
         return 1;
       }
 
@@ -86,14 +92,23 @@ seg_statementlist_node *seg_append_statement(seg_statementlist_node *list, seg_e
   return list;
 }
 
-seg_expr_node *seg_parse_binop(seg_expr_node *lhs, seg_token *op, seg_expr_node *rhs)
-{
+seg_expr_node *seg_parse_binop(
+  seg_parser_state *state,
+  seg_expr_node *lhs,
+  seg_token *op,
+  seg_expr_node *rhs
+) {
+  char *selname;
+  size_t length;
+
   seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
-  methodcall->selector = seg_token_as_string(op, &(methodcall->length));
+
+  selname = seg_token_as_string(op, &length);
   seg_delete_token(op);
 
+  methodcall->selector = seg_symboltable_intern(state->symboltable, selname, length);
   methodcall->receiver = lhs;
-  methodcall->args = seg_parse_arg(rhs, NULL);
+  methodcall->args = seg_parse_arg(state, rhs, NULL);
 
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_METHODCALL;
@@ -102,20 +117,25 @@ seg_expr_node *seg_parse_binop(seg_expr_node *lhs, seg_token *op, seg_expr_node 
 }
 
 seg_expr_node *seg_parse_methodcall(
+  seg_parser_state *state,
   seg_expr_node *receiver,
   seg_token *selector,
   int trim,
   seg_arg_list *args
 ) {
+  char *selname;
+  size_t length;
+
   /* Extract the selector and destroy its token. */
-  seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
   if (trim) {
-    methodcall->selector = seg_token_without(selector, &(methodcall->length), '(');
+    selname = seg_token_without(selector, &length, '(');
   } else {
-    methodcall->selector = seg_token_as_string(selector, &(methodcall->length));
+    selname = seg_token_as_string(selector, &length);
   }
   seg_delete_token(selector);
 
+  seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
+  methodcall->selector = seg_symboltable_intern(state->symboltable, selname, length);
   methodcall->receiver = receiver;
   methodcall->args = args;
 
@@ -125,15 +145,19 @@ seg_expr_node *seg_parse_methodcall(
   return out;
 }
 
-seg_arg_list *seg_parse_arg(seg_expr_node *value, seg_token *keyword)
+seg_arg_list *seg_parse_arg(seg_parser_state *state, seg_expr_node *value, seg_token *keyword)
 {
   seg_arg_list *arg = malloc(sizeof(seg_arg_list));
 
   if (keyword != NULL) {
-    arg->keyword = seg_token_without(keyword, &(arg->length), ':');
+    char *kwname;
+    size_t length;
+
+    kwname = seg_token_without(keyword, &length, ':');
+
+    arg->keyword = seg_symboltable_intern(state->symboltable, kwname, length);
   } else {
     arg->keyword = NULL;
-    arg->length = 0;
   }
 
   arg->value = value;
@@ -142,11 +166,10 @@ seg_arg_list *seg_parse_arg(seg_expr_node *value, seg_token *keyword)
   return arg;
 }
 
-seg_expr_node *seg_implicit_self()
+seg_expr_node *seg_implicit_self(seg_parser_state *state)
 {
   seg_var_node *var = malloc(sizeof(seg_var_node));
-  var->varname = "self";
-  var->length = 4;
+  var->varname = seg_symboltable_intern(state->symboltable, "self", 4);
 
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_VAR;

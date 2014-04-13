@@ -49,7 +49,7 @@ seg_symboltablep seg_new_symboltable()
   return table;
 }
 
-seg_symbol *seg_symboltable_add(seg_symboltablep table, const char *name, size_t length)
+seg_symbol *seg_symboltable_intern(seg_symboltablep table, const char *name, size_t length)
 {
   seg_symbol *existing = (seg_symbol *) seg_hashtable_get(table, name, length);
 
@@ -68,9 +68,9 @@ seg_symbol *seg_symboltable_add(seg_symboltablep table, const char *name, size_t
   return created;
 }
 
-int seg_symboltable_has(seg_symboltablep table, const char *name, size_t length)
+seg_symbol *seg_symboltable_get(seg_symboltablep table, const char *name, size_t length)
 {
-  return seg_hashtable_get(table, name, length) != NULL;
+  return seg_hashtable_get(table, name, length);
 }
 
 void seg_delete_symboltable(seg_symboltablep table)

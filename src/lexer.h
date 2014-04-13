@@ -5,11 +5,17 @@
 
 #include "ast.h"
 #include "segment.h"
+#include "symboltable.h"
+
+typedef struct {
+  seg_statementlist_node *ast;
+  seg_symboltablep symboltable;
+} seg_program;
 
 /**
  * Parse a coherent chunk of segment code and return its AST.
  */
-seg_statementlist_node *seg_parse(char *content, off_t length, seg_options *opts);
+seg_program *seg_parse(char *content, off_t length, seg_options *opts);
 
 /* The initial size of the Ragel stack. */
 #define RAGEL_INIT_STACK_SIZE 5

@@ -153,7 +153,7 @@ static void report(const char *name, const char *ts, const char *te, seg_options
 
 %% write data nofinal;
 
-seg_statementlist_node *seg_parse(char *content, off_t length, seg_options *opts)
+seg_program *seg_parse(char *content, off_t length, seg_options *opts)
 {
   /* Variables used by Ragel. */
   int cs, act, top;
@@ -168,9 +168,11 @@ seg_statementlist_node *seg_parse(char *content, off_t length, seg_options *opts
   /* Parser state */
   int lexer_error = 0;
   void *parser = ParseAlloc(malloc);
+
   seg_parser_state state;
   state.root = NULL;
   state.context = NULL;
+  state.symboltable = seg_new_symboltable();
 
   if (opts->verbose) {
     puts("Starting lexer.");
@@ -192,5 +194,8 @@ seg_statementlist_node *seg_parse(char *content, off_t length, seg_options *opts
 
   ParseFree(parser, free);
 
-  return state.root;
+  seg_program *program = malloc(sizeof(seg_program));
+  program->ast = state.root;
+  program->symboltable = state.symboltable;
+  return program;
 }

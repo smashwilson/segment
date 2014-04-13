@@ -3,11 +3,13 @@ set -e
 rm -f ./core
 clear
 
-if [[ $1 -eq "unit" ]]; then
-  UNIT=1
-else
-  UNIT=0
-fi
+case $1 in
+  unit)
+    UNIT=1
+    ;;
+  *)
+    ;;
+esac
 
 INFILE=${1:-default.seg}
 
@@ -19,7 +21,7 @@ echo -e "\n>> executing >>>>>>>>>>>>>>>>\n"
 set +e
 if [ -z $UNIT ]; then
   EXECUTABLE=bin/segment
-  ${EXECUTABLE} --lexer-debug --ast-debug --verbose ${INFILE}
+  ${EXECUTABLE} --debug lexer --debug ast --debug symbol --verbose ${INFILE}
   EXITCODE=$?
 else
   EXECUTABLE=tests/suite

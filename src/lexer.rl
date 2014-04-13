@@ -27,13 +27,13 @@ static void report(const char *name, const char *ts, const char *te, seg_options
 #define EMPTY(CODE) \
   do { \
     report(#CODE, ts, te, opts); \
-    Parse(parser, CODE, NULL, &state); \
+    if (opts->ast_invoke) { Parse(parser, CODE, NULL, &state); }\
   } while (0)
 
 #define CAPTURE(CODE) \
   do { \
     report(#CODE, ts, te, opts); \
-    Parse(parser, CODE, seg_new_token(ts, te), &state); \
+    if (opts->ast_invoke) { Parse(parser, CODE, seg_new_token(ts, te), &state); }\
   } while (0)
 
 %%{
@@ -174,10 +174,6 @@ seg_program *seg_parse(char *content, off_t length, seg_options *opts)
   state.context = NULL;
   state.symboltable = seg_new_symboltable();
 
-  if (opts->verbose) {
-    puts("Starting lexer.");
-  }
-
   %% write init;
 
   %% write exec;
@@ -186,10 +182,6 @@ seg_program *seg_parse(char *content, off_t length, seg_options *opts)
     lexer_error = 1;
   } else {
     Parse(parser, 0, NULL, &state);
-  }
-
-  if (opts->verbose) {
-    puts("Lexing complete.");
   }
 
   ParseFree(parser, free);

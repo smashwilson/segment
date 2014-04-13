@@ -35,7 +35,7 @@ for SRCFILE in ${BASEDIR}/ast/*.seg; do
   fi
 
   exec 3> /dev/stderr 2> /dev/null
-  ${ROOTDIR}/bin/segment --ast-debug ${SRCFILE} > ${ACTUAL_AST} 2> /dev/null
+  ${ROOTDIR}/bin/segment --debug ast ${SRCFILE} > ${ACTUAL_AST} 2> /dev/null
   PARSE_CODE=$?
   exec 2>&3
 

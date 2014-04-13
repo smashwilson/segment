@@ -4,7 +4,12 @@
 struct seg_hashtable;
 typedef struct seg_hashtable *seg_hashtablep;
 
-typedef void (*seg_hashtable_iterator)(const char *key, const void *value, void *state);
+typedef void (*seg_hashtable_iterator)(
+  const char *key,
+  const size_t key_length,
+  const void *value,
+  void *state
+);
 
 /*
  * Allocate a new hash table with the specified initial capacity.

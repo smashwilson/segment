@@ -170,7 +170,17 @@ void *seg_hashtable_get(seg_hashtablep table, const char *key, size_t key_length
 
 void seg_hashtable_each(seg_hashtablep table, seg_hashtable_iterator iter, void *state)
 {
-  /* */
+  for (int b = 0; b < table->capacity; b++) {
+    bucket *buck = &(table->buckets[b]);
+
+    if (buck->content != NULL) {
+      for (int e = 0; e < buck->length; e++) {
+        entry *ent = &(buck->content[e]);
+
+        (*iter)(ent->key, ent->key_length, ent->value, state);
+      }
+    }
+  }
 }
 
 void seg_delete_hashtable(seg_hashtablep table)

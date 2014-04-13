@@ -37,7 +37,7 @@ for SRCFILE in ${BASEDIR}/lexer/*.seg; do
   fi
 
   exec 3> /dev/stderr 2> /dev/null
-  ${ROOTDIR}/bin/segment --lexer-debug ${SRCFILE} > ${ACTUAL_LEX} 2> /dev/null
+  ${ROOTDIR}/bin/segment --phase lexer --debug lexer ${SRCFILE} > ${ACTUAL_LEX} 2> /dev/null
   LEX_CODE=$?
   exec 2>&3
 

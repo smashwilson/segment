@@ -4,24 +4,29 @@
 #include <errno.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 
 #include "segment.h"
 #include "lexer.h"
-#include "ast_printer.h"
+#include "debug/ast_printer.h"
 
 /*
  * Print a usage statement and exit with an exit code.
  */
 static void print_usage(FILE *dest, int code, const char *progname)
 {
-  fprintf(dest, "Usage: %s [--lexer-debug] [--ast-debug] [--verbose|-v] file ...\n", progname);
-  fprintf(dest, "\n  --lexer-debug  Output each token the lexer identifies.\n");
-  fprintf(dest, "\n  --ast-debug    Write an abstract syntax tree in ASCII-art.\n");
-  fprintf(dest, "\n  --verbose      Output banners and status.\n");
-  fprintf(dest, "\n  file           Interpret each file in sequence.\n");
+  fprintf(
+    dest,
+    "Usage: %s [--debug lexer|ast|symbol] [--phase lexer|ast] [--verbose|-v] "
+    "file ...\n",
+    progname);
+  fprintf(dest, "\n  --debug PHASE  Produce debugging output for the specified phase.\n");
+  fprintf(dest, "  --phase PHASE  Execute only up to the specified phase.\n");
+  fprintf(dest, "  --verbose      Output banners and statistics.\n");
+  fprintf(dest, "  file           Interpret each file in sequence.\n");
   exit(code);
 }
 
@@ -37,8 +42,8 @@ static void process_options(int argc, char **argv, seg_options *opts)
   static int ast_debug = 0;
 
   static struct option long_options [] = {
-    {"lexer-debug", no_argument, &lexer_debug, 1},
-    {"ast-debug", no_argument, &ast_debug, 1},
+    {"debug", required_argument, NULL, 'd'},
+    {"phase", required_argument, NULL, 'p'},
     {"verbose", no_argument, NULL, 'v'},
     {"help", no_argument, NULL, 'h'},
     {0, 0, 0, 0}
@@ -49,10 +54,41 @@ static void process_options(int argc, char **argv, seg_options *opts)
   opts->src_count = 0;
   opts->verbose = 0;
 
+  opts->lexer_debug = 0;
+
+  opts->ast_invoke = 1;
+  opts->ast_debug = 0;
+
+  opts->symbol_debug = 0;
+
   while (c != -1) {
-    c = getopt_long(argc, argv, "hv", long_options, &option_index);
+    c = getopt_long(argc, argv, "d:p:hv", long_options, &option_index);
 
     switch (c) {
+      case 'd':
+        if (! strncmp(optarg, "lexer", 6)) {
+          opts->lexer_debug = 1;
+        } else if (! strncmp(optarg, "ast", 4)) {
+          opts->ast_debug = 1;
+        } else if (! strncmp(optarg, "symbol", 7)) {
+          opts->symbol_debug = 1;
+        } else {
+          fprintf(stderr, "segment: Unrecognized --debug phase <%s>.\n", optarg);
+          fprintf(stderr, "segment: Available phases are: lexer, ast, symbol.\n");
+          print_usage(stderr, 1, argv[0]);
+        }
+        break;
+      case 'p':
+        if (! strncmp(optarg, "lexer", 6)) {
+          opts->ast_invoke = 0;
+        } else if (! strncmp(optarg, "ast", 4)) {
+          opts->ast_invoke = 1;
+        } else {
+          fprintf(stderr, "segment: Unrecognized --phase <%s>.\n", optarg);
+          fprintf(stderr, "segment: Available phases are: lexer, ast.\n");
+          print_usage(stderr, 1, argv[0]);
+        }
+        break;
       case 'h':
         print_usage(stdout, 0, argv[0]);
         break;
@@ -64,9 +100,6 @@ static void process_options(int argc, char **argv, seg_options *opts)
         break;
     }
   }
-
-  opts->lexer_debug = lexer_debug;
-  opts->ast_debug = ast_debug;
 
   if (optind < argc) {
     int count = argc - optind;

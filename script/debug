@@ -3,11 +3,13 @@ set -e
 rm -f ./core
 clear
 
-if [[ $1 -eq "unit" ]]; then
-  UNIT=1
-else
-  UNIT=0
-fi
+case $1 in
+  unit)
+    UNIT=1
+    ;;
+  *)
+    ;;
+esac
 
 INFILE=${1:-default.seg}
 

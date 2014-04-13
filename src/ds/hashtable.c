@@ -79,6 +79,7 @@ void find_or_create_entry(
   }
 
   /* We either created or extended a bucket. Initialize the new entry. */
+  table->count++;
   buck->length++;
 
   e->hashcode = hashcode;
@@ -90,6 +91,16 @@ void find_or_create_entry(
 }
 
 /* Public API. */
+
+unsigned long seg_hashtable_count(seg_hashtablep table)
+{
+  return table->count;
+}
+
+size_t seg_hashtable_capacity(seg_hashtablep table)
+{
+  return table->capacity;
+}
 
 seg_hashtablep seg_new_hashtable(unsigned long capacity)
 {

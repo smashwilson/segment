@@ -19,7 +19,10 @@ void test_hashtable_access(void)
   const char *key1 = "otherkey";
   size_t length1 = strlen(key1);
 
+  CU_ASSERT_EQUAL(seg_hashtable_count(table), 0);
+
   seg_hashtable_put(table, key0, length0, value0);
+  CU_ASSERT_EQUAL(seg_hashtable_count(table), 1);
 
   const char *out0 = seg_hashtable_get(table, key0, length0);
   CU_ASSERT_PTR_EQUAL(out0, value0);
@@ -47,14 +50,17 @@ void test_hashtable_putifabsent(void)
   char *value01 = "newvalue";
 
   seg_hashtable_put(table, key0, length0, value0);
+  CU_ASSERT_EQUAL(seg_hashtable_count(table), 1);
 
   /* Insert a new item. */
   void *existing1 = seg_hashtable_putifabsent(table, key1, length1, value1);
   CU_ASSERT_PTR_EQUAL(existing1, value1);
+  CU_ASSERT_EQUAL(seg_hashtable_count(table), 2);
 
   /* Retrieve an existing item. */
   void *existing0 = seg_hashtable_putifabsent(table, key0, length0, value01);
   CU_ASSERT_PTR_EQUAL(existing0, value0);
+  CU_ASSERT_EQUAL(seg_hashtable_count(table), 2);
 
   void *out0 = seg_hashtable_get(table, key0, length0);
   CU_ASSERT_PTR_EQUAL(out0, value0);
@@ -99,6 +105,7 @@ void test_hashtable_each(void)
   seg_hashtable_put(table, "bbb", 3, "bval");
   seg_hashtable_put(table, "ccc", 3, "cval");
   seg_hashtable_put(table, "ddd", 3, "dval");
+  CU_ASSERT_EQUAL(seg_hashtable_count(table), 4);
 
   seg_hashtable_each(table, &hashtable_iterator, &s);
 

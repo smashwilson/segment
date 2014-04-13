@@ -17,6 +17,16 @@ typedef void (*seg_hashtable_iterator)(
 seg_hashtablep seg_new_hashtable(unsigned long capacity);
 
 /*
+ * Return the number of items currently stored in the table.
+ */
+unsigned long seg_hashtable_count(seg_hashtablep table);
+
+/*
+ * Return the current capacity of the hashtable.
+ */
+size_t seg_hashtable_capacity(seg_hashtablep table);
+
+/*
  * Add a new item to the hashtable, expanding it if necessary. Return the value
  * previously assigned to `key` if one was present. Otherwise, return `NULL`.
  */

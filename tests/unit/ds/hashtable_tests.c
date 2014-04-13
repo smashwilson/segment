@@ -76,7 +76,7 @@ typedef struct {
   int incorrect;
 } iterator_state;
 
-void hashtable_iterator(const char *key, const size_t key_length, const void *value, void *state)
+void hashtable_iterator(const char *key, const size_t key_length, void *value, void *state)
 {
   iterator_state *s = (iterator_state *) state;
 
@@ -100,7 +100,7 @@ void test_hashtable_each(void)
   s.correct = 0;
   s.incorrect = 0;
 
-  seg_hashtablep table = seg_new_hashtable(3L);
+  seg_hashtablep table = seg_new_hashtable(10L);
   seg_hashtable_put(table, "aaa", 3, "aval");
   seg_hashtable_put(table, "bbb", 3, "bval");
   seg_hashtable_put(table, "ccc", 3, "cval");
@@ -115,6 +115,37 @@ void test_hashtable_each(void)
   seg_delete_hashtable(table);
 }
 
+void test_hashtable_resize(void)
+{
+  seg_hashtablep table = seg_new_hashtable(5L);
+
+  seg_hashtable_put(table, "aaa", 3, "aval");
+  seg_hashtable_put(table, "bbb", 3, "bval");
+  seg_hashtable_put(table, "ccc", 3, "cval");
+
+  CU_ASSERT_EQUAL(seg_hashtable_count(table), 3);
+  CU_ASSERT_EQUAL(seg_hashtable_capacity(table), 5);
+
+  seg_hashtable_put(table, "ddd", 3, "dval");
+
+  CU_ASSERT_EQUAL(seg_hashtable_count(table), 4);
+  CU_ASSERT_EQUAL(seg_hashtable_capacity(table), 10);
+
+  void *outa = seg_hashtable_get(table, "aaa", 3);
+  CU_ASSERT_STRING_EQUAL(outa, "aval");
+
+  void *outb = seg_hashtable_get(table, "bbb", 3);
+  CU_ASSERT_STRING_EQUAL(outb, "bval");
+
+  void *outc = seg_hashtable_get(table, "ccc", 3);
+  CU_ASSERT_STRING_EQUAL(outc, "cval");
+
+  void *outd = seg_hashtable_get(table, "ddd", 3);
+  CU_ASSERT_STRING_EQUAL(outd, "dval");
+
+  seg_delete_hashtable(table);
+}
+
 CU_pSuite initialize_hashtable_suite(void)
 {
   CU_pSuite pSuite = CU_add_suite("hashtable", NULL, NULL);
@@ -125,6 +156,7 @@ CU_pSuite initialize_hashtable_suite(void)
   ADD_TEST(test_hashtable_access);
   ADD_TEST(test_hashtable_putifabsent);
   ADD_TEST(test_hashtable_each);
+  ADD_TEST(test_hashtable_resize);
 
   return pSuite;
 }

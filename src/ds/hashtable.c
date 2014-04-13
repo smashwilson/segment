@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "hashtable.h"
 #include "murmur.h"
@@ -26,19 +27,27 @@ struct seg_hashtable {
   bucket *buckets;
 };
 
+typedef struct {
+  seg_hashtablep table;
+  bucket *nbuckets;
+  size_t ncapacity;
+} resize_state;
+
 /* Internal utility methods. */
 
 void find_or_create_entry(
   seg_hashtablep table,
+  bucket *buckets,
+  size_t capacity,
   const char *key,
   size_t key_length,
   entry **ent,
   int *created
 ) {
   uint32_t hashcode = murmur3_32(key, (uint32_t) key_length, table->seed);
-  uint32_t bnum = hashcode % table->capacity;
+  uint32_t bnum = hashcode % capacity;
 
-  bucket *buck = &(table->buckets[bnum]);
+  bucket *buck = &(buckets[bnum]);
   entry *e = NULL;
   int bindex = 0;
 
@@ -90,6 +99,39 @@ void find_or_create_entry(
   *created = 1;
 }
 
+/*
+ * A new element has been added. Calculate the table's new load and trigger a capacity extension
+ * if necessary.
+ */
+void trigger_dynamic_resize(seg_hashtablep table)
+{
+  float load = table->count / (float) table->capacity;
+  if (load >= 0.75f) {
+    seg_hashtable_resize(table, table->capacity * 2);
+  }
+}
+
+void resize_iter(const char *key, const size_t key_length, void *value, void *state)
+{
+  resize_state *rs = (resize_state*) state;
+  entry *e;
+  int created;
+
+  /* Add this entry to the new buckets structure. */
+  find_or_create_entry(rs->table, rs->nbuckets, rs->ncapacity, key, key_length, &e, &created);
+
+  if (! created) {
+    fprintf(
+      stderr,
+      "segment: Unexpected collision during hash growth at key [%.*s]\n",
+      (int) key_length,
+      key
+    );
+  }
+
+  e->value = value;
+}
+
 /* Public API. */
 
 unsigned long seg_hashtable_count(seg_hashtablep table)
@@ -115,18 +157,47 @@ seg_hashtablep seg_new_hashtable(unsigned long capacity)
   return table;
 }
 
+void seg_hashtable_resize(seg_hashtablep table, size_t capacity)
+{
+  size_t orig_cap = table->capacity;
+  unsigned long orig_count = table->count;
+  if (orig_cap == capacity) {
+    return;
+  }
+
+  bucket *nbuckets = calloc(capacity, sizeof(bucket));
+
+  resize_state state;
+  state.table = table;
+  state.nbuckets = nbuckets;
+  state.ncapacity = capacity;
+
+  seg_hashtable_each(table, resize_iter, &state);
+
+  free(table->buckets);
+
+  table->capacity = capacity;
+  table->count = orig_count;
+  table->buckets = nbuckets;
+}
+
 void *seg_hashtable_put(seg_hashtablep table, const char *key, size_t key_length, void *value)
 {
   entry *ent;
   int created;
   void *result = NULL;
 
-  find_or_create_entry(table, key, key_length, &ent, &created);
+  find_or_create_entry(table, table->buckets, table->capacity, key, key_length, &ent, &created);
 
   if (! created) {
     result = ent->value;
   }
+
   ent->value = value;
+
+  if (created) {
+    trigger_dynamic_resize(table);
+  }
 
   return result;
 }
@@ -140,12 +211,13 @@ void *seg_hashtable_putifabsent(
   entry *ent;
   int created;
 
-  find_or_create_entry(table, key, key_length, &ent, &created);
+  find_or_create_entry(table, table->buckets, table->capacity, key, key_length, &ent, &created);
 
   if (! created) {
     return ent->value;
   } else {
     ent->value = value;
+    trigger_dynamic_resize(table);
     return value;
   }
 }

@@ -7,7 +7,7 @@ typedef struct seg_hashtable *seg_hashtablep;
 typedef void (*seg_hashtable_iterator)(
   const char *key,
   const size_t key_length,
-  const void *value,
+  void *value,
   void *state
 );
 
@@ -25,6 +25,13 @@ unsigned long seg_hashtable_count(seg_hashtablep table);
  * Return the current capacity of the hashtable.
  */
 size_t seg_hashtable_capacity(seg_hashtablep table);
+
+/*
+ * Resize a hashtable's capacity. O(n). Invoked automatically during put operations if the table's
+ * load increases beyond the threshold. Notice that `capacity` can be greater or less than the
+ * current capacity.
+ */
+void seg_hashtable_resize(seg_hashtablep table, size_t capacity);
 
 /*
  * Add a new item to the hashtable, expanding it if necessary. Return the value

@@ -5,7 +5,7 @@ ifdef DEBUG
 endif
 
 CORE_OBJECTS = src/token.o src/ast.o src/ast_printer.o src/parse_helpers.o src/lexer.o
-CORE_OBJECTS += src/ds/hashtable.o
+CORE_OBJECTS += src/ds/hashtable.o src/ds/murmur.o
 
 EXEC_OBJECTS = src/segment.o
 

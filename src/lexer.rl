@@ -78,6 +78,7 @@ static void report(const char *name, const char *ts, const char *te, seg_options
   *|;
 
   stringbodydbl = '\"' | [^"]; # "
+  stringbodysingle = '\'' | [^']; # '
 
   main := |*
     comment;
@@ -88,6 +89,9 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     false => { EMPTY(FALSE); };
 
     '"' stringbodydbl* '"' => {
+      CAPTURE(STRING);
+    };
+    "'" stringbodysingle* "'" => {
       CAPTURE(STRING);
     };
 

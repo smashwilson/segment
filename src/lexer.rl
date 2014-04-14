@@ -77,8 +77,8 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     };
   *|;
 
-  stringbodydbl = '\"' | [^"]; # "
-  stringbodysingle = '\'' | [^']; # '
+  stringbodydbl = '\\' /./ | [^"#]; # "
+  stringbodysingle = '\\' /./ | [^']; # '
 
   main := |*
     comment;
@@ -88,10 +88,20 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     true => { EMPTY(TRUE); };
     false => { EMPTY(FALSE); };
 
-    '"' stringbodydbl* '"' => {
+    "'" stringbodysingle* "'" => {
       CAPTURE(STRING);
     };
-    "'" stringbodysingle* "'" => {
+
+    '"' stringbodydbl* '#{' => {
+      CAPTURE(STRINGSTART);
+    };
+    '}' stringbodydbl* '#{' => {
+      CAPTURE(STRINGMID);
+    };
+    '}' stringbodydbl* '"' => {
+      CAPTURE(STRINGEND);
+    };
+    '"' stringbodydbl* '"' => {
       CAPTURE(STRING);
     };
 

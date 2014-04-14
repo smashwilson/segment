@@ -146,8 +146,8 @@ static int process_file(const char *path, seg_options *opts)
 
   seg_program *program = seg_parse((char*) content, istat.st_size, opts);
 
-  if (program->ast == NULL) {
-    fputs("Syntax error!", stderr);
+  if (program->ast == NULL && opts->ast_invoke) {
+    fputs("Syntax error!\n", stderr);
     return 1;
   }
 

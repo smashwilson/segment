@@ -8,6 +8,8 @@
 struct seg_ast_visitor {
   seg_integer_handler visit_integer;
 
+  seg_string_handler visit_string;
+
   seg_var_handler visit_var;
 
   seg_methodcall_handler visit_methodcall_pre;
@@ -31,6 +33,8 @@ seg_ast_visitor seg_new_ast_visitor()
 
   visitor->visit_integer = (seg_integer_handler) &visit_null;
 
+  visitor->visit_string = (seg_string_handler) &visit_null;
+
   visitor->visit_var = (seg_var_handler) &visit_null;
 
   visitor->visit_methodcall_pre = (seg_methodcall_handler) &visit_null;
@@ -51,6 +55,11 @@ seg_ast_visitor seg_new_ast_visitor()
 void seg_ast_visit_integer(seg_ast_visitor visitor, seg_integer_handler visit)
 {
   visitor->visit_integer = visit;
+}
+
+void seg_ast_visit_string(seg_ast_visitor visitor, seg_string_handler visit)
+{
+  visitor->visit_string = visit;
 }
 
 void seg_ast_visit_methodcall(
@@ -113,6 +122,11 @@ static void visit_integer(seg_integer_node *root, seg_ast_visitor visitor, void 
   (*(visitor->visit_integer))(root, state);
 }
 
+static void visit_string(seg_string_node *root, seg_ast_visitor visitor, void *state)
+{
+  (*(visitor->visit_string))(root, state);
+}
+
 static void visit_var(seg_var_node *root, seg_ast_visitor visitor, void *state)
 {
   (*(visitor->visit_var))(root, state);
@@ -148,6 +162,8 @@ static void visit_expr(seg_expr_node *root, seg_ast_visitor visitor, void *state
   case SEG_INTEGER:
     visit_integer(root->child.integer, visitor, state);
     break;
+  case SEG_STRING:
+    visit_string(root->child.string, visitor, state);
   case SEG_VAR:
     visit_var(root->child.var, visitor, state);
     break;

@@ -9,6 +9,7 @@
 
 typedef enum {
   SEG_INTEGER,
+  SEG_STRING,
   SEG_VAR,
   SEG_BLOCK,
   SEG_METHODCALL
@@ -25,6 +26,11 @@ struct seg_statementlist_node;
 typedef struct {
   int value;
 } seg_integer_node;
+
+typedef struct {
+  const char *string;
+  size_t length;
+} seg_string_node;
 
 /* Variable References */
 
@@ -65,6 +71,7 @@ typedef struct {
 typedef struct seg_expr_node {
   union {
     seg_integer_node *integer;
+    seg_string_node *string;
     seg_var_node *var;
     seg_block_node *block;
     seg_methodcall_node *methodcall;

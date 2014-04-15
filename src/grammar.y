@@ -32,6 +32,8 @@
 %type maybestatement { seg_expr_node* }
 %type statement { seg_expr_node* }
 %type expr { seg_expr_node* }
+%type interpolated { seg_expr_node* }
+%type interpolatedstart { seg_methodcall_node* }
 %type invocation { seg_expr_node* }
 %type spaceinvocation { seg_expr_node* }
 %type blockstart { seg_block_node* }
@@ -98,13 +100,90 @@ expr ::= SYMBOL.
 
 // Strings
 
-expr ::= STRING.
-expr ::= interpolated.
+expr (OUT) ::= STRING (S).
+{
+  /* ' ... ' or " ... " */
+  seg_string_node *snode = malloc(sizeof(seg_string_node));
+  snode->string = seg_token_without(S, 1, 1, &(snode->length));
+  seg_delete_token(S);
 
-interpolated ::= interpolatedstart STRINGEND.
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_STRING;
+  OUT->child.string = snode;
+}
 
-interpolatedstart ::= STRINGSTART statement.
-interpolatedstart ::= interpolatedstart STRINGMID.
+expr (OUT) ::= interpolated (IN). { OUT = IN; }
+
+interpolated (OUT) ::= interpolatedstart (PRE) STRINGEND (S).
+{
+  /* } ... " */
+  seg_string_node *snode = malloc(sizeof(seg_string_node));
+  snode->string = seg_token_without(S, 1, 1, &(snode->length));
+  seg_delete_token(S);
+
+  seg_expr_node *part = malloc(sizeof(seg_expr_node));
+  part->child_kind = SEG_STRING;
+  part->child.string = snode;
+
+  /* Prepend `snode` to the argument list of PRE. */
+  seg_arg_list *arg = seg_parse_arg(state, part, NULL);
+  arg->next = PRE->args;
+  PRE->args = arg;
+
+  /* Arguments are reversed. */
+  PRE->args = seg_reverse_args(PRE->args);
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_METHODCALL;
+  OUT->child.methodcall = PRE;
+}
+
+interpolatedstart (OUT) ::= STRINGSTART (S) statement (E).
+{
+  /* " ... #{ */
+  seg_string_node *snode = malloc(sizeof(seg_string_node));
+  snode->string = seg_token_without(S, 1, 2, &(snode->length));
+  seg_delete_token(S);
+
+  seg_expr_node *r = malloc(sizeof(seg_expr_node));
+  r->child_kind = SEG_STRING;
+  r->child.string = snode;
+
+  /* Create a SEG_STRINGAPPEND_METHOD methodcall to concatenate the literal bits. */
+  OUT = seg_implicit_methodcall(state, r, SEG_STRINGAPPEND_METHOD);
+
+  /* Interpose a SEG_STRINGCONV_METHOD methodcall unless E is already a String expression. */
+  if (E->child_kind != SEG_STRING) {
+    seg_methodcall_node *convcall = seg_implicit_methodcall(state, E, SEG_STRINGCONV_METHOD);
+
+    seg_expr_node *conv = malloc(sizeof(seg_expr_node));
+    conv->child_kind = SEG_METHODCALL;
+    conv->child.methodcall = convcall;
+
+    OUT->args = seg_parse_arg(state, conv, NULL);
+  } else {
+    OUT->args = seg_parse_arg(state, E, NULL);
+  }
+}
+
+interpolatedstart (OUT) ::= interpolatedstart (PRE) STRINGMID (S).
+{
+  /* } ... #{ */
+  seg_string_node *snode = malloc(sizeof(seg_string_node));
+  snode->string = seg_token_without(S, 1, 2, &(snode->length));
+  seg_delete_token(S);
+
+  seg_expr_node *part = malloc(sizeof(seg_expr_node));
+  part->child_kind = SEG_STRING;
+  part->child.string = snode;
+
+  /* Prepend `snode` to the argument list of PRE. */
+  seg_arg_list *arg = seg_parse_arg(state, part, NULL);
+  arg->next = PRE->args;
+  PRE->args = arg;
+
+  OUT = PRE;
+}
 
 // Compound Expressions
 

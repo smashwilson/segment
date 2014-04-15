@@ -94,8 +94,17 @@ expr (OUT) ::= INTEGER (L).
 expr ::= FLOAT.
 expr ::= TRUE.
 expr ::= FALSE.
-expr ::= STRING.
 expr ::= SYMBOL.
+
+// Strings
+
+expr ::= STRING.
+expr ::= interpolated.
+
+interpolated ::= interpolatedstart STRINGEND.
+
+interpolatedstart ::= STRINGSTART statement.
+interpolatedstart ::= interpolatedstart STRINGMID.
 
 // Compound Expressions
 

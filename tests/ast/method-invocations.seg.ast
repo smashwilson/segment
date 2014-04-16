@@ -29,9 +29,9 @@ STATEMENTLIST
 | | | |-METHODCALL: +
 | | | | |-INTEGER: 3
 | | | | |-INTEGER: 4
-| | | |-METHODCALL: &and&
-| | | | |-INTEGER: 6
-| | | | |-INTEGER: 89
+| |-METHODCALL: &and&
+| | |-INTEGER: 6
+| | |-INTEGER: 89
 |-METHODCALL: method
 | |-VAR: self
 |-METHODCALL: another

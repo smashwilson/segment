@@ -1,11 +1,6 @@
 STATEMENTLIST
-|-EXPR
-| |-METHODCALL: +
-| | |-EXPR
-| | | |-INTEGER: 3
-| | |-EXPR
-| | | |-METHODCALL: *
-| | | | |-EXPR
-| | | | | |-INTEGER: 4
-| | | | |-EXPR
-| | | | | |-INTEGER: 7
+|-METHODCALL: +
+| |-INTEGER: 3
+| |-METHODCALL: *
+| | |-INTEGER: 4
+| | |-INTEGER: 7

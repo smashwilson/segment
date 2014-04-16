@@ -76,7 +76,7 @@ seg_expr_node *seg_parse_methodcall(
  * Allocate a new seg_expr_node to model an implicit method call. `selector` should be a literal
  * string.
  */
-seg_methodcall_node *seg_implicit_methodcall(
+seg_expr_node *seg_implicit_methodcall(
   seg_parser_state *state,
   seg_expr_node *receiver,
   const char *selector

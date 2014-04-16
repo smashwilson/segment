@@ -1,10 +1,6 @@
 STATEMENTLIST
-|-EXPR
-| |-BLOCK: [☃Ж中𐍆]
-| | |-STATEMENTLIST
-| | | |-EXPR
-| | | | |-METHODCALL: *
-| | | | | |-EXPR
-| | | | | | |-VAR: ☃Ж中𐍆
-| | | | | |-EXPR
-| | | | | | |-INTEGER: 4
+|-BLOCK: [☃Ж中𐍆]
+| |-STATEMENTLIST
+| | |-METHODCALL: *
+| | | |-VAR: ☃Ж中𐍆
+| | | |-INTEGER: 4

@@ -1,25 +1,14 @@
 STATEMENTLIST
-|-EXPR
-| |-BLOCK: [arg0 arg1]
-| | |-STATEMENTLIST
-| | | |-EXPR
-| | | | |-VAR: arg0
-| | | |-EXPR
+|-BLOCK: [arg0 arg1]
+| |-STATEMENTLIST
+| | |-VAR: arg0
+| | |-METHODCALL: method
+| | | |-VAR: self
+| | |-METHODCALL: inner
+| | | |-VAR: self
+| | |-BLOCK: [inner]
+| | | |-STATEMENTLIST
+| | | | |-VAR: arg1
 | | | | |-METHODCALL: method
-| | | | | |-EXPR
-| | | | | | |-VAR: self
-| | | |-EXPR
-| | | | |-METHODCALL: inner
-| | | | | |-EXPR
-| | | | | | |-VAR: self
-| | | |-EXPR
-| | | | |-BLOCK: [inner]
-| | | | | |-STATEMENTLIST
-| | | | | | |-EXPR
-| | | | | | | |-VAR: arg1
-| | | | | | |-EXPR
-| | | | | | | |-METHODCALL: method
-| | | | | | | | |-EXPR
-| | | | | | | | | |-VAR: self
-| | | | | | |-EXPR
-| | | | | | | |-VAR: inner
+| | | | | |-VAR: self
+| | | | |-VAR: inner

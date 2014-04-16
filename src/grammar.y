@@ -15,6 +15,7 @@
 
 // Operators and operator precedence.
 
+%left STRINGMID.
 %left PERIOD.
 %left ANDLIKE.
 %left ORLIKE.
@@ -33,7 +34,7 @@
 %type statement { seg_expr_node* }
 %type expr { seg_expr_node* }
 %type interpolated { seg_expr_node* }
-%type interpolatedstart { seg_methodcall_node* }
+%type interpolatedmiddle { seg_methodcall_node* }
 %type invocation { seg_expr_node* }
 %type spaceinvocation { seg_expr_node* }
 %type blockstart { seg_block_node* }
@@ -114,73 +115,102 @@ expr (OUT) ::= STRING (S).
 
 expr (OUT) ::= interpolated (IN). { OUT = IN; }
 
-interpolated (OUT) ::= interpolatedstart (PRE) STRINGEND (S).
+interpolated (OUT) ::= STRINGSTART (START) interpolatedmiddle (MID) STRINGEND (END).
 {
+  /* " ... #{ */
+  size_t start_length;
+  char *start_content = seg_token_without(START, 1, 2, &start_length);
+  seg_delete_token(START);
+
+  seg_string_node *start_node = malloc(sizeof(seg_string_node));
+  start_node->string = start_content;
+  start_node->length = start_length;
+
+  seg_expr_node *receiver = malloc(sizeof(seg_expr_node));
+  receiver->child_kind = SEG_STRING;
+  receiver->child.string = start_node;
+
+  MID->receiver = receiver;
+
   /* } ... " */
-  seg_string_node *snode = malloc(sizeof(seg_string_node));
-  snode->string = seg_token_without(S, 1, 1, &(snode->length));
-  seg_delete_token(S);
+  size_t end_length;
+  char *end_content = seg_token_without(END, 1, 1, &end_length);
+  seg_delete_token(END);
 
-  seg_expr_node *part = malloc(sizeof(seg_expr_node));
-  part->child_kind = SEG_STRING;
-  part->child.string = snode;
+  if (end_content != NULL) {
+    seg_string_node *end_node = malloc(sizeof(seg_string_node));
+    end_node->string = end_content;
+    end_node->length = end_length;
 
-  /* Prepend `snode` to the argument list of PRE. */
-  seg_arg_list *arg = seg_parse_arg(state, part, NULL);
-  arg->next = PRE->args;
-  PRE->args = arg;
+    seg_expr_node *last = malloc(sizeof(seg_expr_node));
+    last->child_kind = SEG_STRING;
+    last->child.string = end_node;
+
+    seg_arg_list *args = seg_parse_arg(state, last, NULL);
+    args->next = MID->args;
+    MID->args = args;
+  }
 
   /* Arguments are reversed. */
-  PRE->args = seg_reverse_args(PRE->args);
+  MID->args = seg_reverse_args(MID->args);
 
   OUT = malloc(sizeof(seg_expr_node));
   OUT->child_kind = SEG_METHODCALL;
-  OUT->child.methodcall = PRE;
+  OUT->child.methodcall = MID;
 }
 
-interpolatedstart (OUT) ::= STRINGSTART (S) statement (E).
+interpolatedmiddle (OUT) ::= statement (E).
 {
-  /* " ... #{ */
-  seg_string_node *snode = malloc(sizeof(seg_string_node));
-  snode->string = seg_token_without(S, 1, 2, &(snode->length));
-  seg_delete_token(S);
+  OUT = seg_implicit_methodcall(state, NULL, SEG_METHOD_STRINGAPPEND);
 
-  seg_expr_node *r = malloc(sizeof(seg_expr_node));
-  r->child_kind = SEG_STRING;
-  r->child.string = snode;
-
-  /* Create a SEG_STRINGAPPEND_METHOD methodcall to concatenate the literal bits. */
-  OUT = seg_implicit_methodcall(state, r, SEG_STRINGAPPEND_METHOD);
-
-  /* Interpose a SEG_STRINGCONV_METHOD methodcall unless E is already a String expression. */
   if (E->child_kind != SEG_STRING) {
-    seg_methodcall_node *convcall = seg_implicit_methodcall(state, E, SEG_STRINGCONV_METHOD);
+    seg_methodcall_node *conv = seg_implicit_methodcall(state, E, SEG_METHOD_STRINGCONV);
 
-    seg_expr_node *conv = malloc(sizeof(seg_expr_node));
-    conv->child_kind = SEG_METHODCALL;
-    conv->child.methodcall = convcall;
+    seg_expr_node *converted = malloc(sizeof(seg_expr_node));
+    converted->child_kind = SEG_METHODCALL;
+    converted->child.methodcall = conv;
 
-    OUT->args = seg_parse_arg(state, conv, NULL);
+    OUT->args = seg_parse_arg(state, converted, NULL);
   } else {
     OUT->args = seg_parse_arg(state, E, NULL);
   }
 }
 
-interpolatedstart (OUT) ::= interpolatedstart (PRE) STRINGMID (S).
+interpolatedmiddle (OUT) ::= interpolatedmiddle (PRE) STRINGMID (S) statement (E).
 {
-  /* } ... #{ */
-  seg_string_node *snode = malloc(sizeof(seg_string_node));
-  snode->string = seg_token_without(S, 1, 2, &(snode->length));
-  seg_delete_token(S);
+  /* } .. #{ */
+  size_t mid_length;
+  char *mid_content = seg_token_without(S, 1, 2, &mid_length);
 
-  seg_expr_node *part = malloc(sizeof(seg_expr_node));
-  part->child_kind = SEG_STRING;
-  part->child.string = snode;
+  if (mid_content != NULL) {
+    seg_string_node *mid_node = malloc(sizeof(seg_string_node));
+    mid_node->string = mid_content;
+    mid_node->length = mid_length;
 
-  /* Prepend `snode` to the argument list of PRE. */
-  seg_arg_list *arg = seg_parse_arg(state, part, NULL);
-  arg->next = PRE->args;
-  PRE->args = arg;
+    seg_expr_node *mid = malloc(sizeof(seg_expr_node));
+    mid->child_kind = SEG_STRING;
+    mid->child.string = mid_node;
+
+    seg_arg_list *args = seg_parse_arg(state, mid, NULL);
+    args->next = PRE->args;
+    PRE->args = args;
+  }
+
+  if (E->child_kind != SEG_STRING) {
+    seg_methodcall_node *conv = seg_implicit_methodcall(state, E, SEG_METHOD_STRINGCONV);
+
+    seg_expr_node *converted = malloc(sizeof(seg_expr_node));
+    converted->child_kind = SEG_METHODCALL;
+    converted->child.methodcall = conv;
+
+    seg_arg_list *args = seg_parse_arg(state, converted, NULL);
+    args->next = PRE->args;
+    PRE->args = args;
+  } else {
+    seg_arg_list *args = seg_parse_arg(state, E, NULL);
+    args->next = PRE->args;
+    PRE->args = args;
+  }
 
   OUT = PRE;
 }

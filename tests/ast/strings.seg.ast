@@ -1,12 +1,12 @@
 STATEMENTLIST
 |-EXPR
-| |-STRING [double-quoted with \" internal]
+| |-STRING: [double-quoted with \" internal]
 |-EXPR
-| |-STRING [single-quoted with \' internal]
+| |-STRING: [single-quoted with \' internal]
 |-EXPR
 | |-METHODCALL: <<
 | | |-EXPR
-| | | |-STRING [the answer is ]
+| | | |-STRING: [the answer is ]
 | | |-EXPR
 | | | |-METHODCALL: as_string
 | | | | |-EXPR
@@ -18,32 +18,34 @@ STATEMENTLIST
 |-EXPR
 | |-METHODCALL: <<
 | | |-EXPR
-| | | |-STRING [multiple ]
+| | | |-STRING: [multiple ]
 | | |-EXPR
 | | | |-METHODCALL: as_string
 | | | | |-EXPR
 | | | | | |-INTEGER: 1
 | | |-EXPR
-| | | |-STRING [ interpolations ]
+| | | |-STRING: [ interpolations ]
 | | |-EXPR
 | | | |-METHODCALL: as_string
 | | | | |-EXPR
 | | | | | |-INTEGER: 2
 | | |-EXPR
-| | | |-STRING [ inside]
+| | | |-STRING: [ inside]
 |-EXPR
 | |-METHODCALL: <<
 | | |-EXPR
-| | | |-STRING [this ]
+| | | |-STRING: [this ]
 | | |-EXPR
-| | | |-METHODCALL: <<
+| | | |-METHODCALL: as_string
 | | | | |-EXPR
-| | | | | |-STRING [is ]
-| | | | |-EXPR
-| | | | | |-STRING [crazy]
-| | | | |-EXPR
-| | | | | |-STRING [ but ]
-| | | | |-EXPR
-| | | | | |-STRING [ someone ]
+| | | | | |-METHODCALL: <<
+| | | | | | |-EXPR
+| | | | | | | |-STRING: [is ]
+| | | | | | |-EXPR
+| | | | | | | |-STRING: [crazy]
+| | | | | | |-EXPR
+| | | | | | | |-STRING: [ but ]
+| | | | | | |-EXPR
+| | | | | | | |-STRING: [someone]
 | | |-EXPR
-| | | |-STRING [ could do it]
+| | | |-STRING: [ could do it]

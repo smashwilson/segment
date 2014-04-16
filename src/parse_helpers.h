@@ -9,8 +9,8 @@
 
 /* Methods that have special significance. */
 
-#define SEG_STRINGAPPEND_METHOD "<<"
-#define SEG_STRINGCONV_METHOD "as_string"
+#define SEG_METHOD_STRINGAPPEND "<<"
+#define SEG_METHOD_STRINGCONV "as_string"
 
 struct seg_parser_context;
 typedef struct seg_parser_context *seg_parser_contextp;

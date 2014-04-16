@@ -24,10 +24,14 @@ char *seg_token_as_string(seg_token *tok, size_t *length)
 char *seg_token_without(seg_token *tok, size_t initial, size_t final, size_t *length)
 {
   size_t len = tok->length - initial - final;
+  *length = len;
+
+  if (len == 0) {
+    return NULL;
+  }
 
   char *v = malloc(len);
   strncpy(v, tok->start + initial, len);
-  *length = len;
   return v;
 }
 

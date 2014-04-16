@@ -101,18 +101,14 @@ seg_expr_node *seg_parse_binop(
   char *selname;
   size_t length;
 
-  seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
-
   selname = seg_token_as_string(op, &length);
   seg_delete_token(op);
 
-  methodcall->selector = seg_symboltable_intern(state->symboltable, selname, length);
-  methodcall->receiver = lhs;
-  methodcall->args = seg_parse_arg(state, rhs, NULL);
-
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_METHODCALL;
-  out->child.methodcall = methodcall;
+  out->child.methodcall.selector = seg_symboltable_intern(state->symboltable, selname, length);
+  out->child.methodcall.receiver = lhs;
+  out->child.methodcall.args = seg_parse_arg(state, rhs, NULL);
   return out;
 }
 
@@ -134,27 +130,27 @@ seg_expr_node *seg_parse_methodcall(
   }
   seg_delete_token(selector);
 
-  seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
-  methodcall->selector = seg_symboltable_intern(state->symboltable, selname, length);
-  methodcall->receiver = receiver;
-  methodcall->args = args;
-
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_METHODCALL;
-  out->child.methodcall = methodcall;
+  out->child.methodcall.selector = seg_symboltable_intern(state->symboltable, selname, length);
+  out->child.methodcall.receiver = receiver;
+  out->child.methodcall.args = args;
   return out;
 }
 
-seg_methodcall_node *seg_implicit_methodcall(
+seg_expr_node *seg_implicit_methodcall(
   seg_parser_state *state,
   seg_expr_node *receiver,
   const char *selector
 ) {
-  seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
-  methodcall->selector = seg_symboltable_intern(state->symboltable, selector, strlen(selector));
-  methodcall->receiver = receiver;
-  methodcall->args = NULL;
-  return methodcall;
+  seg_symbol *selsym = seg_symboltable_intern(state->symboltable, selector, strlen(selector));
+
+  seg_expr_node *out = malloc(sizeof(seg_expr_node));
+  out->child_kind = SEG_METHODCALL;
+  out->child.methodcall.selector = selsym;
+  out->child.methodcall.receiver = receiver;
+  out->child.methodcall.args = NULL;
+  return out;
 }
 
 seg_arg_list *seg_parse_arg(seg_parser_state *state, seg_expr_node *value, seg_token *keyword)

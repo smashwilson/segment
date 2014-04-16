@@ -85,13 +85,12 @@ statement (OUT) ::= spaceinvocation (IN). { OUT = IN; }
 
 expr (OUT) ::= INTEGER (L).
 {
-  seg_integer_node *inode = malloc(sizeof(seg_integer_node));
-  inode->value = seg_token_as_integer(L);
+  int value = seg_token_as_integer(L);
   seg_delete_token(L);
 
   OUT = malloc(sizeof(seg_expr_node));
   OUT->child_kind = SEG_INTEGER;
-  OUT->child.integer = inode;
+  OUT->child.integer.value = value;
 }
 
 expr ::= FLOAT.
@@ -104,13 +103,14 @@ expr ::= SYMBOL.
 expr (OUT) ::= STRING (S).
 {
   /* ' ... ' or " ... " */
-  seg_string_node *snode = malloc(sizeof(seg_string_node));
-  snode->string = seg_token_without(S, 1, 1, &(snode->length));
+  size_t length;
+  char *value = seg_token_without(S, 1, 1, &length);
   seg_delete_token(S);
 
   OUT = malloc(sizeof(seg_expr_node));
   OUT->child_kind = SEG_STRING;
-  OUT->child.string = snode;
+  OUT->child.string.value = value;
+  OUT->child.string.length = length;
 }
 
 expr (OUT) ::= interpolated (IN). { OUT = IN; }
@@ -122,15 +122,12 @@ interpolated (OUT) ::= STRINGSTART (START) interpolatedmiddle (MID) STRINGEND (E
   char *start_content = seg_token_without(START, 1, 2, &start_length);
   seg_delete_token(START);
 
-  seg_string_node *start_node = malloc(sizeof(seg_string_node));
-  start_node->string = start_content;
-  start_node->length = start_length;
-
   seg_expr_node *receiver = malloc(sizeof(seg_expr_node));
   receiver->child_kind = SEG_STRING;
-  receiver->child.string = start_node;
+  receiver->child.string.value = start_node;
+  receiver->child.string.length = start_length;
 
-  MID->receiver = receiver;
+  MID->child.methodcall.receiver = receiver;
 
   /* } ... " */
   size_t end_length;
@@ -138,25 +135,20 @@ interpolated (OUT) ::= STRINGSTART (START) interpolatedmiddle (MID) STRINGEND (E
   seg_delete_token(END);
 
   if (end_content != NULL) {
-    seg_string_node *end_node = malloc(sizeof(seg_string_node));
-    end_node->string = end_content;
-    end_node->length = end_length;
+    seg_expr_node *end_node = malloc(sizeof(seg_expr_node));
+    end_node->child_kind = SEG_STRING;
+    end_node->child.string.value = end_content;
+    end_node->child.string.length = end_length;
 
-    seg_expr_node *last = malloc(sizeof(seg_expr_node));
-    last->child_kind = SEG_STRING;
-    last->child.string = end_node;
-
-    seg_arg_list *args = seg_parse_arg(state, last, NULL);
-    args->next = MID->args;
-    MID->args = args;
+    seg_arg_list *args = seg_parse_arg(state, end_node, NULL);
+    args->next = MID->child.methodcall.args;
+    MID->child.methodcall.args = args;
   }
 
   /* Arguments are reversed. */
-  MID->args = seg_reverse_args(MID->args);
+  MID->child.methodcall.args = seg_reverse_args(MID->child.methodcall.args);
 
-  OUT = malloc(sizeof(seg_expr_node));
-  OUT->child_kind = SEG_METHODCALL;
-  OUT->child.methodcall = MID;
+  OUT = MID;
 }
 
 interpolatedmiddle (OUT) ::= statement (E).
@@ -164,15 +156,10 @@ interpolatedmiddle (OUT) ::= statement (E).
   OUT = seg_implicit_methodcall(state, NULL, SEG_METHOD_STRINGAPPEND);
 
   if (E->child_kind != SEG_STRING) {
-    seg_methodcall_node *conv = seg_implicit_methodcall(state, E, SEG_METHOD_STRINGCONV);
-
-    seg_expr_node *converted = malloc(sizeof(seg_expr_node));
-    converted->child_kind = SEG_METHODCALL;
-    converted->child.methodcall = conv;
-
-    OUT->args = seg_parse_arg(state, converted, NULL);
+    seg_expr_node *converter = seg_implicit_methodcall(state, E, SEG_METHOD_STRINGCONV);
+    OUT->child.methodcall.args = seg_parse_arg(state, converter, NULL);
   } else {
-    OUT->args = seg_parse_arg(state, E, NULL);
+    OUT->child.methodcall.args = seg_parse_arg(state, E, NULL);
   }
 }
 
@@ -183,13 +170,10 @@ interpolatedmiddle (OUT) ::= interpolatedmiddle (PRE) STRINGMID (S) statement (E
   char *mid_content = seg_token_without(S, 1, 2, &mid_length);
 
   if (mid_content != NULL) {
-    seg_string_node *mid_node = malloc(sizeof(seg_string_node));
-    mid_node->string = mid_content;
-    mid_node->length = mid_length;
-
     seg_expr_node *mid = malloc(sizeof(seg_expr_node));
     mid->child_kind = SEG_STRING;
-    mid->child.string = mid_node;
+    mid->child.string.value = mid_content;
+    mid->child.string.length = mid_length;
 
     seg_arg_list *args = seg_parse_arg(state, mid, NULL);
     args->next = PRE->args;
@@ -197,15 +181,11 @@ interpolatedmiddle (OUT) ::= interpolatedmiddle (PRE) STRINGMID (S) statement (E
   }
 
   if (E->child_kind != SEG_STRING) {
-    seg_methodcall_node *conv = seg_implicit_methodcall(state, E, SEG_METHOD_STRINGCONV);
+    seg_expr_node *converter = seg_implicit_methodcall(state, E, SEG_METHOD_STRINGCONV);
 
-    seg_expr_node *converted = malloc(sizeof(seg_expr_node));
-    converted->child_kind = SEG_METHODCALL;
-    converted->child.methodcall = conv;
-
-    seg_arg_list *args = seg_parse_arg(state, converted, NULL);
-    args->next = PRE->args;
-    PRE->args = args;
+    seg_arg_list *args = seg_parse_arg(state, converter, NULL);
+    args->next = PRE->child.methodcall.args;
+    PRE->child.methodcall.args = args;
   } else {
     seg_arg_list *args = seg_parse_arg(state, E, NULL);
     args->next = PRE->args;
@@ -227,32 +207,20 @@ expr (OUT) ::= IDENTIFIER (V).
   OUT = malloc(sizeof(seg_expr_node));
 
   if (seg_parser_isarg(state, name, length)) {
-    seg_symbol *varname = INTERN(name, length);
-
-    seg_var_node *varnode = malloc(sizeof(seg_var_node));
-    varnode->varname = varname;
-
     OUT->child_kind = SEG_VAR;
-    OUT->child.var = varnode;
+    OUT->child.var.varname = INTERN(name, length);
   } else {
-    seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
-    methodcall->selector = INTERN(name, length);
-    methodcall->receiver = seg_implicit_self(state);
-    methodcall->args = NULL;
-
     OUT->child_kind = SEG_METHODCALL;
-    OUT->child.methodcall = methodcall;
+    OUT->child.methodcall.selector = INTERN(name, length);
+    OUT->child.methodcall.receiver = seg_implicit_self(state);
+    OUT->child.methodcall.args = NULL;
   }
 }
 
-expr (OUT) ::= block (B).
-{
-  OUT = malloc(sizeof(seg_expr_node));
-  OUT->child_kind = SEG_BLOCK;
-  OUT->child.block = B;
-}
+expr (OUT) ::= block (IN). { OUT = IN; }
 
 expr ::= assignment.
+
 expr (OUT) ::= invocation (I). { OUT = I; }
 
 // Blocks
@@ -260,25 +228,26 @@ expr (OUT) ::= invocation (I). { OUT = I; }
 block (OUT) ::= blockstart (BLK) parameters statementlist (BODY) BLOCKEND.
 {
   OUT = BLK;
-  OUT->body = BODY;
+  OUT->child.block.body = BODY;
 
   /*
     Parameters are pushed in reverse order.
     This restores them to the correct order.
   */
-  seg_parameter_list *params = seg_reverse_params(OUT->parameters);
-  OUT->parameters = params;
+  seg_parameter_list *params = seg_reverse_params(OUT->child.block.parameters);
+  OUT->child.block.parameters = params;
 
   seg_parser_popcontext(state);
 }
 
 blockstart (OUT) ::= BLOCKSTART.
 {
-  OUT = malloc(sizeof(seg_block_node));
-  OUT->parameters = NULL;
-  OUT->body = NULL;
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_BLOCK;
+  OUT->child.block.parameters = NULL;
+  OUT->child.block.body = NULL;
 
-  seg_parser_pushcontext(state, OUT);
+  seg_parser_pushcontext(state, &(OUT->child.block));
 }
 
 parameters ::= .

@@ -28,7 +28,7 @@ typedef struct {
 } seg_integer_node;
 
 typedef struct {
-  const char *string;
+  const char *value;
   size_t length;
 } seg_string_node;
 
@@ -70,11 +70,11 @@ typedef struct {
 
 typedef struct seg_expr_node {
   union {
-    seg_integer_node *integer;
-    seg_string_node *string;
-    seg_var_node *var;
-    seg_block_node *block;
-    seg_methodcall_node *methodcall;
+    seg_integer_node integer;
+    seg_string_node string;
+    seg_var_node var;
+    seg_block_node block;
+    seg_methodcall_node methodcall;
   } child;
   seg_expr_kind child_kind;
   struct seg_expr_node *next;

@@ -7,7 +7,6 @@
 
 struct seg_ast_visitor {
   seg_integer_handler visit_integer;
-
   seg_string_handler visit_string;
 
   seg_var_handler visit_var;
@@ -17,9 +16,6 @@ struct seg_ast_visitor {
 
   seg_block_handler visit_block_pre;
   seg_block_handler visit_block_post;
-
-  seg_expr_handler visit_expr_pre;
-  seg_expr_handler visit_expr_post;
 
   seg_statementlist_handler visit_statementlist_pre;
   seg_statementlist_handler visit_statementlist_post;
@@ -32,16 +28,12 @@ seg_ast_visitor seg_new_ast_visitor()
   seg_ast_visitor visitor = malloc(sizeof(struct seg_ast_visitor));
 
   visitor->visit_integer = (seg_integer_handler) &visit_null;
-
   visitor->visit_string = (seg_string_handler) &visit_null;
 
   visitor->visit_var = (seg_var_handler) &visit_null;
 
   visitor->visit_methodcall_pre = (seg_methodcall_handler) &visit_null;
   visitor->visit_methodcall_post = (seg_methodcall_handler) &visit_null;
-
-  visitor->visit_expr_pre = (seg_expr_handler) &visit_null;
-  visitor->visit_expr_post = (seg_expr_handler) &visit_null;
 
   visitor->visit_block_pre = (seg_block_handler) &visit_null;
   visitor->visit_block_post = (seg_block_handler) &visit_null;
@@ -85,15 +77,6 @@ void seg_ast_visit_block(seg_ast_visitor visitor, seg_visit_when when, seg_block
     visitor->visit_block_pre = visit;
   } else {
     visitor->visit_block_post = visit;
-  }
-}
-
-void seg_ast_visit_expr(seg_ast_visitor visitor, seg_visit_when when, seg_expr_handler visit)
-{
-  if (when == SEG_VISIT_PRE) {
-    visitor->visit_expr_pre = visit;
-  } else {
-    visitor->visit_expr_post = visit;
   }
 }
 

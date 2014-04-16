@@ -21,17 +21,17 @@ char *seg_token_as_string(seg_token *tok, size_t *length)
   return v;
 }
 
-char *seg_token_without(seg_token *tok, size_t *length, char final)
+char *seg_token_without(seg_token *tok, size_t initial, size_t final, size_t *length)
 {
-  if (tok->start[tok->length - 1] != final) {
-    fprintf(stderr, "Warning: token is missing expected terminating '%c'.", final);
-    return seg_token_as_string(tok, length);
+  size_t len = tok->length - initial - final;
+  *length = len;
+
+  if (len == 0) {
+    return NULL;
   }
 
-  size_t len = tok->length - 1;
   char *v = malloc(len);
-  strncpy(v, tok->start, len);
-  *length = len;
+  strncpy(v, tok->start + initial, len);
   return v;
 }
 

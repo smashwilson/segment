@@ -1,0 +1,51 @@
+STATEMENTLIST
+|-EXPR
+| |-STRING: [double-quoted with \" internal]
+|-EXPR
+| |-STRING: [single-quoted with \' internal]
+|-EXPR
+| |-METHODCALL: <<
+| | |-EXPR
+| | | |-STRING: [the answer is ]
+| | |-EXPR
+| | | |-METHODCALL: as_string
+| | | | |-EXPR
+| | | | | |-METHODCALL: *
+| | | | | | |-EXPR
+| | | | | | | |-INTEGER: 6
+| | | | | | |-EXPR
+| | | | | | | |-INTEGER: 7
+|-EXPR
+| |-METHODCALL: <<
+| | |-EXPR
+| | | |-STRING: [multiple ]
+| | |-EXPR
+| | | |-METHODCALL: as_string
+| | | | |-EXPR
+| | | | | |-INTEGER: 1
+| | |-EXPR
+| | | |-STRING: [ interpolations ]
+| | |-EXPR
+| | | |-METHODCALL: as_string
+| | | | |-EXPR
+| | | | | |-INTEGER: 2
+| | |-EXPR
+| | | |-STRING: [ inside]
+|-EXPR
+| |-METHODCALL: <<
+| | |-EXPR
+| | | |-STRING: [this ]
+| | |-EXPR
+| | | |-METHODCALL: as_string
+| | | | |-EXPR
+| | | | | |-METHODCALL: <<
+| | | | | | |-EXPR
+| | | | | | | |-STRING: [is ]
+| | | | | | |-EXPR
+| | | | | | | |-STRING: [crazy]
+| | | | | | |-EXPR
+| | | | | | | |-STRING: [ but ]
+| | | | | | |-EXPR
+| | | | | | | |-STRING: [someone]
+| | |-EXPR
+| | | |-STRING: [ could do it]

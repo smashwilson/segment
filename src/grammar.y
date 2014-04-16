@@ -15,6 +15,7 @@
 
 // Operators and operator precedence.
 
+%left STRINGMID.
 %left PERIOD.
 %left ANDLIKE.
 %left ORLIKE.
@@ -32,6 +33,8 @@
 %type maybestatement { seg_expr_node* }
 %type statement { seg_expr_node* }
 %type expr { seg_expr_node* }
+%type interpolated { seg_expr_node* }
+%type interpolatedmiddle { seg_methodcall_node* }
 %type invocation { seg_expr_node* }
 %type spaceinvocation { seg_expr_node* }
 %type blockstart { seg_block_node* }
@@ -94,8 +97,123 @@ expr (OUT) ::= INTEGER (L).
 expr ::= FLOAT.
 expr ::= TRUE.
 expr ::= FALSE.
-expr ::= STRING.
 expr ::= SYMBOL.
+
+// Strings
+
+expr (OUT) ::= STRING (S).
+{
+  /* ' ... ' or " ... " */
+  seg_string_node *snode = malloc(sizeof(seg_string_node));
+  snode->string = seg_token_without(S, 1, 1, &(snode->length));
+  seg_delete_token(S);
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_STRING;
+  OUT->child.string = snode;
+}
+
+expr (OUT) ::= interpolated (IN). { OUT = IN; }
+
+interpolated (OUT) ::= STRINGSTART (START) interpolatedmiddle (MID) STRINGEND (END).
+{
+  /* " ... #{ */
+  size_t start_length;
+  char *start_content = seg_token_without(START, 1, 2, &start_length);
+  seg_delete_token(START);
+
+  seg_string_node *start_node = malloc(sizeof(seg_string_node));
+  start_node->string = start_content;
+  start_node->length = start_length;
+
+  seg_expr_node *receiver = malloc(sizeof(seg_expr_node));
+  receiver->child_kind = SEG_STRING;
+  receiver->child.string = start_node;
+
+  MID->receiver = receiver;
+
+  /* } ... " */
+  size_t end_length;
+  char *end_content = seg_token_without(END, 1, 1, &end_length);
+  seg_delete_token(END);
+
+  if (end_content != NULL) {
+    seg_string_node *end_node = malloc(sizeof(seg_string_node));
+    end_node->string = end_content;
+    end_node->length = end_length;
+
+    seg_expr_node *last = malloc(sizeof(seg_expr_node));
+    last->child_kind = SEG_STRING;
+    last->child.string = end_node;
+
+    seg_arg_list *args = seg_parse_arg(state, last, NULL);
+    args->next = MID->args;
+    MID->args = args;
+  }
+
+  /* Arguments are reversed. */
+  MID->args = seg_reverse_args(MID->args);
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_METHODCALL;
+  OUT->child.methodcall = MID;
+}
+
+interpolatedmiddle (OUT) ::= statement (E).
+{
+  OUT = seg_implicit_methodcall(state, NULL, SEG_METHOD_STRINGAPPEND);
+
+  if (E->child_kind != SEG_STRING) {
+    seg_methodcall_node *conv = seg_implicit_methodcall(state, E, SEG_METHOD_STRINGCONV);
+
+    seg_expr_node *converted = malloc(sizeof(seg_expr_node));
+    converted->child_kind = SEG_METHODCALL;
+    converted->child.methodcall = conv;
+
+    OUT->args = seg_parse_arg(state, converted, NULL);
+  } else {
+    OUT->args = seg_parse_arg(state, E, NULL);
+  }
+}
+
+interpolatedmiddle (OUT) ::= interpolatedmiddle (PRE) STRINGMID (S) statement (E).
+{
+  /* } .. #{ */
+  size_t mid_length;
+  char *mid_content = seg_token_without(S, 1, 2, &mid_length);
+
+  if (mid_content != NULL) {
+    seg_string_node *mid_node = malloc(sizeof(seg_string_node));
+    mid_node->string = mid_content;
+    mid_node->length = mid_length;
+
+    seg_expr_node *mid = malloc(sizeof(seg_expr_node));
+    mid->child_kind = SEG_STRING;
+    mid->child.string = mid_node;
+
+    seg_arg_list *args = seg_parse_arg(state, mid, NULL);
+    args->next = PRE->args;
+    PRE->args = args;
+  }
+
+  if (E->child_kind != SEG_STRING) {
+    seg_methodcall_node *conv = seg_implicit_methodcall(state, E, SEG_METHOD_STRINGCONV);
+
+    seg_expr_node *converted = malloc(sizeof(seg_expr_node));
+    converted->child_kind = SEG_METHODCALL;
+    converted->child.methodcall = conv;
+
+    seg_arg_list *args = seg_parse_arg(state, converted, NULL);
+    args->next = PRE->args;
+    PRE->args = args;
+  } else {
+    seg_arg_list *args = seg_parse_arg(state, E, NULL);
+    args->next = PRE->args;
+    PRE->args = args;
+  }
+
+  OUT = PRE;
+}
 
 // Compound Expressions
 

@@ -9,6 +9,7 @@
 
 typedef enum {
   SEG_INTEGER,
+  SEG_STRING,
   SEG_VAR,
   SEG_BLOCK,
   SEG_METHODCALL
@@ -25,6 +26,11 @@ struct seg_statementlist_node;
 typedef struct {
   int value;
 } seg_integer_node;
+
+typedef struct {
+  const char *string;
+  size_t length;
+} seg_string_node;
 
 /* Variable References */
 
@@ -65,6 +71,7 @@ typedef struct {
 typedef struct seg_expr_node {
   union {
     seg_integer_node *integer;
+    seg_string_node *string;
     seg_var_node *var;
     seg_block_node *block;
     seg_methodcall_node *methodcall;
@@ -92,6 +99,7 @@ typedef enum {
 } seg_visit_when;
 
 typedef void (*seg_integer_handler)(seg_integer_node *node, void *state);
+typedef void (*seg_string_handler)(seg_string_node *node, void *state);
 typedef void (*seg_methodcall_handler)(seg_methodcall_node *node, void *state);
 typedef void (*seg_var_handler)(seg_var_node *node, void *state);
 typedef void (*seg_block_handler)(seg_block_node *node, void *state);
@@ -101,6 +109,7 @@ typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, void *st
 seg_ast_visitor seg_new_ast_visitor();
 
 void seg_ast_visit_integer(seg_ast_visitor visitor, seg_integer_handler visit);
+void seg_ast_visit_string(seg_ast_visitor visitor, seg_string_handler visit);
 void seg_ast_visit_methodcall(
   seg_ast_visitor visitor,
   seg_visit_when when,

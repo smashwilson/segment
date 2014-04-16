@@ -7,6 +7,11 @@
 #include "token.h"
 #include "symboltable.h"
 
+/* Methods that have special significance. */
+
+#define SEG_METHOD_STRINGAPPEND "<<"
+#define SEG_METHOD_STRINGCONV "as_string"
+
 struct seg_parser_context;
 typedef struct seg_parser_context *seg_parser_contextp;
 
@@ -65,6 +70,16 @@ seg_expr_node *seg_parse_methodcall(
   seg_token *selector,
   int trim,
   seg_arg_list *args
+);
+
+/*
+ * Allocate a new seg_expr_node to model an implicit method call. `selector` should be a literal
+ * string.
+ */
+seg_methodcall_node *seg_implicit_methodcall(
+  seg_parser_state *state,
+  seg_expr_node *receiver,
+  const char *selector
 );
 
 /*

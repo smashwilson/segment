@@ -46,10 +46,8 @@ static void report(const char *name, const char *ts, const char *te, seg_options
   float = ('+'|'-')?[0-9]+'.'[0-9]+;
   true = 'true';
   false = 'false';
-  string = '"' [^"]* '"';
-  # Syntax highlight fix. '
 
-  control = [(){};=.|,];
+  control = [(){};=.|,"']; # "
   sigil = [%@];
   op = [&|+\-*/%^];
 
@@ -65,7 +63,6 @@ static void report(const char *name, const char *ts, const char *te, seg_options
   ionly = istart & iend;
 
   identifier = istart imiddle* iend | ionly;
-  symbol = ':' identifier | ':' string;
 
   blockargs := |*
     comment;
@@ -80,6 +77,9 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     };
   *|;
 
+  stringbodydbl = '\\' /./ | [^"#]; # "
+  stringbodysingle = '\\' /./ | [^']; # '
+
   main := |*
     comment;
 
@@ -87,8 +87,23 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     float => { EMPTY(FLOAT); };
     true => { EMPTY(TRUE); };
     false => { EMPTY(FALSE); };
-    string => { EMPTY(STRING); };
-    symbol => { EMPTY(SYMBOL); };
+
+    "'" stringbodysingle* "'" => {
+      CAPTURE(STRING);
+    };
+
+    '"' stringbodydbl* '#{' => {
+      CAPTURE(STRINGSTART);
+    };
+    '}' stringbodydbl* '#{' => {
+      CAPTURE(STRINGMID);
+    };
+    '}' stringbodydbl* '"' => {
+      CAPTURE(STRINGEND);
+    };
+    '"' stringbodydbl* '"' => {
+      CAPTURE(STRING);
+    };
 
     '(' => { EMPTY(LPAREN); };
     ')' => { EMPTY(RPAREN); };

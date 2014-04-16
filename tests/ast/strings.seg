@@ -1,0 +1,5 @@
+"double-quoted with \" internal"
+'single-quoted with \' internal'
+"the answer is #{6 * 7}"
+"multiple #{1} interpolations #{2} inside"
+"this #{ "is #{ 'crazy' } but #{ "someone" }" } could do it"

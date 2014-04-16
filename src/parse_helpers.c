@@ -128,7 +128,7 @@ seg_expr_node *seg_parse_methodcall(
 
   /* Extract the selector and destroy its token. */
   if (trim) {
-    selname = seg_token_without(selector, &length, '(');
+    selname = seg_token_without(selector, 0, 1, &length);
   } else {
     selname = seg_token_as_string(selector, &length);
   }
@@ -145,6 +145,18 @@ seg_expr_node *seg_parse_methodcall(
   return out;
 }
 
+seg_methodcall_node *seg_implicit_methodcall(
+  seg_parser_state *state,
+  seg_expr_node *receiver,
+  const char *selector
+) {
+  seg_methodcall_node *methodcall = malloc(sizeof(seg_methodcall_node));
+  methodcall->selector = seg_symboltable_intern(state->symboltable, selector, strlen(selector));
+  methodcall->receiver = receiver;
+  methodcall->args = NULL;
+  return methodcall;
+}
+
 seg_arg_list *seg_parse_arg(seg_parser_state *state, seg_expr_node *value, seg_token *keyword)
 {
   seg_arg_list *arg = malloc(sizeof(seg_arg_list));
@@ -153,7 +165,7 @@ seg_arg_list *seg_parse_arg(seg_parser_state *state, seg_expr_node *value, seg_t
     char *kwname;
     size_t length;
 
-    kwname = seg_token_without(keyword, &length, ':');
+    kwname = seg_token_without(keyword, 0, 1, &length);
 
     arg->keyword = seg_symboltable_intern(state->symboltable, kwname, length);
   } else {

@@ -164,6 +164,7 @@ static void visit_expr(seg_expr_node *root, seg_ast_visitor visitor, void *state
     break;
   case SEG_STRING:
     visit_string(root->child.string, visitor, state);
+    break;
   case SEG_VAR:
     visit_var(root->child.var, visitor, state);
     break;

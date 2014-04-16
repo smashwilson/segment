@@ -30,15 +30,17 @@
 
 %type program { seg_statementlist_node* }
 %type statementlist { seg_statementlist_node* }
+
 %type maybestatement { seg_expr_node* }
 %type statement { seg_expr_node* }
 %type expr { seg_expr_node* }
 %type interpolated { seg_expr_node* }
-%type interpolatedmiddle { seg_methodcall_node* }
+%type interpolatedmiddle { seg_expr_node* }
 %type invocation { seg_expr_node* }
 %type spaceinvocation { seg_expr_node* }
-%type blockstart { seg_block_node* }
-%type block { seg_block_node* }
+%type blockstart { seg_expr_node* }
+%type block { seg_expr_node* }
+
 %type parameters { seg_parameter_list* }
 %type commaparams { seg_parameter_list* }
 %type parameter { seg_parameter_list* }
@@ -124,7 +126,7 @@ interpolated (OUT) ::= STRINGSTART (START) interpolatedmiddle (MID) STRINGEND (E
 
   seg_expr_node *receiver = malloc(sizeof(seg_expr_node));
   receiver->child_kind = SEG_STRING;
-  receiver->child.string.value = start_node;
+  receiver->child.string.value = start_content;
   receiver->child.string.length = start_length;
 
   MID->child.methodcall.receiver = receiver;
@@ -176,8 +178,8 @@ interpolatedmiddle (OUT) ::= interpolatedmiddle (PRE) STRINGMID (S) statement (E
     mid->child.string.length = mid_length;
 
     seg_arg_list *args = seg_parse_arg(state, mid, NULL);
-    args->next = PRE->args;
-    PRE->args = args;
+    args->next = PRE->child.methodcall.args;
+    PRE->child.methodcall.args = args;
   }
 
   if (E->child_kind != SEG_STRING) {
@@ -188,8 +190,8 @@ interpolatedmiddle (OUT) ::= interpolatedmiddle (PRE) STRINGMID (S) statement (E
     PRE->child.methodcall.args = args;
   } else {
     seg_arg_list *args = seg_parse_arg(state, E, NULL);
-    args->next = PRE->args;
-    PRE->args = args;
+    args->next = PRE->child.methodcall.args;
+    PRE->child.methodcall.args = args;
   }
 
   OUT = PRE;

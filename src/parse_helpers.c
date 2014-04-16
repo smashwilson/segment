@@ -176,12 +176,9 @@ seg_arg_list *seg_parse_arg(seg_parser_state *state, seg_expr_node *value, seg_t
 
 seg_expr_node *seg_implicit_self(seg_parser_state *state)
 {
-  seg_var_node *var = malloc(sizeof(seg_var_node));
-  var->varname = seg_symboltable_intern(state->symboltable, "self", 4);
-
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_VAR;
-  out->child.var = var;
+  out->child.var.varname = seg_symboltable_intern(state->symboltable, "self", 4);
   return out;
 }
 

@@ -103,7 +103,6 @@ typedef void (*seg_string_handler)(seg_string_node *node, void *state);
 typedef void (*seg_methodcall_handler)(seg_methodcall_node *node, void *state);
 typedef void (*seg_var_handler)(seg_var_node *node, void *state);
 typedef void (*seg_block_handler)(seg_block_node *node, void *state);
-typedef void (*seg_expr_handler)(seg_expr_node *node, void *state);
 typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, void *state);
 
 seg_ast_visitor seg_new_ast_visitor();
@@ -117,7 +116,6 @@ void seg_ast_visit_methodcall(
 );
 void seg_ast_visit_var(seg_ast_visitor visitor, seg_var_handler);
 void seg_ast_visit_block(seg_ast_visitor visitor, seg_visit_when, seg_block_handler visit);
-void seg_ast_visit_expr(seg_ast_visitor visitor, seg_visit_when when, seg_expr_handler visit);
 
 void seg_ast_visit_statementlist(
   seg_ast_visitor visitor,

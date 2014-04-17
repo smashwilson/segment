@@ -91,7 +91,23 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     "'" stringbodysingle* "'" => {
       CAPTURE(STRING);
     };
+    '"' stringbodydbl* '"' => {
+      CAPTURE(STRING);
+    };
 
+    ':' identifier => {
+      CAPTURE(SYMBOL);
+    };
+    ':"' stringbodydbl* '"' => {
+      CAPTURE(QUOTEDSYMBOL);
+    };
+    ":'" stringbodysingle* "'" => {
+      CAPTURE(QUOTEDSYMBOL);
+    };
+
+    ':"' stringbodydbl* '#{' => {
+      CAPTURE(SYMBOLSTART);
+    };
     '"' stringbodydbl* '#{' => {
       CAPTURE(STRINGSTART);
     };
@@ -100,9 +116,6 @@ static void report(const char *name, const char *ts, const char *te, seg_options
     };
     '}' stringbodydbl* '"' => {
       CAPTURE(STRINGEND);
-    };
-    '"' stringbodydbl* '"' => {
-      CAPTURE(STRING);
     };
 
     '(' => { EMPTY(LPAREN); };

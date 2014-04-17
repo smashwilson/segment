@@ -11,6 +11,7 @@
 
 #define SEG_METHOD_STRINGAPPEND "<<"
 #define SEG_METHOD_STRINGCONV "as_string"
+#define SEG_METHOD_STRINGINTERN "as_symbol"
 
 struct seg_parser_context;
 typedef struct seg_parser_context *seg_parser_contextp;
@@ -80,6 +81,20 @@ seg_expr_node *seg_implicit_methodcall(
   seg_parser_state *state,
   seg_expr_node *receiver,
   const char *selector
+);
+
+/*
+ * Finish an interpolation expression. `middle` is the actual SEG_METHOD_STRINGAPPEND invocation,
+ * so it will actually be returned, with `stem` as its receiver and `end_token` wrapped in a String
+ * expression as a final argument.
+ *
+ * `end_token` will be destroyed by this call.
+ */
+seg_expr_node *seg_parse_interpolation(
+  seg_parser_state *state,
+  seg_expr_node *stem,
+  seg_expr_node *middle,
+  seg_token *end_token
 );
 
 /*

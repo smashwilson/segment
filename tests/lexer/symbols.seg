@@ -1,0 +1,4 @@
+:bareword
+:"double"
+:'single'
+:"inter #{3 + 4} polated"

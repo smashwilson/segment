@@ -98,9 +98,8 @@ expr (OUT) ::= INTEGER (L).
 expr ::= FLOAT.
 expr ::= TRUE.
 expr ::= FALSE.
-expr ::= SYMBOL.
 
-// Strings
+// Strings and symbols
 
 expr (OUT) ::= STRING (S).
 {
@@ -113,6 +112,28 @@ expr (OUT) ::= STRING (S).
   OUT->child_kind = SEG_STRING;
   OUT->child.string.value = value;
   OUT->child.string.length = length;
+}
+
+expr (OUT) ::= SYMBOL (S).
+{
+  /* : ... */
+  seg_symbol *sym = seg_token_intern_without(S, state->symboltable, 1, 0);
+  seg_delete_token(S);
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_SYMBOL;
+  OUT->child.symbol.value = sym;
+}
+
+expr (OUT) ::= QUOTEDSYMBOL (S).
+{
+  /* :' ... ' or :" ... " */
+  seg_symbol *sym = seg_token_intern_without(S, state->symboltable, 2, 1);
+  seg_delete_token(S);
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_SYMBOL;
+  OUT->child.symbol.value = sym;
 }
 
 expr (OUT) ::= interpolated (IN). { OUT = IN; }
@@ -129,28 +150,24 @@ interpolated (OUT) ::= STRINGSTART (START) interpolatedmiddle (MID) STRINGEND (E
   receiver->child.string.value = start_content;
   receiver->child.string.length = start_length;
 
-  MID->child.methodcall.receiver = receiver;
+  OUT = seg_parse_interpolation(state, receiver, MID, END);
+}
 
-  /* } ... " */
-  size_t end_length;
-  char *end_content = seg_token_without(END, 1, 1, &end_length);
-  seg_delete_token(END);
+interpolated (OUT) ::= SYMBOLSTART (START) interpolatedmiddle (MID) STRINGEND (END).
+{
+  /* :" ... #{ */
+  size_t start_length;
+  char *start_content = seg_token_without(START, 2, 2, &start_length);
+  seg_delete_token(START);
 
-  if (end_content != NULL) {
-    seg_expr_node *end_node = malloc(sizeof(seg_expr_node));
-    end_node->child_kind = SEG_STRING;
-    end_node->child.string.value = end_content;
-    end_node->child.string.length = end_length;
+  seg_expr_node *receiver = malloc(sizeof(seg_expr_node));
+  receiver->child_kind = SEG_STRING;
+  receiver->child.string.value = start_content;
+  receiver->child.string.length = start_length;
 
-    seg_arg_list *args = seg_parse_arg(state, end_node, NULL);
-    args->next = MID->child.methodcall.args;
-    MID->child.methodcall.args = args;
-  }
+  seg_expr_node *full_string = seg_parse_interpolation(state, receiver, MID, END);
 
-  /* Arguments are reversed. */
-  MID->child.methodcall.args = seg_reverse_args(MID->child.methodcall.args);
-
-  OUT = MID;
+  OUT = seg_implicit_methodcall(state, full_string, SEG_METHOD_STRINGINTERN);
 }
 
 interpolatedmiddle (OUT) ::= statement (E).

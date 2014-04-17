@@ -33,6 +33,15 @@ static void print_string(seg_string_node *node, void *state)
   fprintf(pstate->out, "STRING: [%.*s]\n", (int) node->length, node->value);
 }
 
+static void print_symbol(seg_symbol_node *node, void *state)
+{
+  printer_state *pstate = (printer_state *) state;
+  print_prefix(pstate);
+
+  seg_symbol *sym = node->value;
+  fprintf(pstate->out, "SYMBOL: [%.*s]\n", (int) sym->length, sym->name);
+}
+
 static void print_var(seg_var_node *node, void *state)
 {
   printer_state *pstate = (printer_state *) state;
@@ -111,6 +120,7 @@ void seg_print_ast(seg_statementlist_node *root, FILE *outf)
 
     seg_ast_visit_integer(visitor, &print_integer);
     seg_ast_visit_string(visitor, &print_string);
+    seg_ast_visit_symbol(visitor, &print_symbol);
 
     seg_ast_visit_var(visitor, &print_var);
 

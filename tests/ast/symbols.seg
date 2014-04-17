@@ -1,0 +1,4 @@
+:bare
+:'single quoted'
+:"double quoted"
+:"inter #{3 + 4} polated"

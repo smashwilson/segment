@@ -116,14 +116,24 @@ expr (OUT) ::= STRING (S).
 
 expr (OUT) ::= SYMBOL (S).
 {
-  /* :' ... ' or :" ... " */
-  size_t length;
-  char *value = seg_token_without(S, 2, 1, &length);
+  /* : ... */
+  seg_symbol *sym = seg_token_intern_without(S, state->symboltable, 1, 0);
   seg_delete_token(S);
 
   OUT = malloc(sizeof(seg_expr_node));
   OUT->child_kind = SEG_SYMBOL;
-  OUT->child.symbol.value = INTERN(value, length);
+  OUT->child.symbol.value = sym;
+}
+
+expr (OUT) ::= QUOTEDSYMBOL (S).
+{
+  /* :' ... ' or :" ... " */
+  seg_symbol *sym = seg_token_intern_without(S, state->symboltable, 2, 1);
+  seg_delete_token(S);
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_SYMBOL;
+  OUT->child.symbol.value = sym;
 }
 
 expr (OUT) ::= interpolated (IN). { OUT = IN; }
@@ -146,12 +156,14 @@ interpolated (OUT) ::= STRINGSTART (START) interpolatedmiddle (MID) STRINGEND (E
 interpolated (OUT) ::= SYMBOLSTART (START) interpolatedmiddle (MID) STRINGEND (END).
 {
   /* :" ... #{ */
-  seg_symbol *start_sym = seg_token_intern_without(START, state->symboltable, 2, 2);
+  size_t start_length;
+  char *start_content = seg_token_without(START, 2, 2, &start_length);
   seg_delete_token(START);
 
   seg_expr_node *receiver = malloc(sizeof(seg_expr_node));
-  receiver->child_kind = SEG_SYMBOL;
-  receiver->child.symbol.value = start_sym;
+  receiver->child_kind = SEG_STRING;
+  receiver->child.string.value = start_content;
+  receiver->child.string.length = start_length;
 
   seg_expr_node *full_string = seg_parse_interpolation(state, receiver, MID, END);
 

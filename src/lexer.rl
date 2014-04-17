@@ -99,10 +99,10 @@ static void report(const char *name, const char *ts, const char *te, seg_options
       CAPTURE(SYMBOL);
     };
     ':"' stringbodydbl* '"' => {
-      CAPTURE(SYMBOL);
+      CAPTURE(QUOTEDSYMBOL);
     };
     ":'" stringbodysingle* "'" => {
-      CAPTURE(SYMBOL);
+      CAPTURE(QUOTEDSYMBOL);
     };
 
     ':"' stringbodydbl* '#{' => {

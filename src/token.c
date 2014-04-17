@@ -4,6 +4,7 @@
 #include <errno.h>
 
 #include "token.h"
+#include "symboltable.h"
 
 seg_token *seg_new_token(const char *start, const char *end)
 {
@@ -19,6 +20,16 @@ char *seg_token_as_string(seg_token *tok, size_t *length)
   strncpy(v, tok->start, tok->length);
   *length = tok->length;
   return v;
+}
+
+seg_symbol *seg_token_intern_without(
+  seg_token *tok,
+  seg_symboltablep table,
+  size_t initial,
+  size_t final
+) {
+  size_t len = tok->length - initial - final;
+  return seg_symboltable_intern(table, tok->start + initial, len);
 }
 
 char *seg_token_without(seg_token *tok, size_t initial, size_t final, size_t *length)

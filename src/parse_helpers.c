@@ -153,6 +153,36 @@ seg_expr_node *seg_implicit_methodcall(
   return out;
 }
 
+seg_expr_node *seg_parse_interpolation(
+  seg_parser_state *state,
+  seg_expr_node *stem,
+  seg_expr_node *middle,
+  seg_token *end_token
+) {
+  middle->child.methodcall.receiver = stem;
+
+  /* } ... " */
+  size_t end_length;
+  char *end_content = seg_token_without(end_token, 1, 1, &end_length);
+  seg_delete_token(end_token);
+
+  if (end_content != NULL) {
+    seg_expr_node *end_node = malloc(sizeof(seg_expr_node));
+    end_node->child_kind = SEG_STRING;
+    end_node->child.string.value = end_content;
+    end_node->child.string.length = end_length;
+
+    seg_arg_list *args = seg_parse_arg(state, end_node, NULL);
+    args->next = middle->child.methodcall.args;
+    middle->child.methodcall.args = args;
+  }
+
+  /* Arguments are reversed. */
+  middle->child.methodcall.args = seg_reverse_args(middle->child.methodcall.args);
+
+  return middle;
+}
+
 seg_arg_list *seg_parse_arg(seg_parser_state *state, seg_expr_node *value, seg_token *keyword)
 {
   seg_arg_list *arg = malloc(sizeof(seg_arg_list));

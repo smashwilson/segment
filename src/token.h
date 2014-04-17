@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include "symboltable.h"
+
 typedef struct {
   const char *start;
   size_t length;
@@ -17,6 +19,16 @@ seg_token *seg_new_token(const char *start, const char *end);
  * Copy this token into an independently allocated string and compute its length.
  */
 char *seg_token_as_string(seg_token *tok, size_t *length);
+
+/*
+ * Intern part of the content of this token as a symbol.
+ */
+seg_symbol *seg_token_intern_without(
+  seg_token *tok,
+  seg_symboltablep table,
+  size_t initial,
+  size_t final
+);
 
 /*
  * Copy this token into an independently allocated string, omitted expected final and initial

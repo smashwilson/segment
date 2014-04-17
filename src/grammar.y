@@ -114,7 +114,17 @@ expr (OUT) ::= STRING (S).
   OUT->child.string.length = length;
 }
 
-expr ::= SYMBOL.
+expr (OUT) ::= SYMBOL (S).
+{
+  /* :' ... ' or :" ... " */
+  size_t length;
+  char *value = seg_token_without(S, 2, 1, &length);
+  seg_delete_token(S);
+
+  OUT = malloc(sizeof(seg_expr_node));
+  OUT->child_kind = SEG_SYMBOL;
+  OUT->child.symbol.value = INTERN(value, length);
+}
 
 expr (OUT) ::= interpolated (IN). { OUT = IN; }
 
@@ -130,31 +140,23 @@ interpolated (OUT) ::= STRINGSTART (START) interpolatedmiddle (MID) STRINGEND (E
   receiver->child.string.value = start_content;
   receiver->child.string.length = start_length;
 
-  MID->child.methodcall.receiver = receiver;
-
-  /* } ... " */
-  size_t end_length;
-  char *end_content = seg_token_without(END, 1, 1, &end_length);
-  seg_delete_token(END);
-
-  if (end_content != NULL) {
-    seg_expr_node *end_node = malloc(sizeof(seg_expr_node));
-    end_node->child_kind = SEG_STRING;
-    end_node->child.string.value = end_content;
-    end_node->child.string.length = end_length;
-
-    seg_arg_list *args = seg_parse_arg(state, end_node, NULL);
-    args->next = MID->child.methodcall.args;
-    MID->child.methodcall.args = args;
-  }
-
-  /* Arguments are reversed. */
-  MID->child.methodcall.args = seg_reverse_args(MID->child.methodcall.args);
-
-  OUT = MID;
+  OUT = seg_parse_interpolation(state, receiver, MID, END);
 }
 
-interpolated ::= SYMBOLSTART interpolatedmiddle STRINGEND.
+interpolated (OUT) ::= SYMBOLSTART (START) interpolatedmiddle (MID) STRINGEND (END).
+{
+  /* :" ... #{ */
+  seg_symbol *start_sym = seg_token_intern_without(START, state->symboltable, 2, 2);
+  seg_delete_token(START);
+
+  seg_expr_node *receiver = malloc(sizeof(seg_expr_node));
+  receiver->child_kind = SEG_SYMBOL;
+  receiver->child.symbol.value = start_sym;
+
+  seg_expr_node *full_string = seg_parse_interpolation(state, receiver, MID, END);
+
+  OUT = seg_implicit_methodcall(state, full_string, SEG_METHOD_STRINGINTERN);
+}
 
 interpolatedmiddle (OUT) ::= statement (E).
 {

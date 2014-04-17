@@ -1,0 +1,13 @@
+STATEMENTLIST
+|-SYMBOL: [bare]
+|-SYMBOL: [single quoted]
+|-SYMBOL: [double quoted]
+|-METHODCALL: as_symbol
+| |-METHODCALL: <<
+| | |-STRING: [inter ]
+| | |-METHODCALL: as_string
+| | | |-METHODCALL: +
+| | | | |-INTEGER: 3
+| | | | |-INTEGER: 4
+| | |-STRING: [ polated]
+

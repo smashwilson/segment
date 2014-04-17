@@ -98,9 +98,8 @@ expr (OUT) ::= INTEGER (L).
 expr ::= FLOAT.
 expr ::= TRUE.
 expr ::= FALSE.
-expr ::= SYMBOL.
 
-// Strings
+// Strings and symbols
 
 expr (OUT) ::= STRING (S).
 {
@@ -114,6 +113,8 @@ expr (OUT) ::= STRING (S).
   OUT->child.string.value = value;
   OUT->child.string.length = length;
 }
+
+expr ::= SYMBOL.
 
 expr (OUT) ::= interpolated (IN). { OUT = IN; }
 
@@ -152,6 +153,8 @@ interpolated (OUT) ::= STRINGSTART (START) interpolatedmiddle (MID) STRINGEND (E
 
   OUT = MID;
 }
+
+interpolated ::= SYMBOLSTART interpolatedmiddle STRINGEND.
 
 interpolatedmiddle (OUT) ::= statement (E).
 {

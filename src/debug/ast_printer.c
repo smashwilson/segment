@@ -120,7 +120,7 @@ void seg_print_ast(seg_statementlist_node *root, FILE *outf)
 
     seg_ast_visit_integer(visitor, &print_integer);
     seg_ast_visit_string(visitor, &print_string);
-    seg_ast_visit_string(visitor, &print_symbol);
+    seg_ast_visit_symbol(visitor, &print_symbol);
 
     seg_ast_visit_var(visitor, &print_var);
 

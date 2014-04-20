@@ -8,12 +8,12 @@ has () {
 }
 
 if has brew; then
-  brew install ragel lemon cunit
+  brew install ragel lemon cunit llvm
   exit 0
 fi
 
 if has apt-get; then
-  sudo apt-get install -y ragel lemon libcunit1-dev
+  sudo apt-get install -y ragel lemon libcunit1-dev llvm-3.4-dev
   exit 0
 fi
 

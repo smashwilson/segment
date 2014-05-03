@@ -4,7 +4,7 @@
 #include <sys/types.h>
 
 #include "ast.h"
-#include "segment.h"
+#include "options.h"
 #include "symboltable.h"
 
 typedef struct {

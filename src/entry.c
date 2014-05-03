@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 
-#include "segment.h"
+#include "options.h"
 #include "lexer.h"
 #include "debug/ast_printer.h"
 #include "debug/symbol_printer.h"

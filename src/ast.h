@@ -20,8 +20,6 @@ typedef enum {
 
 struct seg_expr_node;
 
-struct seg_statementlist_node;
-
 /* Literals */
 
 typedef struct {
@@ -52,7 +50,8 @@ typedef struct seg_parameter_list {
 
 typedef struct {
   seg_parameter_list *parameters;
-  struct seg_statementlist_node *body;
+  struct seg_expr_node *first;
+  struct seg_expr_node *last;
 } seg_block_node;
 
 /* Method Invocation */
@@ -86,11 +85,6 @@ typedef struct seg_expr_node {
   struct seg_expr_node *next;
 } seg_expr_node;
 
-typedef struct seg_statementlist_node {
-  seg_expr_node *first;
-  seg_expr_node *last;
-} seg_statementlist_node;
-
 /* Visitor */
 
 typedef struct seg_ast_visitor* seg_ast_visitor;
@@ -110,7 +104,6 @@ typedef void (*seg_symbol_handler)(seg_symbol_node *node, void *state);
 typedef void (*seg_methodcall_handler)(seg_methodcall_node *node, void *state);
 typedef void (*seg_var_handler)(seg_var_node *node, void *state);
 typedef void (*seg_block_handler)(seg_block_node *node, void *state);
-typedef void (*seg_statementlist_handler)(seg_statementlist_node *node, void *state);
 
 seg_ast_visitor seg_new_ast_visitor();
 
@@ -125,15 +118,9 @@ void seg_ast_visit_methodcall(
 void seg_ast_visit_var(seg_ast_visitor visitor, seg_var_handler);
 void seg_ast_visit_block(seg_ast_visitor visitor, seg_visit_when, seg_block_handler visit);
 
-void seg_ast_visit_statementlist(
-  seg_ast_visitor visitor,
-  seg_visit_when when,
-  seg_statementlist_handler visit
-);
-
 void seg_ast_visit(
   seg_ast_visitor visitor,
-  seg_statementlist_node *root,
+  seg_block_node *root,
   void *state
 );
 

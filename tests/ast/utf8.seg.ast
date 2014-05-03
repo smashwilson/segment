@@ -1,6 +1,5 @@
-STATEMENTLIST
+BLOCK: without parameters
 |-BLOCK: [☃Ж中𐍆]
-| |-STATEMENTLIST
-| | |-METHODCALL: *
-| | | |-VAR: ☃Ж中𐍆
-| | | |-INTEGER: 4
+| |-METHODCALL: *
+| | |-VAR: ☃Ж中𐍆
+| | |-INTEGER: 4

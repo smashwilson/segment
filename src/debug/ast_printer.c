@@ -95,22 +95,13 @@ static void print_block(seg_block_node *node, void *state)
   pstate->depth++;
 }
 
-static void print_statementlist(seg_statementlist_node *node, void *state)
-{
-  printer_state *pstate = (printer_state *) state;
-  print_prefix(pstate);
-
-  fputs("STATEMENTLIST\n", pstate->out);
-  pstate->depth++;
-}
-
 static void pop_depth(void *ignored, void *state)
 {
   printer_state *pstate = (printer_state *) state;
   pstate->depth--;
 }
 
-void seg_print_ast(seg_statementlist_node *root, FILE *outf)
+void seg_print_ast(seg_block_node *root, FILE *outf)
 {
     printer_state pstate;
     pstate.out = outf;
@@ -129,9 +120,6 @@ void seg_print_ast(seg_statementlist_node *root, FILE *outf)
 
     seg_ast_visit_block(visitor, SEG_VISIT_PRE, &print_block);
     seg_ast_visit_block(visitor, SEG_VISIT_POST, (seg_block_handler) &pop_depth);
-
-    seg_ast_visit_statementlist(visitor, SEG_VISIT_PRE, &print_statementlist);
-    seg_ast_visit_statementlist(visitor, SEG_VISIT_POST, (seg_statementlist_handler) &pop_depth);
 
     seg_ast_visit(visitor, root, &pstate);
 

@@ -1,4 +1,4 @@
-STATEMENTLIST
+BLOCK: without parameters
 |-SYMBOL: [bare]
 |-SYMBOL: [single quoted]
 |-SYMBOL: [double quoted]

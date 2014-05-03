@@ -1,14 +1,12 @@
-STATEMENTLIST
+BLOCK: without parameters
 |-BLOCK: [arg0 arg1]
-| |-STATEMENTLIST
-| | |-VAR: arg0
+| |-VAR: arg0
+| |-METHODCALL: method
+| | |-VAR: self
+| |-METHODCALL: inner
+| | |-VAR: self
+| |-BLOCK: [inner]
+| | |-VAR: arg1
 | | |-METHODCALL: method
 | | | |-VAR: self
-| | |-METHODCALL: inner
-| | | |-VAR: self
-| | |-BLOCK: [inner]
-| | | |-STATEMENTLIST
-| | | | |-VAR: arg1
-| | | | |-METHODCALL: method
-| | | | | |-VAR: self
-| | | | |-VAR: inner
+| | |-VAR: inner

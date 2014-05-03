@@ -17,7 +17,7 @@ struct seg_parser_context;
 typedef struct seg_parser_context *seg_parser_contextp;
 
 typedef struct {
-  seg_statementlist_node *root;
+  seg_block_node *root;
   seg_symboltablep symboltable;
   seg_parser_contextp context;
 } seg_parser_state;
@@ -47,7 +47,7 @@ int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t len
  * Append a new statement to a statement list. If `maybe` is NULL, return the original list
  * unmodified.
  */
-seg_statementlist_node *seg_append_statement(seg_statementlist_node *list, seg_expr_node *maybe);
+seg_block_node *seg_append_expr(seg_block_node *list, seg_expr_node *maybe);
 
 /*
  * Allocate a new seg_expr_node to model a binary operator application. `op` token will be destroyed

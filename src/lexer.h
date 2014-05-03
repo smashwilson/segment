@@ -8,7 +8,7 @@
 #include "symboltable.h"
 
 typedef struct {
-  seg_statementlist_node *ast;
+  seg_block_node *ast;
   seg_symboltablep symboltable;
 } seg_program;
 

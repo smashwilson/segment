@@ -65,6 +65,7 @@ statementlist (OUT) ::= maybestatement (ONLY).
   OUT = malloc(sizeof(seg_block_node));
   OUT->first = ONLY;
   OUT->last = ONLY;
+  OUT->parameters = NULL;
 }
 
 statementlist (OUT) ::= statementlist (LIST) NEWLINE maybestatement (MAYBE).
@@ -247,7 +248,9 @@ expr (OUT) ::= invocation (I). { OUT = I; }
 block (OUT) ::= blockstart (BLK) parameters statementlist (BODY) BLOCKEND.
 {
   OUT = BLK;
-  OUT->child.block.body = BODY;
+  OUT->child.block.first = BODY->first;
+  OUT->child.block.last = BODY->last;
+  free(BODY);
 
   /*
     Parameters are pushed in reverse order.
@@ -264,7 +267,8 @@ blockstart (OUT) ::= BLOCKSTART.
   OUT = malloc(sizeof(seg_expr_node));
   OUT->child_kind = SEG_BLOCK;
   OUT->child.block.parameters = NULL;
-  OUT->child.block.body = NULL;
+  OUT->child.block.first = NULL;
+  OUT->child.block.last = NULL;
 
   seg_parser_pushcontext(state, &(OUT->child.block));
 }

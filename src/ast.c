@@ -127,7 +127,7 @@ static void visit_expr(seg_expr_node *root, seg_ast_visitor visitor, void *state
     (*(visitor->visit_methodcall_post))(&(root->child.methodcall), state);
     break;
   case SEG_BLOCK:
-    visit_block(&(root->child.block));
+    visit_block(&(root->child.block), visitor, state);
     break;
   default:
     fprintf(stderr, "Unexpected child_kind in expr: %d\n", root->child_kind);
@@ -136,7 +136,7 @@ static void visit_expr(seg_expr_node *root, seg_ast_visitor visitor, void *state
 
 void seg_ast_visit(seg_ast_visitor visitor, seg_block_node *root, void *state)
 {
-  visit_statementlist(root, visitor, state);
+  visit_block(root, visitor, state);
 }
 
 void seg_delete_ast_visitor(seg_ast_visitor visitor)

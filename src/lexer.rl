@@ -6,7 +6,7 @@
 #include "lexer.h"
 #include "ast.h"
 #include "token.h"
-#include "segment.h"
+#include "options.h"
 #include "parse_helpers.h"
 
 #include "grammar.h"

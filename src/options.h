@@ -1,5 +1,5 @@
-#ifndef SEGMENT_H
-#define SEGMENT_H
+#ifndef OPTIONS_H
+#define OPTIONS_H
 
 typedef struct {
   int lexer_debug;

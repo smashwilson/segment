@@ -8,6 +8,6 @@
 
  Mostly useful for debugging the parser itself.
  */
-void seg_print_ast(seg_statementlist_node *root, FILE *outf);
+void seg_print_ast(seg_block_node *root, FILE *outf);
 
 #endif

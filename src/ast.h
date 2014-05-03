@@ -50,8 +50,8 @@ typedef struct seg_parameter_list {
 
 typedef struct {
   seg_parameter_list *parameters;
-  seg_expr_node *first;
-  seg_expr_node *last;
+  struct seg_expr_node *first;
+  struct seg_expr_node *last;
 } seg_block_node;
 
 /* Method Invocation */

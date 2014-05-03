@@ -1,4 +1,4 @@
-STATEMENTLIST
+BLOCK: without parameters
 |-METHODCALL: method
 | |-INTEGER: 4
 | |-INTEGER: 1
@@ -25,10 +25,9 @@ STATEMENTLIST
 | | |-INTEGER: 7
 | | |-INTEGER: 8
 | |-BLOCK: without parameters
-| | |-STATEMENTLIST
-| | | |-METHODCALL: +
-| | | | |-INTEGER: 3
-| | | | |-INTEGER: 4
+| | |-METHODCALL: +
+| | | |-INTEGER: 3
+| | | |-INTEGER: 4
 | |-METHODCALL: &and&
 | | |-INTEGER: 6
 | | |-INTEGER: 89

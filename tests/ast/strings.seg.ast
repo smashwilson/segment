@@ -1,4 +1,4 @@
-STATEMENTLIST
+BLOCK: without parameters
 |-STRING: [double-quoted with \" internal]
 |-STRING: [single-quoted with \' internal]
 |-METHODCALL: <<

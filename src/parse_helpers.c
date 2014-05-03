@@ -74,7 +74,7 @@ int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t len
   return 0;
 }
 
-seg_statementlist_node *seg_append_statement(seg_statementlist_node *list, seg_expr_node *maybe)
+seg_block_node *seg_append_expr(seg_block_node *list, seg_expr_node *maybe)
 {
   if (maybe != NULL) {
     if (list->last != NULL) {

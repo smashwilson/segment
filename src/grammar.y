@@ -28,8 +28,8 @@
 
 %token_type { seg_token* }
 
-%type program { seg_statementlist_node* }
-%type statementlist { seg_statementlist_node* }
+%type program { seg_block_node* }
+%type statementlist { seg_block_node* }
 
 %type maybestatement { seg_expr_node* }
 %type statement { seg_expr_node* }
@@ -62,19 +62,19 @@ program (OUT) ::= statementlist (LIST).
 
 statementlist (OUT) ::= maybestatement (ONLY).
 {
-  OUT = malloc(sizeof(seg_statementlist_node));
+  OUT = malloc(sizeof(seg_block_node));
   OUT->first = ONLY;
   OUT->last = ONLY;
 }
 
 statementlist (OUT) ::= statementlist (LIST) NEWLINE maybestatement (MAYBE).
 {
-  OUT = seg_append_statement(LIST, MAYBE);
+  OUT = seg_append_expr(LIST, MAYBE);
 }
 
 statementlist (OUT) ::= statementlist (LIST) SEMI maybestatement (MAYBE).
 {
-  OUT = seg_append_statement(LIST, MAYBE);
+  OUT = seg_append_expr(LIST, MAYBE);
 }
 
 maybestatement ::= .

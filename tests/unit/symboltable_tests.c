@@ -2,8 +2,8 @@
 
 #include "unit.h"
 
-#include "../../src/symboltable.h"
-#include "../../src/ds/hashtable.h"
+#include "symboltable.h"
+#include "ds/hashtable.h"
 
 static void test_access(void)
 {

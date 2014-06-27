@@ -7,7 +7,7 @@ endif
 CORE_OBJECTS = src/lexer.o
 CORE_OBJECTS += src/token.o src/ast.o
 CORE_OBJECTS += src/parse_helpers.o
-CORE_OBJECTS += src/symboltable.o
+CORE_OBJECTS += src/object.o src/symboltable.o
 CORE_OBJECTS += src/ds/hashtable.o src/ds/murmur.o
 CORE_OBJECTS += src/debug/ast_printer.o src/debug/symbol_printer.o
 
@@ -15,6 +15,7 @@ EXEC_OBJECTS = src/entry.o
 
 TEST_OBJECTS = tests/unit/suite.o
 TEST_OBJECTS += tests/unit/symboltable_tests.o
+TEST_OBJECTS += tests/unit/object_tests.o
 TEST_OBJECTS += tests/unit/ds/hashtable_tests.o
 
 bin/segment: src/grammar.c ${CORE_OBJECTS} ${EXEC_OBJECTS}

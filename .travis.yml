@@ -3,6 +3,4 @@ compiler: gcc
 install: script/bootstrap
 script: make test
 notifications:
-  email:
-    on_success: change
-    on_failure: change
+  email: false

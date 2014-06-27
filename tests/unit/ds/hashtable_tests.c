@@ -3,9 +3,9 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../unit.h"
+#include "unit.h"
 
-#include "../../../src/ds/hashtable.h"
+#include "ds/hashtable.h"
 
 static void test_access(void)
 {

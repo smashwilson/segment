@@ -6,6 +6,7 @@
 CU_pSuite initialize_hashtable_suite(void);
 CU_pSuite initialize_symboltable_suite(void);
 CU_pSuite initialize_object_suite(void);
+CU_pSuite initialize_runtime_suite(void);
 
 #define ADD_SUITE(name) \
   if (name() == NULL) { \
@@ -22,6 +23,7 @@ int main(void)
   ADD_SUITE(initialize_hashtable_suite);
   ADD_SUITE(initialize_symboltable_suite);
   ADD_SUITE(initialize_object_suite);
+  ADD_SUITE(initialize_runtime_suite);
 
   CU_basic_set_mode(CU_BRM_VERBOSE);
   CU_basic_run_tests();

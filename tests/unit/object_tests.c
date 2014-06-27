@@ -23,11 +23,7 @@ static void test_symbol_literal(void)
 
 static void test_isclass(void)
 {
-  seg_object *o = seg_integer(3l);
-  CU_ASSERT_FALSE(seg_isclass(o));
-
-  seg_object *cls = seg_class(o);
-  CU_ASSERT_TRUE(seg_isclass(cls));
+  CU_FAIL("pending");
 }
 
 CU_pSuite initialize_object_suite(void)

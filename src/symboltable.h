@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "ds/hashtable.h"
+#include "ds/stringtable.h"
 
 typedef seg_stringtable seg_symboltable;
 

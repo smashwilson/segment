@@ -3,8 +3,10 @@
 
 /* Forward declarations for unit test suites */
 
-CU_pSuite initialize_hashtable_suite(void);
+CU_pSuite initialize_stringtable_suite(void);
+CU_pSuite initialize_ptrtable_suite(void);
 CU_pSuite initialize_symboltable_suite(void);
+CU_pSuite initialize_plugtable_suite(void);
 CU_pSuite initialize_object_suite(void);
 CU_pSuite initialize_runtime_suite(void);
 
@@ -20,8 +22,10 @@ int main(void)
     return CU_get_error();
   }
 
-  ADD_SUITE(initialize_hashtable_suite);
+  ADD_SUITE(initialize_stringtable_suite);
   ADD_SUITE(initialize_symboltable_suite);
+  ADD_SUITE(initialize_ptrtable_suite);
+  ADD_SUITE(initialize_plugtable_suite);
   ADD_SUITE(initialize_object_suite);
   ADD_SUITE(initialize_runtime_suite);
 

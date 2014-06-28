@@ -18,7 +18,7 @@ typedef struct seg_parser_context *seg_parser_contextp;
 
 typedef struct {
   seg_block_node *root;
-  seg_symboltablep symboltable;
+  seg_symboltable *symboltable;
   seg_parser_contextp context;
 } seg_parser_state;
 

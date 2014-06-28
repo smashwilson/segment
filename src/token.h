@@ -25,7 +25,7 @@ char *seg_token_as_string(seg_token *tok, size_t *length);
  */
 seg_symbol *seg_token_intern_without(
   seg_token *tok,
-  seg_symboltablep table,
+  seg_symboltable *table,
   size_t initial,
   size_t final
 );

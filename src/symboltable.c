@@ -3,15 +3,15 @@
 
 #include "symboltable.h"
 
-seg_symboltablep seg_new_symboltable()
+seg_symboltable *seg_new_symboltable()
 {
   char *end = NULL;
 
-  unsigned long capacity = SEG_SYMTABLE_CAP;
-  size_t init_bucket_capacity = SEG_SYMTABLE_BUCKET_CAP;
-  size_t bucket_growth_factor = SEG_SYMTABLE_BUCKET_GROWTH;
+  uint64_t capacity = SEG_SYMTABLE_CAP;
+  uint32_t init_bucket_capacity = SEG_SYMTABLE_BUCKET_CAP;
+  uint32_t bucket_growth_factor = SEG_SYMTABLE_BUCKET_GROWTH;
   float max_load = SEG_SYMTABLE_MAX_LOAD;
-  size_t table_growth_factor = SEG_SYMTABLE_GROWTH;
+  uint32_t table_growth_factor = SEG_SYMTABLE_GROWTH;
 
   const char *capacity_str = getenv("SEG_SYMTABLE_INIT_CAP");
   if (capacity_str != NULL) {
@@ -20,12 +20,12 @@ seg_symboltablep seg_new_symboltable()
 
   const char *bucketcap_str = getenv("SEG_SYMTABLE_GROWTH");
   if (bucketcap_str != NULL) {
-    init_bucket_capacity = (size_t) strtoul(bucketcap_str, &end, 10);
+    init_bucket_capacity = (uint32_t) strtoul(bucketcap_str, &end, 10);
   }
 
   const char *bucketgrowth_str = getenv("SEG_SYMTABLE_BUCKET_GROWTH");
   if (bucketgrowth_str != NULL) {
-    bucket_growth_factor = (size_t) strtoul(bucketgrowth_str, &end, 10);
+    bucket_growth_factor = (uint32_t) strtoul(bucketgrowth_str, &end, 10);
   }
 
   const char *maxload_str = getenv("SEG_SYMTABLE_MAX_LOAD");
@@ -35,23 +35,23 @@ seg_symboltablep seg_new_symboltable()
 
   const char *growth_str = getenv("SEG_SYMTABLE_GROWTH");
   if (growth_str != NULL) {
-    table_growth_factor = (size_t) strtoul(growth_str, &end, 10);
+    table_growth_factor = (uint32_t) strtoul(growth_str, &end, 10);
   }
 
-  seg_hashtablep table = seg_new_hashtable(capacity);
+  seg_stringtable *table = seg_new_stringtable(capacity);
 
-  seg_hashtable_settings *settings = seg_hashtable_get_settings(table);
+  seg_hashtable_settings *settings = seg_stringtable_get_settings(table);
   settings->init_bucket_capacity = init_bucket_capacity;
   settings->bucket_growth_factor = bucket_growth_factor;
   settings->max_load = max_load;
   settings->table_growth_factor = table_growth_factor;
 
-  return table;
+  return (seg_symboltable*) table;
 }
 
-seg_symbol *seg_symboltable_intern(seg_symboltablep table, const char *name, size_t length)
+seg_symbol *seg_symboltable_intern(seg_symboltable *table, const char *name, size_t length)
 {
-  seg_symbol *existing = (seg_symbol *) seg_hashtable_get(table, name, length);
+  seg_symbol *existing = (seg_symbol *) seg_stringtable_get(table, name, length);
 
   if (existing != NULL) {
     return existing;
@@ -63,17 +63,17 @@ seg_symbol *seg_symboltable_intern(seg_symboltablep table, const char *name, siz
   created->name = symname;
   created->length = length;
 
-  seg_hashtable_put(table, name, length, created);
+  seg_stringtable_put(table, name, length, created);
 
   return created;
 }
 
-seg_symbol *seg_symboltable_get(seg_symboltablep table, const char *name, size_t length)
+seg_symbol *seg_symboltable_get(seg_symboltable *table, const char *name, size_t length)
 {
-  return seg_hashtable_get(table, name, length);
+  return (seg_symbol*) seg_stringtable_get(table, name, length);
 }
 
-void seg_delete_symboltable(seg_symboltablep table)
+void seg_delete_symboltable(seg_symboltable *table)
 {
-  seg_delete_hashtable(table);
+  seg_delete_stringtable(table);
 }

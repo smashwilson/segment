@@ -7,7 +7,7 @@
 
 static void test_access(void)
 {
-  seg_symboltablep table = seg_new_symboltable();
+  seg_symboltable *table = seg_new_symboltable();
 
   seg_symbol *a0sym = seg_symboltable_intern(table, "aaa", 3);
   seg_symbol *b0sym = seg_symboltable_intern(table, "bbb", 3);

@@ -4,6 +4,7 @@
 /* Forward declarations for unit test suites */
 
 CU_pSuite initialize_stringtable_suite(void);
+CU_pSuite initialize_ptrtable_suite(void);
 CU_pSuite initialize_symboltable_suite(void);
 
 #define ADD_SUITE(name) \
@@ -20,6 +21,7 @@ int main(void)
 
   ADD_SUITE(initialize_stringtable_suite);
   ADD_SUITE(initialize_symboltable_suite);
+  ADD_SUITE(initialize_ptrtable_suite);
 
   CU_basic_set_mode(CU_BRM_VERBOSE);
   CU_basic_run_tests();

@@ -145,9 +145,9 @@ static void test_resize(void)
   seg_delete_hashtable(table);
 }
 
-CU_pSuite initialize_hashtable_suite(void)
+CU_pSuite initialize_string_hashtable_suite(void)
 {
-  CU_pSuite pSuite = CU_add_suite("hashtable", NULL, NULL);
+  CU_pSuite pSuite = CU_add_suite("string_hashtable", NULL, NULL);
   if (pSuite == NULL) {
     return NULL;
   }

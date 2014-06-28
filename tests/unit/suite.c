@@ -3,7 +3,7 @@
 
 /* Forward declarations for unit test suites */
 
-CU_pSuite initialize_hashtable_suite(void);
+CU_pSuite initialize_string_hashtable_suite(void);
 CU_pSuite initialize_symboltable_suite(void);
 
 #define ADD_SUITE(name) \
@@ -18,7 +18,7 @@ int main(void)
     return CU_get_error();
   }
 
-  ADD_SUITE(initialize_hashtable_suite);
+  ADD_SUITE(initialize_string_hashtable_suite);
   ADD_SUITE(initialize_symboltable_suite);
 
   CU_basic_set_mode(CU_BRM_VERBOSE);

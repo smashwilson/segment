@@ -85,6 +85,94 @@ static void test_putifabsent(void)
   seg_delete_plugtable(table);
 }
 
+typedef struct {
+  int correct;
+  int incorrect;
+} iterator_state;
+
+static void ptrtable_iterator(const void *k, void *value, void *state)
+{
+  key *thekey = (key *) k;
+  iterator_state *s = (iterator_state *) state;
+
+  if (thekey->aaa == 0 && thekey->bbb == 0 && ! memcmp(value, "aval", 4)) {
+    s->correct++;
+  } else if (thekey->aaa == 1 && thekey->bbb == 1 && ! memcmp(value, "bval", 4)) {
+    s->correct++;
+  } else if (thekey->aaa == 2 && thekey->bbb == 2 && ! memcmp(value, "cval", 4)) {
+    s->correct++;
+  } else if (thekey->aaa == 3 && thekey->bbb == 3 && ! memcmp(value, "dval", 4)) {
+    s->correct++;
+  } else {
+    printf("Unexpected pair in plugtable! [%d, %d] -> [%s]\n",
+      thekey->aaa, thekey->bbb, (const char*) value);
+    s->incorrect++;
+  }
+}
+
+static void test_each(void)
+{
+  iterator_state s;
+  s.correct = 0;
+  s.incorrect = 0;
+
+  seg_plugtable *table = seg_new_plugtable(10L, equals0, hash0);
+
+  key k0 = {0, 0};
+  key k1 = {1, 1};
+  key k2 = {2, 2};
+  key k3 = {3, 3};
+
+  seg_plugtable_put(table, &k0, "aval");
+  seg_plugtable_put(table, &k1, "bval");
+  seg_plugtable_put(table, &k2, "cval");
+  seg_plugtable_put(table, &k3, "dval");
+  CU_ASSERT_EQUAL(seg_plugtable_count(table), 4);
+
+  seg_plugtable_each(table, &ptrtable_iterator, &s);
+
+  CU_ASSERT_EQUAL(s.correct, 4);
+  CU_ASSERT_EQUAL(s.incorrect, 0);
+
+  seg_delete_plugtable(table);
+}
+
+static void test_resize(void)
+{
+  seg_plugtable *table = seg_new_plugtable(5L, equals0, hash0);
+
+  key k0 = { 0, 0 };
+  key k1 = { 1, 1 };
+  key k2 = { 2, 2 };
+  key k3 = { 3, 3 };
+
+  seg_plugtable_put(table, &k0, "aval");
+  seg_plugtable_put(table, &k1, "bval");
+  seg_plugtable_put(table, &k2, "cval");
+
+  CU_ASSERT_EQUAL(seg_plugtable_count(table), 3);
+  CU_ASSERT_EQUAL(seg_plugtable_capacity(table), 5);
+
+  seg_plugtable_put(table, &k3, "dval");
+
+  CU_ASSERT_EQUAL(seg_plugtable_count(table), 4);
+  CU_ASSERT_EQUAL(seg_plugtable_capacity(table), 10);
+
+  void *outa = seg_plugtable_get(table, &k0);
+  CU_ASSERT_STRING_EQUAL(outa, "aval");
+
+  void *outb = seg_plugtable_get(table, &k1);
+  CU_ASSERT_STRING_EQUAL(outb, "bval");
+
+  void *outc = seg_plugtable_get(table, &k2);
+  CU_ASSERT_STRING_EQUAL(outc, "cval");
+
+  void *outd = seg_plugtable_get(table, &k3);
+  CU_ASSERT_STRING_EQUAL(outd, "dval");
+
+  seg_delete_plugtable(table);
+}
+
 CU_pSuite initialize_plugtable_suite(void)
 {
   CU_pSuite pSuite = CU_add_suite("plugtable", NULL, NULL);
@@ -94,6 +182,8 @@ CU_pSuite initialize_plugtable_suite(void)
 
   ADD_TEST(test_access);
   ADD_TEST(test_putifabsent);
+  ADD_TEST(test_each);
+  ADD_TEST(test_resize);
 
   return pSuite;
 }

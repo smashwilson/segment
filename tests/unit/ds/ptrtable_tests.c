@@ -91,7 +91,7 @@ static void ptrtable_iterator(const void *k, void *value, void *state)
   } else if (thekey->aaa == 3 && thekey->bbb == 3 && ! memcmp(value, "dval", 4)) {
     s->correct++;
   } else {
-    printf("Unexpected pair in stringtable! [%d, %d] -> [%s]\n",
+    printf("Unexpected pair in ptrtable! [%d, %d] -> [%s]\n",
       thekey->aaa, thekey->bbb, (const char*) value);
     s->incorrect++;
   }

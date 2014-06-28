@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "hashtable.h"
+#include "stringtable.h"
 #include "murmur.h"
 
 typedef struct {

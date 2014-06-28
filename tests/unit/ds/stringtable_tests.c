@@ -5,7 +5,7 @@
 
 #include "unit.h"
 
-#include "ds/hashtable.h"
+#include "ds/stringtable.h"
 
 static void test_access(void)
 {

@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #include "unit.h"
-#include "ds/hashtable.h"
+#include "ds/ptrtable.h"
 
 typedef struct {
   int32_t aaa;

@@ -1,4 +1,10 @@
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
 #include "ptrtable.h"
+#include "murmur.h"
 
 typedef struct {
   uint32_t hashcode;
@@ -48,7 +54,7 @@ void pt_find_or_create_entry(
     /* Create an empty bucket and return its first slot. */
     buck->capacity = table->settings.init_bucket_capacity;
     buck->length = 0;
-    buck->content = calloc(buck->capacity, sizeof(st_entry));
+    buck->content = calloc(buck->capacity, sizeof(pt_entry));
 
     e = &(buck->content[0]);
   } else {
@@ -73,7 +79,7 @@ void pt_find_or_create_entry(
       /* Expand an existing bucket that has filled. */
       buck->capacity = buck->capacity * table->settings.bucket_growth_factor;
       buck->content = realloc(buck->content, buck->capacity);
-      memset(buck->content, 0, sizeof(st_entry) * buck->capacity);
+      memset(buck->content, 0, sizeof(pt_entry) * buck->capacity);
     }
 
     e = &(buck->content[bindex]);
@@ -115,8 +121,8 @@ void pt_resize_iter(const void *key, void *value, void *state)
     fprintf(
       stderr,
       "segment: Unexpected collision during hash growth at key [%.*s]\n",
-      (int) key_length,
-      key
+      (int) rs->table->key_length,
+      (const char*) key
     );
   }
 
@@ -167,7 +173,7 @@ void seg_ptrtable_resize(seg_ptrtable *table, uint64_t capacity)
     return;
   }
 
-  pt_bucket *nbuckets = calloc(capacity, sizeof(st_bucket));
+  pt_bucket *nbuckets = calloc(capacity, sizeof(pt_bucket));
 
   pt_resize_state state;
   state.table = table;
@@ -185,7 +191,7 @@ void seg_ptrtable_resize(seg_ptrtable *table, uint64_t capacity)
 
 void *seg_ptrtable_put(seg_ptrtable *table, const void *key, void *value)
 {
-  st_entry *ent;
+  pt_entry *ent;
   bool created;
   void *result = NULL;
 
@@ -204,7 +210,7 @@ void *seg_ptrtable_put(seg_ptrtable *table, const void *key, void *value)
   return result;
 }
 
-void *seg_ptrtable_putifabsent(seg_ptrtable *table, const char *void, void *value) {
+void *seg_ptrtable_putifabsent(seg_ptrtable *table, const void *key, void *value) {
   pt_entry *ent;
   bool created;
 

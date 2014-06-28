@@ -1,6 +1,9 @@
 #ifndef PTRTABLE_H
 #define PTRTABLE_H
 
+#include <stdint.h>
+#include <stddef.h>
+
 #include "ds/hashtable.h"
 
 /*

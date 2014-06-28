@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "ds/pluggabletable.h"
+#include "ds/plugtable.h"
 #include "ds/murmur.h"
 
 typedef struct {
@@ -18,17 +18,17 @@ typedef struct {
   pg_entry *content;
 } pg_bucket;
 
-struct seg_pluggabletable {
+struct seg_plugtable {
   uint64_t count;
   uint64_t capacity;
-  seg_pluggabletable_equal equalf;
-  seg_pluggabletable_hash hashf;
+  seg_plugtable_equal equalf;
+  seg_plugtable_hash hashf;
   seg_hashtable_settings settings;
   pg_bucket *buckets;
 };
 
 typedef struct {
-  seg_pluggabletable *table;
+  seg_plugtable *table;
   pg_bucket *nbuckets;
   size_t ncapacity;
 } pg_resize_state;
@@ -36,7 +36,7 @@ typedef struct {
 /* Internal utility methods. */
 
 void pg_find_or_create_entry(
-  seg_pluggabletable *table,
+  seg_plugtable *table,
   pg_bucket *buckets,
   uint64_t capacity,
   const void *key,
@@ -100,11 +100,11 @@ void pg_find_or_create_entry(
  * A new element has been added. Calculate the table's new load and trigger a capacity extension
  * if necessary.
  */
-void pg_trigger_dynamic_resize(seg_pluggabletable *table)
+void pg_trigger_dynamic_resize(seg_plugtable *table)
 {
   float load = table->count / (float) table->capacity;
   if (load >= table->settings.max_load) {
-    seg_pluggabletable_resize(table, table->capacity * table->settings.table_growth_factor);
+    seg_plugtable_resize(table, table->capacity * table->settings.table_growth_factor);
   }
 }
 
@@ -130,27 +130,27 @@ void pg_resize_iter(const void *key, void *value, void *state)
 
 /* Public API. */
 
-uint64_t seg_pluggabletable_count(seg_pluggabletable *table)
+uint64_t seg_plugtable_count(seg_plugtable *table)
 {
   return table->count;
 }
 
-uint64_t seg_pluggabletable_capacity(seg_pluggabletable *table)
+uint64_t seg_plugtable_capacity(seg_plugtable *table)
 {
   return table->capacity;
 }
 
-seg_hashtable_settings *seg_pluggabletable_get_settings(seg_pluggabletable *table)
+seg_hashtable_settings *seg_plugtable_get_settings(seg_plugtable *table)
 {
   return &(table->settings);
 }
 
-seg_pluggabletable *seg_new_pluggabletable(
+seg_plugtable *seg_new_plugtable(
   uint64_t capacity,
-  seg_pluggabletable_equal equalfunc,
-  seg_pluggabletable_hash hashfunc
+  seg_plugtable_equal equalfunc,
+  seg_plugtable_hash hashfunc
 ) {
-  seg_pluggabletable *table = malloc(sizeof(struct seg_pluggabletable));
+  seg_plugtable *table = malloc(sizeof(struct seg_plugtable));
   table->capacity = capacity;
   table->equalf = equalfunc;
   table->hashf = hashfunc;
@@ -167,7 +167,7 @@ seg_pluggabletable *seg_new_pluggabletable(
   return table;
 }
 
-void seg_pluggabletable_resize(seg_pluggabletable *table, uint64_t capacity)
+void seg_plugtable_resize(seg_plugtable *table, uint64_t capacity)
 {
   uint64_t orig_cap = table->capacity;
   uint64_t orig_count = table->count;
@@ -182,7 +182,7 @@ void seg_pluggabletable_resize(seg_pluggabletable *table, uint64_t capacity)
   state.nbuckets = nbuckets;
   state.ncapacity = capacity;
 
-  seg_pluggabletable_each(table, pg_resize_iter, &state);
+  seg_plugtable_each(table, pg_resize_iter, &state);
 
   free(table->buckets);
 
@@ -191,7 +191,7 @@ void seg_pluggabletable_resize(seg_pluggabletable *table, uint64_t capacity)
   table->buckets = nbuckets;
 }
 
-void *seg_pluggabletable_put(seg_pluggabletable *table, const void *key, void *value)
+void *seg_plugtable_put(seg_plugtable *table, const void *key, void *value)
 {
   pg_entry *ent;
   bool created;
@@ -212,7 +212,7 @@ void *seg_pluggabletable_put(seg_pluggabletable *table, const void *key, void *v
   return result;
 }
 
-void *seg_pluggabletable_putifabsent(seg_pluggabletable *table, const void *key, void *value) {
+void *seg_plugtable_putifabsent(seg_plugtable *table, const void *key, void *value) {
   pg_entry *ent;
   bool created;
 
@@ -227,7 +227,7 @@ void *seg_pluggabletable_putifabsent(seg_pluggabletable *table, const void *key,
   }
 }
 
-void *seg_pluggabletable_get(seg_pluggabletable *table, const void *key)
+void *seg_plugtable_get(seg_plugtable *table, const void *key)
 {
   uint32_t hashcode = (*table->hashf)(key);
   uint32_t bnum = hashcode % table->capacity;
@@ -255,7 +255,7 @@ void *seg_pluggabletable_get(seg_pluggabletable *table, const void *key)
   return NULL;
 }
 
-void seg_pluggabletable_each(seg_pluggabletable *table, seg_pluggabletable_iterator iter, void *state)
+void seg_plugtable_each(seg_plugtable *table, seg_plugtable_iterator iter, void *state)
 {
   for (int b = 0; b < table->capacity; b++) {
     pg_bucket *buck = &(table->buckets[b]);
@@ -270,7 +270,7 @@ void seg_pluggabletable_each(seg_pluggabletable *table, seg_pluggabletable_itera
   }
 }
 
-void seg_delete_pluggabletable(seg_pluggabletable *table)
+void seg_delete_plugtable(seg_plugtable *table)
 {
   free(table->buckets);
   free(table);

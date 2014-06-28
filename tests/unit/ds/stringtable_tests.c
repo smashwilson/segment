@@ -9,7 +9,7 @@
 
 static void test_access(void)
 {
-  seg_hashtablep table = seg_new_stringtable(10L);
+  seg_stringtable *table = seg_new_stringtable(10L);
 
   const char *key0 = "somekey";
   size_t length0 = strlen(key0);
@@ -34,7 +34,7 @@ static void test_access(void)
 
 static void test_putifabsent(void)
 {
-  seg_stringtablep table = seg_new_stringtable(10L);
+  seg_stringtable *table = seg_new_stringtable(10L);
 
   /* Populate the table. */
 
@@ -99,7 +99,7 @@ static void test_each(void)
   s.correct = 0;
   s.incorrect = 0;
 
-  seg_stringtablep table = seg_new_stringtable(10L);
+  seg_stringtable *table = seg_new_stringtable(10L);
   seg_stringtable_put(table, "aaa", 3, "aval");
   seg_stringtable_put(table, "bbb", 3, "bval");
   seg_stringtable_put(table, "ccc", 3, "cval");
@@ -116,7 +116,7 @@ static void test_each(void)
 
 static void test_resize(void)
 {
-  seg_stringtablep table = seg_new_stringtable(5L);
+  seg_stringtable *table = seg_new_stringtable(5L);
 
   seg_stringtable_put(table, "aaa", 3, "aval");
   seg_stringtable_put(table, "bbb", 3, "bval");

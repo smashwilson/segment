@@ -2,31 +2,43 @@
 #define HASH
 
 #include <stddef.h>
+#include <stdint.h>
 
-struct seg_hashtable;
-typedef struct seg_hashtable *seg_hashtablep;
+/*
+ * Hashtable specialized for keys that are directly comparable, variable-sized, contiguous chunks
+ * of memory.
+ */
+struct seg_stringtable;
+typedef struct seg_stringtable seg_stringtable;
 
+/*
+ * Settings that control the growth behavior of a hashtable.
+ */
 typedef struct {
   /* The initial capacity of newly allocated buckets. */
-  size_t init_bucket_capacity;
+  uint32_t init_bucket_capacity;
 
   /* Factor by which bucket capacity will increase when filled. */
-  size_t bucket_growth_factor;
+  uint32_t bucket_growth_factor;
 
   /* Load factor at which automatic resizing will be triggered. */
   float max_load;
 
   /* Amount by which the table's bucket capacity will grow when `max_load_factor` is reached. */
-  size_t table_growth_factor;
+  uint32_t table_growth_factor;
 } seg_hashtable_settings;
 
 /* Default settings for a newly initialized table. */
+
 #define SEG_HT_INIT_BUCKET_CAPACITY 4
 #define SEG_HT_BUCKET_GROWTH_FACTOR 2
 #define SEG_HT_MAX_LOAD 0.75
 #define SEG_HT_TABLE_GROWTH_FACTOR 2
 
-typedef void (*seg_hashtable_iterator)(
+/*
+ * Signature of a function used to iterate over the key-value pairs within a hashtable.
+ */
+typedef void (*seg_stringtable_iterator)(
   const char *key,
   const size_t key_length,
   void *value,
@@ -34,50 +46,49 @@ typedef void (*seg_hashtable_iterator)(
 );
 
 /*
- * Allocate a new hash table with the specified initial capacity.
+ * Allocate a new stringtable with the specified initial capacity.
  */
-seg_hashtablep seg_new_hashtable(unsigned long capacity);
+seg_stringtable *seg_new_stringtable(uint64_t capacity);
 
 /*
- * Return the number of items currently stored in the table.
+ * Return the number of items currently stored in a stringtable.
  */
-unsigned long seg_hashtable_count(seg_hashtablep table);
+uint64_t seg_stringtable_count(seg_stringtable *table);
 
 /*
- * Return the current capacity of the hashtable.
+ * Return the current capacity of a stringtable.
  */
-size_t seg_hashtable_capacity(seg_hashtablep table);
+uint64_t seg_stringtable_capacity(seg_stringtable *table);
 
 /*
- * Retrieve the growth settings currently used by a hashtable. The settings are read-write.
+ * Retrieve the growth settings currently used by a stringtable. The settings are read-write.
  */
-seg_hashtable_settings *seg_hashtable_get_settings(seg_hashtablep table);
+seg_hashtable_settings *seg_stringtable_get_settings(seg_stringtable *table);
 
 /*
- * Resize a hashtable's capacity. O(n). Invoked automatically during put operations if the table's
+ * Resize a stringtable's capacity. O(n). Invoked automatically during put operations if the table's
  * load increases beyond the threshold. Notice that `capacity` can be greater or less than the
  * current capacity.
  */
-void seg_hashtable_resize(seg_hashtablep table, size_t capacity);
+void seg_stringtable_resize(seg_stringtable *table, uint64_t capacity);
 
 /*
- * Add a new item to the hashtable, expanding it if necessary. Return the value
- * previously assigned to `key` if one was present. Otherwise, return `NULL`.
+ * Add a new item to the stringtable, expanding it if necessary. Return the value previously
+ * assigned to `key` if one was present. Otherwise, return `NULL`.
  */
-void *seg_hashtable_put(
-  seg_hashtablep table,
+void *seg_stringtable_put(
+  seg_stringtable *table,
   const char *key,
   size_t key_length,
   void *value
 );
 
 /*
- * Add a new item to the hashtable if and only if `key` is currently unassigned.
- * Return the existing item mapped to `key` if there was one, or the newly
- * assigned `value` otherwise.
+ * Add a new item to the stringtable if and only if `key` is currently unassigned. Return the
+ * existing item mapped to `key` if there was one, or the newly assigned `value` otherwise.
  */
-void *seg_hashtable_putifabsent(
-  seg_hashtablep table,
+void *seg_stringtable_putifabsent(
+  seg_stringtable *table,
   const char *key,
   size_t key_length,
   void *value
@@ -87,17 +98,17 @@ void *seg_hashtable_putifabsent(
  * Search for an existing value in the hashtable at `key`. Return the value or
  * `NULL` if it's not present.
  */
-void *seg_hashtable_get(seg_hashtablep table, const char *key, size_t key_length);
+void *seg_stringtable_get(seg_stringtable *table, const char *key, size_t key_length);
 
 /*
  * Iterate through each key-value pair in the hashtable. `state` will be provided as-is to the
  * iterator function during each iteration.
  */
-void seg_hashtable_each(seg_hashtablep table, seg_hashtable_iterator iter, void *state);
+void seg_stringtable_each(seg_stringtable *table, seg_stringtable_iterator iter, void *state);
 
 /*
- * Destroy a hashtable created with `seg_new_hashtable`.
+ * Destroy a stringtable created with `seg_new_stringtable`.
  */
-void seg_delete_hashtable(seg_hashtablep table);
+void seg_delete_stringtable(seg_stringtable *table);
 
 #endif

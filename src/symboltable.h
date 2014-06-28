@@ -5,7 +5,7 @@
 
 #include "ds/hashtable.h"
 
-typedef seg_hashtablep seg_symboltablep;
+typedef seg_stringtable seg_symboltable;
 
 typedef struct {
   const char *name;
@@ -27,22 +27,22 @@ typedef struct {
  * Allocate a new symboltable for the interpreter. Read initial storage settings for the table from
  * the process' environment.
  */
-seg_symboltablep seg_new_symboltable();
+seg_symboltable *seg_new_symboltable();
 
 /*
  * Insert a new entry into the symboltable if it's not already present. Return the newly created
  * symbol or the previously existing one.
  */
-seg_symbol *seg_symboltable_intern(seg_symboltablep table, const char *name, size_t length);
+seg_symbol *seg_symboltable_intern(seg_symboltable *table, const char *name, size_t length);
 
 /*
  * Access an existing symbol if one exists with the given name. Return NULL if it does not.
  */
-seg_symbol *seg_symboltable_get(seg_symboltablep table, const char *name, size_t length);
+seg_symbol *seg_symboltable_get(seg_symboltable *table, const char *name, size_t length);
 
 /*
  * Cleanly dispose of a symboltable allocated with `seg_new_symboltable`.
  */
-void seg_delete_symboltable(seg_symboltablep table);
+void seg_delete_symboltable(seg_symboltable *table);
 
 #endif

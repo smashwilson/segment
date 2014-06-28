@@ -3,8 +3,10 @@
 
 /* Forward declarations for unit test suites */
 
-CU_pSuite initialize_hashtable_suite(void);
+CU_pSuite initialize_stringtable_suite(void);
+CU_pSuite initialize_ptrtable_suite(void);
 CU_pSuite initialize_symboltable_suite(void);
+CU_pSuite initialize_plugtable_suite(void);
 
 #define ADD_SUITE(name) \
   if (name() == NULL) { \
@@ -18,8 +20,10 @@ int main(void)
     return CU_get_error();
   }
 
-  ADD_SUITE(initialize_hashtable_suite);
+  ADD_SUITE(initialize_stringtable_suite);
   ADD_SUITE(initialize_symboltable_suite);
+  ADD_SUITE(initialize_ptrtable_suite);
+  ADD_SUITE(initialize_plugtable_suite);
 
   CU_basic_set_mode(CU_BRM_VERBOSE);
   CU_basic_run_tests();

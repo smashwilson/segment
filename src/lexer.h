@@ -9,7 +9,7 @@
 
 typedef struct {
   seg_block_node *ast;
-  seg_symboltablep symboltable;
+  seg_symboltable *symboltable;
 } seg_program;
 
 /**

@@ -17,6 +17,8 @@ TEST_OBJECTS = tests/unit/suite.o
 TEST_OBJECTS += tests/unit/symboltable_tests.o
 TEST_OBJECTS += tests/unit/ds/stringtable_tests.o tests/unit/ds/ptrtable_tests.o
 TEST_OBJECTS += tests/unit/ds/plugtable_tests.o
+TEST_OBJECTS += tests/unit/object_tests.o
+TEST_OBJECTS += tests/unit/runtime_tests.o
 
 bin/segment: src/grammar.c ${CORE_OBJECTS} ${EXEC_OBJECTS}
 	mkdir -p bin/

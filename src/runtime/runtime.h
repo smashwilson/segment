@@ -1,6 +1,7 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
+#include "errors.h"
 #include "runtime/symboltable.h"
 #include "model/object.h"
 
@@ -14,7 +15,7 @@ typedef struct seg_runtime seg_runtime;
  * Special objects instantiated runtime initialization that used often enough by the interpreter
  * to justify special access.
  */
-typedef struct {
+struct seg_bootstrap_objects {
   // Notable Class instances.
   seg_object *class_class;
   seg_object *integer_class;
@@ -27,12 +28,13 @@ typedef struct {
   seg_object *empty_instance;
   seg_object *true_instance;
   seg_object *false_instance;
-} seg_bootstrap_objects;
+};
+typedef struct seg_bootstrap_objects seg_bootstrap_objects;
 
 /*
  * Initialize the runtime, bootstrapping it with initial objects such as the Class class.
  */
-seg_runtime *seg_new_runtime();
+seg_err seg_new_runtime(seg_runtime **out);
 
 /*
  * Access the global symbol table within a given runtime.

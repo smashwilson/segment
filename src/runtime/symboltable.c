@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "symboltable.h"
+#include "runtime/symboltable.h"
 
-seg_symboltable *seg_new_symboltable()
+seg_err seg_new_symboltable(seg_symboltable **out)
 {
   char *end = NULL;
 
@@ -46,31 +46,40 @@ seg_symboltable *seg_new_symboltable()
   settings->max_load = max_load;
   settings->table_growth_factor = table_growth_factor;
 
-  return (seg_symboltable*) table;
+  out = &table;
+  return SEG_OK;
 }
 
-seg_symbol *seg_symboltable_intern(seg_symboltable *table, const char *name, size_t length)
+seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_t length, seg_object **out)
 {
-  seg_symbol *existing = (seg_symbol *) seg_stringtable_get(table, name, length);
+  seg_err err;
+  seg_object *existing = (seg_object *) seg_stringtable_get(table, name, length);
 
-  if (existing != NULL) {
-    return existing;
+  if (existing != SEG_NO_SYMBOL) {
+    out = &existing;
+    return SEG_OK;
   }
 
-  seg_symbol *created = malloc(sizeof(seg_symbol));
-  char *symname = malloc(length);
-  memcpy(symname, name, length);
-  created->name = symname;
-  created->length = length;
+  char *ownname = malloc(sizeof(char) * length);
+  if (ownname == NULL) {
+    return SEG_NOMEM;
+  }
+  ownname = memcpy(ownname, name, length);
 
+  seg_object *created = NULL;
+  err = seg_symbol(ownname, length, &created);
+  if (err != SEG_OK) {
+    return err;
+  }
   seg_stringtable_put(table, name, length, created);
 
-  return created;
+  out = &created;
+  return SEG_OK;
 }
 
-seg_symbol *seg_symboltable_get(seg_symboltable *table, const char *name, size_t length)
+seg_object *seg_symboltable_get(seg_symboltable *table, const char *name, size_t length)
 {
-  return (seg_symbol*) seg_stringtable_get(table, name, length);
+  return (seg_object*) seg_stringtable_get(table, name, length);
 }
 
 void seg_delete_symboltable(seg_symboltable *table)

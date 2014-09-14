@@ -7,6 +7,8 @@
 
 #include "ds/hashtable.h"
 
+// FIXME use seg_err for error reporting
+
 /*
  * Hashtable that uses custom functions to compute key hashes and equality. This will ultimately
  * back in-language Dictionary instances.

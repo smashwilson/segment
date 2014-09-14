@@ -5,7 +5,7 @@
 
 #include "ast.h"
 #include "options.h"
-#include "symboltable.h"
+#include "runtime/symboltable.h"
 
 typedef struct {
   seg_block_node *ast;

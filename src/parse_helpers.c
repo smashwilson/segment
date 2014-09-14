@@ -49,7 +49,7 @@ int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t len
    Even if you're nesting blocks like a crazy person a simple linear scan should do the trick
    here.
   */
-  seg_symbol *existing = seg_symboltable_get(state->symboltable, identifier, length);
+  seg_object *existing = seg_symboltable_get(state->symboltable, identifier, length);
   if (existing == NULL) {
     /* If it wasn't intern'd, it's not an argument. */
     return 0;
@@ -106,7 +106,7 @@ seg_expr_node *seg_parse_binop(
 
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_METHODCALL;
-  out->child.methodcall.selector = seg_symboltable_intern(state->symboltable, selname, length);
+  seg_symboltable_intern(state->symboltable, selname, length, &out->child.methodcall.selector);
   out->child.methodcall.receiver = lhs;
   out->child.methodcall.args = seg_parse_arg(state, rhs, NULL);
   return out;
@@ -132,7 +132,7 @@ seg_expr_node *seg_parse_methodcall(
 
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_METHODCALL;
-  out->child.methodcall.selector = seg_symboltable_intern(state->symboltable, selname, length);
+  seg_symboltable_intern(state->symboltable, selname, length, &out->child.methodcall.selector);
   out->child.methodcall.receiver = receiver;
   out->child.methodcall.args = args;
   return out;
@@ -143,7 +143,8 @@ seg_expr_node *seg_implicit_methodcall(
   seg_expr_node *receiver,
   const char *selector
 ) {
-  seg_symbol *selsym = seg_symboltable_intern(state->symboltable, selector, strlen(selector));
+  seg_object *selsym = NULL;
+  seg_symboltable_intern(state->symboltable, selector, strlen(selector), &selsym);
 
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_METHODCALL;
@@ -193,7 +194,7 @@ seg_arg_list *seg_parse_arg(seg_parser_state *state, seg_expr_node *value, seg_t
 
     kwname = seg_token_without(keyword, 0, 1, &length);
 
-    arg->keyword = seg_symboltable_intern(state->symboltable, kwname, length);
+    seg_symboltable_intern(state->symboltable, kwname, length, &arg->keyword);
   } else {
     arg->keyword = NULL;
   }
@@ -208,7 +209,7 @@ seg_expr_node *seg_implicit_self(seg_parser_state *state)
 {
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
   out->child_kind = SEG_VAR;
-  out->child.var.varname = seg_symboltable_intern(state->symboltable, "self", 4);
+  seg_symboltable_intern(state->symboltable, "self", 4, &out->child.var.varname);
   return out;
 }
 

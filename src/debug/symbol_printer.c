@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "symbol_printer.h"
+#include "debug/symbol_printer.h"
 
 #include "ds/hashtable.h"
 

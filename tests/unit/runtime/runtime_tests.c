@@ -7,8 +7,11 @@
 
 static void test_creation(void)
 {
-  seg_runtime *r = seg_new_runtime();
-  CU_ASSERT_PTR_NOT_NULL_FATAL(r);
+  seg_err err;
+
+  seg_runtime *r = NULL;
+  err = seg_new_runtime(&r);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
 
   seg_symboltable *symtable = seg_runtime_symboltable(r);
   CU_ASSERT_PTR_NOT_NULL(symtable);
@@ -18,17 +21,22 @@ static void test_creation(void)
 
 static void test_bootstrap(void)
 {
-  seg_runtime *r = seg_new_runtime();
-  seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
+  seg_err err;
+
+  seg_runtime *r = NULL;
+  err = seg_new_runtime(&r);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+
+  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
 
   /* The Class class has itself as its class. */
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->class_class));
+  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->class_class, r));
 
   /* The other classes are instances of the Class class for each literal. */
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->integer_class));
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->string_class));
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->symbol_class));
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->block_class));
+  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->integer_class, r));
+  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->string_class, r));
+  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->symbol_class, r));
+  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->block_class, r));
 
   seg_delete_runtime(r);
 }

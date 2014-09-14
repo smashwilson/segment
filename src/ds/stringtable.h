@@ -6,6 +6,8 @@
 
 #include "ds/hashtable.h"
 
+// FIXME use seg_err for error reporting
+
 /*
  * Hashtable specialized for keys that are directly comparable, variable-sized, contiguous chunks
  * of memory. This is most useful for tables keyed with strings, including internal tables like

@@ -2,18 +2,33 @@
 
 #include "unit.h"
 
+#include "errors.h"
 #include "runtime/symboltable.h"
+#include "model/object.h"
 #include "ds/hashtable.h"
 
 static void test_access(void)
 {
-  seg_symboltable *table = seg_new_symboltable();
+  seg_err err;
 
-  seg_symbol *a0sym = seg_symboltable_intern(table, "aaa", 3);
-  seg_symbol *b0sym = seg_symboltable_intern(table, "bbb", 3);
+  seg_symboltable *table = NULL;
+  err = seg_new_symboltable(&table);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+
+  seg_object *a0sym = NULL;
+  err = seg_symboltable_intern(table, "aaa", 3, &a0sym);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+
+  seg_object *b0sym = NULL;
+  err = seg_symboltable_intern(table, "bbb", 3, &b0sym);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+
   CU_ASSERT_PTR_NOT_EQUAL(a0sym, b0sym);
 
-  seg_symbol *b1sym = seg_symboltable_intern(table, "bbb", 3);
+  seg_object *b1sym = NULL;
+  err = seg_symboltable_intern(table, "bbb", 3, &b1sym);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+
   CU_ASSERT_PTR_EQUAL(b0sym, b1sym);
 
   seg_delete_symboltable(table);

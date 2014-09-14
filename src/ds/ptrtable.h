@@ -6,6 +6,8 @@
 
 #include "ds/hashtable.h"
 
+// FIXME use seg_err for error reporting
+
 /*
  * Hashtable specialized for keys that are directly comparable and of uniform length. This is
  * most useful for tables keyed by object identity, like symbols, or by instances of a common

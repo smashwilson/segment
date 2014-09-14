@@ -1,11 +1,34 @@
 #include <stdio.h>
 
 #include "ast_printer.h"
+#include "model/object.h"
 
 typedef struct {
   FILE *out;
   int depth;
 } printer_state;
+
+static void print_stringlike(printer_state *pstate, seg_object *object)
+{
+  seg_err err;
+
+  char *out = NULL;
+  uint64_t length = 0l;
+
+  err = seg_string_name(object, &out);
+  if (err != SEG_OK) {
+    fprintf(pstate->out, "[ERR{%d}]\n", err);
+    return;
+  }
+
+  err = seg_string_length(object, &length);
+  if (err != SEG_OK) {
+    fprintf(pstate->out, "[ERR{%d}]\n", err);
+    return;
+  }
+
+  fprintf(pstate->out, "[%.*s]\n", (int) length, out);
+}
 
 static void print_prefix(printer_state *pstate)
 {
@@ -22,7 +45,7 @@ static void print_integer(seg_integer_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  fprintf(pstate->out, "INTEGER: %d\n", node->value);
+  fprintf(pstate->out, "INTEGER: %lu\n", node->value);
 }
 
 static void print_string(seg_string_node *node, void *state)
@@ -38,8 +61,8 @@ static void print_symbol(seg_symbol_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  seg_symbol *sym = node->value;
-  fprintf(pstate->out, "SYMBOL: [%.*s]\n", (int) sym->length, sym->name);
+  fputs("SYMBOL: ", pstate->out);
+  print_stringlike(pstate, node->value);
 }
 
 static void print_var(seg_var_node *node, void *state)
@@ -47,8 +70,8 @@ static void print_var(seg_var_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  seg_symbol *varname = node->varname;
-  fprintf(pstate->out, "VAR: %.*s\n", (int) varname->length, varname->name);
+  fputs("VAR: ", pstate->out);
+  print_stringlike(pstate, node->varname);
 }
 
 static void print_methodcall(seg_methodcall_node *node, void *state)
@@ -56,8 +79,9 @@ static void print_methodcall(seg_methodcall_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  seg_symbol *selector = node->selector;
-  fprintf(pstate->out, "METHODCALL: %.*s\n", (int) selector->length, selector->name);
+  fputs("METHODCALL: ", pstate->out);
+  print_stringlike(pstate, node->selector);
+
   pstate->depth++;
 }
 
@@ -66,29 +90,28 @@ static void print_block(seg_block_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  fprintf(pstate->out, "BLOCK: ");
+  fputs("BLOCK: ", pstate->out);
 
   seg_parameter_list *initial = node->parameters;
   seg_parameter_list *current = initial;
 
   if (initial == NULL) {
-    fprintf(pstate->out, "without parameters");
+    fputs("without parameters", pstate->out);
   } else {
-    fprintf(pstate->out, "[");
+    fputc('<', pstate->out);
   }
 
   while(current != NULL) {
     if (current != initial) {
       fputc(' ', pstate->out);
     }
+    print_stringlike(pstate, current->parameter);
 
-    seg_symbol *parameter = current->parameter;
-    fprintf(pstate->out, "%.*s", (int) parameter->length, parameter->name);
     current = current->next;
   }
 
   if (initial != NULL) {
-    fputc(']', pstate->out);
+    fputc('>', pstate->out);
   }
   fputc('\n', pstate->out);
 

@@ -3,18 +3,15 @@
 
 #include <stdint.h>
 
+#include "errors.h"
 #include "ds/stringtable.h"
+#include "model/object.h"
 
 typedef seg_stringtable seg_symboltable;
 
-typedef struct {
-  const char *name;
-  size_t length;
-} seg_symbol;
-
 /*
  * Default growth characteristics of the symbol table. Each of these may be overridden by the
- * environment variable of the same name.
+ * environment variable of the same name, or controlled at runtime through the Symboltable object.
  */
 
 #define SEG_SYMTABLE_CAP 1048576
@@ -26,19 +23,26 @@ typedef struct {
 /*
  * Allocate a new symboltable for the interpreter. Read initial storage settings for the table from
  * the process' environment.
+ *
+ * SEG_NOMEM: If the allocation fails.
  */
-seg_symboltable *seg_new_symboltable();
+seg_err seg_new_symboltable(seg_symboltable **out);
 
 /*
  * Insert a new entry into the symboltable if it's not already present. Return the newly created
  * symbol or the previously existing one.
+ *
+ * SEG_NOMEM: If the allocation of a new symbol fails.
+ * SEG_RANGE: If the symbol length is greater than seg_symbol() permits.
  */
-seg_symbol *seg_symboltable_intern(seg_symboltable *table, const char *name, size_t length);
+seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_t length, seg_object **out);
 
 /*
- * Access an existing symbol if one exists with the given name. Return NULL if it does not.
+ * Access an existing symbol if one exists with the given name. Return SEG_NO_SYMBOL if it does not.
  */
-seg_symbol *seg_symboltable_get(seg_symboltable *table, const char *name, size_t length);
+seg_object *seg_symboltable_get(seg_symboltable *table, const char *name, uint64_t length);
+
+#define SEG_NO_SYMBOL NULL
 
 /*
  * Cleanly dispose of a symboltable allocated with `seg_new_symboltable`.

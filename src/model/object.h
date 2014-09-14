@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include "errors.h"
-#include "runtime/symboltable.h"
 
 struct seg_object;
 typedef struct seg_object seg_object;
@@ -54,6 +53,20 @@ seg_err seg_cstring(const char *str, seg_object **out);
  * SEG_NOMEM: If the allocation attempt fails.
  */
 seg_err seg_symbol(char *str, uint64_t length, seg_object **out);
+
+/*
+ * Access a symbol or string's contents.
+ *
+ * SEG_TYPE: If stringlike is not a string or symbol.
+ */
+seg_err seg_string_name(seg_object *stringlike, char **out);
+
+/*
+ * Access a symbol or string's length.
+ *
+ * SEG_TYPE: If stringlike is not a string or symbol.
+ */
+seg_err seg_string_length(seg_object *stringlike, uint64_t *out);
 
 /*
  * Allocate a new slotted instance from a class.
@@ -112,7 +125,7 @@ seg_err seg_ivar_atput(seg_object *o, uint64_t index, seg_object *v);
 
 /* Forward declared for _seg_bootstrap_runtime. */
 struct seg_bootstrap_objects;
-typedef struct seg_bootstrap_objects;
+typedef struct seg_bootstrap_objects seg_bootstrap_objects;
 
 /*
  * Populate a runtime with an initial set of basic classes and objects.

@@ -3,32 +3,35 @@
 #include "unit.h"
 #include "errors.h"
 #include "model/object.h"
+#include "runtime/runtime.h"
 
 static void test_integer_literal(void)
 {
-  seg_err result;
+  seg_err err;
 
-  seg_runtime *r = seg_new_runtime();
-  CU_ASSERT_PTR_NOT_NULL_FATAL(r);
+  seg_runtime *r = NULL;
+  err = seg_new_runtime(&r);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
 
   seg_object *i = NULL;
-  result = seg_integer(42l, &i);
-  CU_ASSERT_EQUAL_FATAL(result, SEG_OK);
+  err = seg_integer(42l, &i);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
 
   seg_object *kls = seg_class(i, r);
-  CU_ASSERT_PTR_EQUAL(kls, r.integer_class);
+  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
+  CU_ASSERT_PTR_EQUAL(kls, boots->integer_class);
 
   int64_t v = 0l;
-  result = seg_integer_value(i, &v);
-  CU_ASSERT_EQUAL_FATAL(result, SEG_OK);
+  err = seg_integer_value(i, &v);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
   CU_ASSERT_EQUAL(v, 42l);
 
   seg_object *n = NULL;
-  result = seg_integer(-32l, &n);
-  CU_ASSERT_EQUAL_FATAL(result, SEG_OK);
+  err = seg_integer(-32l, &n);
+  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
 
-  result = seg_integer(1 << 63, &i);
-  CU_ASSERT_EQUAL(result, SEG_RANGE);
+  err = seg_integer(1 << 63, &i);
+  CU_ASSERT_EQUAL(err, SEG_RANGE);
 
   seg_delete_runtime(r);
 }

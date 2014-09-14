@@ -8,17 +8,27 @@ struct seg_runtime {
   seg_bootstrap_objects bootstrap;
 };
 
-seg_runtime *seg_new_runtime()
+seg_err seg_new_runtime(seg_runtime **out)
 {
   seg_runtime *r = malloc(sizeof(seg_runtime));
+  if (r == NULL) {
+    return SEG_NOMEM;
+  }
 
   /* Initialize the symbol table. */
-  r->symboltable = seg_new_symboltable();
+  seg_err err = seg_new_symboltable(&r->symboltable);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   /* Create bootstrap objects. */
-  _seg_bootstrap_runtime(r);
+  err = _seg_bootstrap_runtime(r, &r->bootstrap);
+  if (err != SEG_OK) {
+    return err;
+  }
 
-  return r;
+  out = &r;
+  return SEG_OK;
 }
 
 seg_symboltable *seg_runtime_symboltable(seg_runtime *runtime)

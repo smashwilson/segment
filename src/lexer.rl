@@ -200,7 +200,7 @@ seg_program *seg_parse(char *content, off_t length, seg_options *opts)
   seg_parser_state state;
   state.root = NULL;
   state.context = NULL;
-  state.symboltable = seg_new_symboltable();
+  seg_new_symboltable(&state.symboltable);
 
   %% write init;
 

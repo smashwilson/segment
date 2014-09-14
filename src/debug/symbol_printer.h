@@ -1,7 +1,7 @@
 #ifndef SYMBOL_PRINTER
 #define SYMBOL_PRINTER
 
-#include "symboltable.h"
+#include "runtime/symboltable.h"
 
 /*
  * Dump the contents of the symboltable to stdout, along with some usage statistics.

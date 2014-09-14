@@ -2,7 +2,7 @@
 
 #include "unit.h"
 
-#include "symboltable.h"
+#include "runtime/symboltable.h"
 #include "ds/hashtable.h"
 
 static void test_access(void)

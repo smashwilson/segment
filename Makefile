@@ -47,6 +47,5 @@ tests/units: ${CORE_OBJECTS} ${TEST_OBJECTS}
 .PHONY: clean
 clean:
 	rm -f src/*.o src/grammar.c src/grammar.h src/grammar.out src/lexer.c
-	rm -f src/ds/*.o
-	rm -f src/debug/*.o
-	rm -f tests/unit/*.o
+	rm -f src/debug/*.o src/ds/*.o src/model/*.o src/runtime/*.o
+	rm -f tests/unit/*.o tests/unit/ds/*.o tests/unit/model/*.o tests/unit/runtime/*.o

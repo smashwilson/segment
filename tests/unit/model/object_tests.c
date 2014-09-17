@@ -11,11 +11,11 @@ static void test_integer_literal(void)
 
   seg_runtime *r = NULL;
   err = seg_new_runtime(&r);
-  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+  SEG_ASSERT_OK(err);
 
   seg_object *i = NULL;
   err = seg_integer(42l, &i);
-  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+  SEG_ASSERT_OK(err);
 
   seg_object *kls = seg_class(i, r);
   const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
@@ -23,15 +23,15 @@ static void test_integer_literal(void)
 
   int64_t v = 0l;
   err = seg_integer_value(i, &v);
-  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+  SEG_ASSERT_OK(err);
   CU_ASSERT_EQUAL(v, 42l);
 
   seg_object *n = NULL;
   err = seg_integer(-32l, &n);
-  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+  SEG_ASSERT_OK(err);
 
-  err = seg_integer(1 << 63, &i);
-  CU_ASSERT_EQUAL(err, SEG_RANGE);
+  err = seg_integer(1ll << 63, &i);
+  CU_ASSERT_EQUAL(err->code, SEG_CODE_RANGE);
 
   seg_delete_runtime(r);
 }

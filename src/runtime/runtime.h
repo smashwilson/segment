@@ -44,7 +44,7 @@ seg_symboltable *seg_runtime_symboltable(seg_runtime *runtime);
 /*
  * Access the read-only bootstrap objects.
  */
-const seg_bootstrap_objects const *seg_runtime_bootstraps(seg_runtime *runtime);
+const seg_bootstrap_objects *seg_runtime_bootstraps(seg_runtime *runtime);
 
 /*
  * Dispose of a runtime acquired from seg_new_runtime().

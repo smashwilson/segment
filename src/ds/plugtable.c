@@ -35,7 +35,7 @@ typedef struct {
 
 /* Internal utility methods. */
 
-void pg_find_or_create_entry(
+seg_err pg_find_or_create_entry(
   seg_plugtable *table,
   pg_bucket *buckets,
   uint64_t capacity,
@@ -55,6 +55,9 @@ void pg_find_or_create_entry(
     buck->capacity = table->settings.init_bucket_capacity;
     buck->length = 0;
     buck->content = calloc(buck->capacity, sizeof(pg_entry));
+    if (buck->content == NULL) {
+      return SEG_NOMEM("Unable to allocate plugtable bucket");
+    }
 
     e = &(buck->content[0]);
   } else {
@@ -68,7 +71,7 @@ void pg_find_or_create_entry(
         /* Found! Return this bucket and mark it as existing. */
         *ent = e;
         *created = false;
-        return ;
+        return SEG_OK;
       }
     }
 
@@ -79,6 +82,11 @@ void pg_find_or_create_entry(
       /* Expand an existing bucket that has filled. */
       buck->capacity = buck->capacity * table->settings.bucket_growth_factor;
       buck->content = realloc(buck->content, buck->capacity);
+
+      if (buck->content == NULL) {
+        return SEG_NOMEM("Unable to expand an existing plugtable bucket.");
+      }
+
       memset(buck->content, 0, sizeof(pg_entry) * buck->capacity);
     }
 
@@ -94,21 +102,24 @@ void pg_find_or_create_entry(
 
   *ent = e;
   *created = true;
+
+  return SEG_OK;
 }
 
 /*
  * A new element has been added. Calculate the table's new load and trigger a capacity extension
  * if necessary.
  */
-void pg_trigger_dynamic_resize(seg_plugtable *table)
+seg_err pg_trigger_dynamic_resize(seg_plugtable *table)
 {
   float load = table->count / (float) table->capacity;
   if (load >= table->settings.max_load) {
-    seg_plugtable_resize(table, table->capacity * table->settings.table_growth_factor);
+    return seg_plugtable_resize(table, table->capacity * table->settings.table_growth_factor);
   }
+  return SEG_OK;
 }
 
-void pg_resize_iter(const void *key, void *value, void *state)
+seg_err pg_resize_iter(const void *key, void *value, void *state)
 {
   pg_resize_state *rs = (pg_resize_state*) state;
   pg_entry *e;
@@ -118,14 +129,11 @@ void pg_resize_iter(const void *key, void *value, void *state)
   pg_find_or_create_entry(rs->table, rs->nbuckets, rs->ncapacity, key, &e, &created);
 
   if (! created) {
-    fprintf(
-      stderr,
-      "segment: Unexpected collision during hash growth at key [%s]\n",
-      (const char*) key
-    );
+    return SEG_COLLISION("Unexpected collision during hash growth");
   }
 
   e->value = value;
+  return SEG_OK;
 }
 
 /* Public API. */
@@ -145,12 +153,17 @@ seg_hashtable_settings *seg_plugtable_get_settings(seg_plugtable *table)
   return &(table->settings);
 }
 
-seg_plugtable *seg_new_plugtable(
+seg_err seg_new_plugtable(
   uint64_t capacity,
   seg_plugtable_equal equalfunc,
-  seg_plugtable_hash hashfunc
+  seg_plugtable_hash hashfunc,
+  seg_plugtable **out
 ) {
   seg_plugtable *table = malloc(sizeof(struct seg_plugtable));
+  if (table == NULL) {
+    return SEG_NOMEM("Unable to allocate hashtable");
+  }
+
   table->capacity = capacity;
   table->equalf = equalfunc;
   table->hashf = hashfunc;
@@ -162,17 +175,23 @@ seg_plugtable *seg_new_plugtable(
   table->settings.table_growth_factor = SEG_HT_TABLE_GROWTH_FACTOR;
 
   pg_bucket *buckets = calloc(capacity, sizeof(pg_bucket));
+  if (buckets == NULL) {
+    return SEG_NOMEM("Unable to allocate buckets for hashtable");
+  }
   table->buckets = buckets;
 
-  return table;
+  *out = table;
+  return SEG_OK;
 }
 
-void seg_plugtable_resize(seg_plugtable *table, uint64_t capacity)
+seg_err seg_plugtable_resize(seg_plugtable *table, uint64_t capacity)
 {
+  seg_err err;
+
   uint64_t orig_cap = table->capacity;
   uint64_t orig_count = table->count;
   if (orig_cap == capacity) {
-    return;
+    return SEG_OK;
   }
 
   pg_bucket *nbuckets = calloc(capacity, sizeof(pg_bucket));
@@ -182,22 +201,32 @@ void seg_plugtable_resize(seg_plugtable *table, uint64_t capacity)
   state.nbuckets = nbuckets;
   state.ncapacity = capacity;
 
-  seg_plugtable_each(table, pg_resize_iter, &state);
+  err = seg_plugtable_each(table, pg_resize_iter, &state);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   free(table->buckets);
 
   table->capacity = capacity;
   table->count = orig_count;
   table->buckets = nbuckets;
+
+  return SEG_OK;
 }
 
-void *seg_plugtable_put(seg_plugtable *table, const void *key, void *value)
+seg_err seg_plugtable_put(seg_plugtable *table, const void *key, void *value, void **out)
 {
+  seg_err err;
+
   pg_entry *ent;
   bool created;
   void *result = NULL;
 
-  pg_find_or_create_entry(table, table->buckets, table->capacity, key, &ent, &created);
+  err = pg_find_or_create_entry(table, table->buckets, table->capacity, key, &ent, &created);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   if (! created) {
     result = ent->value;
@@ -206,25 +235,38 @@ void *seg_plugtable_put(seg_plugtable *table, const void *key, void *value)
   ent->value = value;
 
   if (created) {
-    pg_trigger_dynamic_resize(table);
+    err = pg_trigger_dynamic_resize(table);
+    if (err != SEG_OK) {
+      return err;
+    }
   }
 
-  return result;
+  *out = result;
+  return SEG_OK;
 }
 
-void *seg_plugtable_putifabsent(seg_plugtable *table, const void *key, void *value) {
+seg_err seg_plugtable_putifabsent(seg_plugtable *table, const void *key, void *value, void **out) {
+  seg_err err;
+
   pg_entry *ent;
   bool created;
 
-  pg_find_or_create_entry(table, table->buckets, table->capacity, key, &ent, &created);
+  err = pg_find_or_create_entry(table, table->buckets, table->capacity, key, &ent, &created);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   if (! created) {
-    return ent->value;
+    *out = ent->value;
   } else {
     ent->value = value;
-    pg_trigger_dynamic_resize(table);
-    return value;
+    err = pg_trigger_dynamic_resize(table);
+    if (err != SEG_OK) {
+      return err;
+    }
+    *out = value;
   }
+  return SEG_OK;
 }
 
 void *seg_plugtable_get(seg_plugtable *table, const void *key)
@@ -255,8 +297,10 @@ void *seg_plugtable_get(seg_plugtable *table, const void *key)
   return NULL;
 }
 
-void seg_plugtable_each(seg_plugtable *table, seg_plugtable_iterator iter, void *state)
+seg_err seg_plugtable_each(seg_plugtable *table, seg_plugtable_iterator iter, void *state)
 {
+  seg_err err;
+
   for (int b = 0; b < table->capacity; b++) {
     pg_bucket *buck = &(table->buckets[b]);
 
@@ -264,10 +308,15 @@ void seg_plugtable_each(seg_plugtable *table, seg_plugtable_iterator iter, void 
       for (int e = 0; e < buck->length; e++) {
         pg_entry *ent = &(buck->content[e]);
 
-        (*iter)(ent->key, ent->value, state);
+        err = (*iter)(ent->key, ent->value, state);
+        if (err != SEG_OK) {
+          return err;
+        }
       }
     }
   }
+
+  return SEG_OK;
 }
 
 void seg_delete_plugtable(seg_plugtable *table)

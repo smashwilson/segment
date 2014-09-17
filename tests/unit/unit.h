@@ -10,4 +10,14 @@
         return NULL;\
     }
 
+/*
+ * Assert that a seg_err is SEG_OK. If it isn't, print its error as a failure message.
+ */
+#define SEG_ASSERT_OK(err) \
+  do { \
+    if (err != SEG_OK) { \
+      CU_FAIL_FATAL(err->message); \
+    } \
+  } while(0)
+
 #endif

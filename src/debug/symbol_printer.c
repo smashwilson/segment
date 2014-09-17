@@ -4,9 +4,10 @@
 
 #include "ds/hashtable.h"
 
-static void print_symbol(const char *key, size_t key_length, void *value, void *state)
+static seg_err print_symbol(const char *key, const uint64_t key_length, void *value, void *state)
 {
   printf("symbol: [%*s]\n", (int) key_length, key);
+  return SEG_OK;
 }
 
 void seg_print_symboltable(seg_symboltable *table)

@@ -35,7 +35,7 @@ typedef struct {
 
 /* Internal utility methods. */
 
-void pt_find_or_create_entry(
+seg_err pt_find_or_create_entry(
   seg_ptrtable *table,
   pt_bucket *buckets,
   uint64_t capacity,
@@ -56,6 +56,10 @@ void pt_find_or_create_entry(
     buck->length = 0;
     buck->content = calloc(buck->capacity, sizeof(pt_entry));
 
+    if (buck->content == NULL) {
+      return SEG_NOMEM("Unable to allocate ptrtable bucket.");
+    }
+
     e = &(buck->content[0]);
   } else {
     /* Search for an item already present with this key. */
@@ -68,7 +72,7 @@ void pt_find_or_create_entry(
         /* Found! Return this bucket and mark it as existing. */
         *ent = e;
         *created = false;
-        return ;
+        return SEG_OK;
       }
     }
 
@@ -79,6 +83,11 @@ void pt_find_or_create_entry(
       /* Expand an existing bucket that has filled. */
       buck->capacity = buck->capacity * table->settings.bucket_growth_factor;
       buck->content = realloc(buck->content, buck->capacity);
+
+      if (buck->content == NULL) {
+        return SEG_NOMEM("Unable to expand ptrtable bucket.");
+      }
+
       memset(buck->content, 0, sizeof(pt_entry) * buck->capacity);
     }
 
@@ -94,39 +103,43 @@ void pt_find_or_create_entry(
 
   *ent = e;
   *created = true;
+
+  return SEG_OK;
 }
 
 /*
  * A new element has been added. Calculate the table's new load and trigger a capacity extension
  * if necessary.
  */
-void pt_trigger_dynamic_resize(seg_ptrtable *table)
+seg_err pt_trigger_dynamic_resize(seg_ptrtable *table)
 {
   float load = table->count / (float) table->capacity;
   if (load >= table->settings.max_load) {
-    seg_ptrtable_resize(table, table->capacity * table->settings.table_growth_factor);
+    return seg_ptrtable_resize(table, table->capacity * table->settings.table_growth_factor);
   }
+  return SEG_OK;
 }
 
-void pt_resize_iter(const void *key, void *value, void *state)
+seg_err pt_resize_iter(const void *key, void *value, void *state)
 {
+  seg_err err;
+
   pt_resize_state *rs = (pt_resize_state*) state;
   pt_entry *e;
   bool created;
 
   /* Add this entry to the new buckets structure. */
-  pt_find_or_create_entry(rs->table, rs->nbuckets, rs->ncapacity, key, &e, &created);
+  err = pt_find_or_create_entry(rs->table, rs->nbuckets, rs->ncapacity, key, &e, &created);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   if (! created) {
-    fprintf(
-      stderr,
-      "segment: Unexpected collision during hash growth at key [%.*s]\n",
-      (int) rs->table->key_length,
-      (const char*) key
-    );
+    return SEG_COLLISION("Collision during expansion of ptrtable.");
   }
 
   e->value = value;
+  return SEG_OK;
 }
 
 /* Public API. */
@@ -146,9 +159,13 @@ seg_hashtable_settings *seg_ptrtable_get_settings(seg_ptrtable *table)
   return &(table->settings);
 }
 
-seg_ptrtable *seg_new_ptrtable(uint64_t capacity, size_t key_length)
+seg_err seg_new_ptrtable(uint64_t capacity, uint64_t key_length, seg_ptrtable **out)
 {
   seg_ptrtable *table = malloc(sizeof(struct seg_ptrtable));
+  if (table == NULL) {
+    return SEG_NOMEM("Unable to allocate ptrtable.");
+  }
+
   table->capacity = capacity;
   table->key_length = key_length;
   table->count = 0L;
@@ -160,42 +177,60 @@ seg_ptrtable *seg_new_ptrtable(uint64_t capacity, size_t key_length)
   table->settings.table_growth_factor = SEG_HT_TABLE_GROWTH_FACTOR;
 
   pt_bucket *buckets = calloc(capacity, sizeof(pt_bucket));
-  table->buckets = buckets;
+  if (buckets == NULL) {
+    return SEG_NOMEM("Unable to allocate ptrtable buckets.");
+  }
 
-  return table;
+  table->buckets = buckets;
+  *out = table;
+  return SEG_OK;
 }
 
-void seg_ptrtable_resize(seg_ptrtable *table, uint64_t capacity)
+seg_err seg_ptrtable_resize(seg_ptrtable *table, uint64_t capacity)
 {
+  seg_err err;
+
   uint64_t orig_cap = table->capacity;
   uint64_t orig_count = table->count;
   if (orig_cap == capacity) {
-    return;
+    return SEG_OK;
   }
 
   pt_bucket *nbuckets = calloc(capacity, sizeof(pt_bucket));
+  if (nbuckets == NULL) {
+    return SEG_NOMEM("Unable to allocate resized ptrtable buckets.");
+  }
 
   pt_resize_state state;
   state.table = table;
   state.nbuckets = nbuckets;
   state.ncapacity = capacity;
 
-  seg_ptrtable_each(table, pt_resize_iter, &state);
+  err = seg_ptrtable_each(table, pt_resize_iter, &state);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   free(table->buckets);
 
   table->capacity = capacity;
   table->count = orig_count;
   table->buckets = nbuckets;
+  return SEG_OK;
 }
 
-void *seg_ptrtable_put(seg_ptrtable *table, const void *key, void *value)
+seg_err seg_ptrtable_put(seg_ptrtable *table, const void *key, void *value, void **out)
 {
+  seg_err err;
+
   pt_entry *ent;
   bool created;
   void *result = NULL;
 
-  pt_find_or_create_entry(table, table->buckets, table->capacity, key, &ent, &created);
+  err = pt_find_or_create_entry(table, table->buckets, table->capacity, key, &ent, &created);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   if (! created) {
     result = ent->value;
@@ -204,25 +239,39 @@ void *seg_ptrtable_put(seg_ptrtable *table, const void *key, void *value)
   ent->value = value;
 
   if (created) {
-    pt_trigger_dynamic_resize(table);
+    err = pt_trigger_dynamic_resize(table);
+    if (err != SEG_OK) {
+      return err;
+    }
   }
 
-  return result;
+  *out = result;
+  return SEG_OK;
 }
 
-void *seg_ptrtable_putifabsent(seg_ptrtable *table, const void *key, void *value) {
+seg_err seg_ptrtable_putifabsent(seg_ptrtable *table, const void *key, void *value, void **out) {
+  seg_err err;
+
   pt_entry *ent;
   bool created;
 
-  pt_find_or_create_entry(table, table->buckets, table->capacity, key, &ent, &created);
+  err = pt_find_or_create_entry(table, table->buckets, table->capacity, key, &ent, &created);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   if (! created) {
-    return ent->value;
+    *out = ent->value;
   } else {
     ent->value = value;
-    pt_trigger_dynamic_resize(table);
-    return value;
+    err = pt_trigger_dynamic_resize(table);
+    if (err != SEG_OK) {
+      return err;
+    }
+    *out = value;
   }
+
+  return SEG_OK;
 }
 
 void *seg_ptrtable_get(seg_ptrtable *table, const void *key)
@@ -253,8 +302,10 @@ void *seg_ptrtable_get(seg_ptrtable *table, const void *key)
   return NULL;
 }
 
-void seg_ptrtable_each(seg_ptrtable *table, seg_ptrtable_iterator iter, void *state)
+seg_err seg_ptrtable_each(seg_ptrtable *table, seg_ptrtable_iterator iter, void *state)
 {
+  seg_err err;
+
   for (int b = 0; b < table->capacity; b++) {
     pt_bucket *buck = &(table->buckets[b]);
 
@@ -262,10 +313,15 @@ void seg_ptrtable_each(seg_ptrtable *table, seg_ptrtable_iterator iter, void *st
       for (int e = 0; e < buck->length; e++) {
         pt_entry *ent = &(buck->content[e]);
 
-        (*iter)(ent->key, ent->value, state);
+        err = (*iter)(ent->key, ent->value, state);
+        if (err != SEG_OK) {
+          return err;
+        }
       }
     }
   }
+
+  return SEG_OK;
 }
 
 void seg_delete_ptrtable(seg_ptrtable *table)

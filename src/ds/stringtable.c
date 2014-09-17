@@ -37,7 +37,7 @@ typedef struct {
 
 /* Internal utility methods. */
 
-void st_find_or_create_entry(
+seg_err st_find_or_create_entry(
   seg_stringtable *table,
   st_bucket *buckets,
   size_t capacity,
@@ -59,6 +59,10 @@ void st_find_or_create_entry(
     buck->length = 0;
     buck->content = calloc(buck->capacity, sizeof(st_entry));
 
+    if (buck->content == NULL) {
+      return SEG_NOMEM("Unable to allocate stringtable bucket.");
+    }
+
     e = &(buck->content[0]);
   } else {
     /* Search for an item already present with this key. */
@@ -72,7 +76,7 @@ void st_find_or_create_entry(
         /* Found! Return this bucket and mark it as existing. */
         *ent = e;
         *created = false;
-        return ;
+        return SEG_OK;
       }
     }
 
@@ -83,6 +87,11 @@ void st_find_or_create_entry(
       /* Expand an existing bucket that has filled. */
       buck->capacity = buck->capacity * table->settings.bucket_growth_factor;
       buck->content = realloc(buck->content, buck->capacity);
+
+      if (buck->content == NULL) {
+        return SEG_NOMEM("Unable to expand stringtable bucket.");
+      }
+
       memset(buck->content, 0, sizeof(st_entry) * buck->capacity);
     }
 
@@ -99,39 +108,43 @@ void st_find_or_create_entry(
 
   *ent = e;
   *created = true;
+
+  return SEG_OK;
 }
 
 /*
  * A new element has been added. Calculate the table's new load and trigger a capacity extension
  * if necessary.
  */
-void st_trigger_dynamic_resize(seg_stringtable *table)
+seg_err st_trigger_dynamic_resize(seg_stringtable *table)
 {
   float load = table->count / (float) table->capacity;
   if (load >= table->settings.max_load) {
-    seg_stringtable_resize(table, table->capacity * table->settings.table_growth_factor);
+    return seg_stringtable_resize(table, table->capacity * table->settings.table_growth_factor);
   }
+  return SEG_OK;
 }
 
-void st_resize_iter(const char *key, const size_t key_length, void *value, void *state)
+seg_err st_resize_iter(const char *key, const uint64_t key_length, void *value, void *state)
 {
+  seg_err err;
+
   st_resize_state *rs = (st_resize_state*) state;
   st_entry *e;
   bool created;
 
   /* Add this entry to the new buckets structure. */
-  st_find_or_create_entry(rs->table, rs->nbuckets, rs->ncapacity, key, key_length, &e, &created);
+  err = st_find_or_create_entry(rs->table, rs->nbuckets, rs->ncapacity, key, key_length, &e, &created);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   if (! created) {
-    fprintf(
-      stderr,
-      "segment: Unexpected collision during hash growth at key [%.*s]\n",
-      (int) key_length,
-      key
-    );
+    return SEG_COLLISION("Unexpected collision when resizing stringtable.");
   }
 
   e->value = value;
+  return SEG_OK;
 }
 
 /* Public API. */
@@ -151,9 +164,13 @@ seg_hashtable_settings *seg_stringtable_get_settings(seg_stringtable *table)
   return &(table->settings);
 }
 
-seg_stringtable *seg_new_stringtable(uint64_t capacity)
+seg_err seg_new_stringtable(uint64_t capacity, seg_stringtable **out)
 {
   seg_stringtable *table = malloc(sizeof(struct seg_stringtable));
+  if (table == NULL) {
+    return SEG_NOMEM("Unable to allocate stringtable.");
+  }
+
   table->capacity = capacity;
   table->count = 0L;
   table->seed = (uint32_t) ((intptr_t) table) % UINT32_MAX;
@@ -164,42 +181,63 @@ seg_stringtable *seg_new_stringtable(uint64_t capacity)
   table->settings.table_growth_factor = SEG_HT_TABLE_GROWTH_FACTOR;
 
   st_bucket *buckets = calloc(capacity, sizeof(st_bucket));
-  table->buckets = buckets;
 
-  return table;
+  if (buckets == NULL) {
+    return SEG_NOMEM("Unable to allocate buckets for stringtable.");
+  }
+
+  table->buckets = buckets;
+  *out = table;
+
+  return SEG_OK;
 }
 
-void seg_stringtable_resize(seg_stringtable *table, uint64_t capacity)
+seg_err seg_stringtable_resize(seg_stringtable *table, uint64_t capacity)
 {
+  seg_err err;
+
   uint64_t orig_cap = table->capacity;
   uint64_t orig_count = table->count;
   if (orig_cap == capacity) {
-    return;
+    return SEG_OK;
   }
 
   st_bucket *nbuckets = calloc(capacity, sizeof(st_bucket));
+  if (nbuckets == NULL) {
+    return SEG_NOMEM("Unable to allocate new buckets to resize stringtable.");
+  }
 
   st_resize_state state;
   state.table = table;
   state.nbuckets = nbuckets;
   state.ncapacity = capacity;
 
-  seg_stringtable_each(table, st_resize_iter, &state);
+  err = seg_stringtable_each(table, st_resize_iter, &state);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   free(table->buckets);
 
   table->capacity = capacity;
   table->count = orig_count;
   table->buckets = nbuckets;
+
+  return SEG_OK;
 }
 
-void *seg_stringtable_put(seg_stringtable *table, const char *key, size_t key_length, void *value)
+seg_err seg_stringtable_put(seg_stringtable *table, const char *key, size_t key_length, void *value, void **out)
 {
+  seg_err err;
+
   st_entry *ent;
   bool created;
   void *result = NULL;
 
-  st_find_or_create_entry(table, table->buckets, table->capacity, key, key_length, &ent, &created);
+  err = st_find_or_create_entry(table, table->buckets, table->capacity, key, key_length, &ent, &created);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   if (! created) {
     result = ent->value;
@@ -208,30 +246,45 @@ void *seg_stringtable_put(seg_stringtable *table, const char *key, size_t key_le
   ent->value = value;
 
   if (created) {
-    st_trigger_dynamic_resize(table);
+    err = st_trigger_dynamic_resize(table);
+    if (err != SEG_OK) {
+      return err;
+    }
   }
 
-  return result;
+  *out = result;
+  return SEG_OK;
 }
 
-void *seg_stringtable_putifabsent(
+seg_err seg_stringtable_putifabsent(
   seg_stringtable *table,
   const char *key,
   size_t key_length,
-  void *value
+  void *value,
+  void **out
 ) {
+  seg_err err;
   st_entry *ent;
   bool created;
 
-  st_find_or_create_entry(table, table->buckets, table->capacity, key, key_length, &ent, &created);
+  err = st_find_or_create_entry(table, table->buckets, table->capacity, key, key_length, &ent, &created);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   if (! created) {
-    return ent->value;
+    *out = ent->value;
   } else {
     ent->value = value;
-    st_trigger_dynamic_resize(table);
-    return value;
+    err = st_trigger_dynamic_resize(table);
+    if (err != SEG_OK) {
+      return err;
+    }
+
+    *out = value;
   }
+
+  return SEG_OK;
 }
 
 void *seg_stringtable_get(seg_stringtable *table, const char *key, size_t key_length)
@@ -263,8 +316,10 @@ void *seg_stringtable_get(seg_stringtable *table, const char *key, size_t key_le
   return NULL;
 }
 
-void seg_stringtable_each(seg_stringtable *table, seg_stringtable_iterator iter, void *state)
+seg_err seg_stringtable_each(seg_stringtable *table, seg_stringtable_iterator iter, void *state)
 {
+  seg_err err;
+
   for (int b = 0; b < table->capacity; b++) {
     st_bucket *buck = &(table->buckets[b]);
 
@@ -272,10 +327,15 @@ void seg_stringtable_each(seg_stringtable *table, seg_stringtable_iterator iter,
       for (int e = 0; e < buck->length; e++) {
         st_entry *ent = &(buck->content[e]);
 
-        (*iter)(ent->key, ent->key_length, ent->value, state);
+        err = (*iter)(ent->key, ent->key_length, ent->value, state);
+        if (err != SEG_OK) {
+          return err;
+        }
       }
     }
   }
+
+  return SEG_OK;
 }
 
 void seg_delete_stringtable(seg_stringtable *table)

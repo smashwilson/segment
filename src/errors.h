@@ -1,7 +1,7 @@
 #ifndef ERRORS_H
 #define ERRORS_H
 
-#include <stdint.h>
+#include <stdlib.h>
 
 typedef enum {
 
@@ -13,6 +13,9 @@ typedef enum {
 
   /* Operation performed on an instance of an incorrect type. */
   SEG_CODE_TYPE,
+
+  /* Unexpected hash collision encountered. */
+  SEG_CODE_COLLISION,
 
   /* Operation not supported yet. */
   SEG_CODE_NOTYET
@@ -26,25 +29,14 @@ typedef struct __seg_err {
 
 #define SEG_OK NULL
 
-static struct __seg_err __seg_err_nomem = {
-  .code = SEG_CODE_NOMEM,
-  .message = "Out of memory"
-};
+seg_err __seg_create_err(seg_err_code code, const char *msg);
 
-#define __SEG_ERR(ecode, ebody) \
-  do { \
-    seg_err __seg_err_ ## __LINE__ = malloc(sizeof(seg_err)); \
-    if __seg_err_ ## __LINE__ == NULL { \
-      __seg_err_ ## __LINE__.code = (ecode); \
-      __seg_err_ ## __LINE__.message = "__FILE__@L__LINE__:" ## (ebody); \
-    } else { \
-      &__seg_err_nomem \
-    } \
-  } while(0)
+#define __PREFIX(msg) (__FILE__ ": " msg)
 
-#define SEG_NOMEM(msg) __SEG_ERR(SEG_CODE_NOMEM, msg)
-#define SEG_RANGE(msg) __SEG_ERR(SEG_CODE_RANGE, msg)
-#define SEG_TYPE(msg) __SEG_ERR(SEG_CODE_TYPE, msg)
-#define SEG_NOTYET(msg) __SEG_ERR(SEG_CODE_NOTYET, msg)
+#define SEG_NOMEM(msg) __seg_create_err(SEG_CODE_NOMEM, __PREFIX(msg))
+#define SEG_RANGE(msg) __seg_create_err(SEG_CODE_RANGE, __PREFIX(msg))
+#define SEG_TYPE(msg) __seg_create_err(SEG_CODE_TYPE, __PREFIX(msg))
+#define SEG_COLLISION(msg) __seg_create_err(SEG_CODE_COLLISION, __PREFIX(msg))
+#define SEG_NOTYET(msg) __seg_create_err(SEG_CODE_NOTYET, __PREFIX(msg))
 
 #endif

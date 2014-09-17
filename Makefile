@@ -8,7 +8,9 @@ CORE_OBJECTS = src/lexer.o
 CORE_OBJECTS += src/token.o src/ast.o
 CORE_OBJECTS += src/parse_helpers.o
 
+CORE_OBJECTS += src/errors.o
 CORE_OBJECTS += src/ds/stringtable.o src/ds/ptrtable.o src/ds/plugtable.o src/ds/murmur.o
+
 CORE_OBJECTS += src/model/object.o
 CORE_OBJECTS += src/runtime/symboltable.o src/runtime/runtime.o
 CORE_OBJECTS += src/debug/ast_printer.o src/debug/symbol_printer.o

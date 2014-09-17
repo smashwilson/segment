@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-// FIXME use seg_err for error reporting
+#include "errors.h"
 
 /*
  * Settings that control the growth behavior of a hashtable.

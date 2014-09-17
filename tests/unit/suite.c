@@ -24,7 +24,7 @@ int main(void)
 
   // ADD_SUITE(initialize_stringtable_suite);
   // ADD_SUITE(initialize_symboltable_suite);
-  // ADD_SUITE(initialize_ptrtable_suite);
+  ADD_SUITE(initialize_ptrtable_suite);
   ADD_SUITE(initialize_plugtable_suite);
   // ADD_SUITE(initialize_object_suite);
   // ADD_SUITE(initialize_runtime_suite);

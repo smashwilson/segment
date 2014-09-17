@@ -16,6 +16,7 @@
 #define SEG_ASSERT_OK(err) \
   do { \
     if (err != SEG_OK) { \
+      fprintf(stderr, "\nerror: %s\n", err->message); \
       CU_FAIL_FATAL(err->message); \
     } \
   } while(0)

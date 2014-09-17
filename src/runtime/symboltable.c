@@ -5,6 +5,7 @@
 
 seg_err seg_new_symboltable(seg_symboltable **out)
 {
+  seg_err err;
   char *end = NULL;
 
   uint64_t capacity = SEG_SYMTABLE_CAP;
@@ -38,7 +39,11 @@ seg_err seg_new_symboltable(seg_symboltable **out)
     table_growth_factor = (uint32_t) strtoul(growth_str, &end, 10);
   }
 
-  seg_stringtable *table = seg_new_stringtable(capacity);
+  seg_stringtable *table;
+  err = seg_new_stringtable(capacity, &table);
+  if (err != SEG_OK) {
+    return err;
+  }
 
   seg_hashtable_settings *settings = seg_stringtable_get_settings(table);
   settings->init_bucket_capacity = init_bucket_capacity;
@@ -46,7 +51,7 @@ seg_err seg_new_symboltable(seg_symboltable **out)
   settings->max_load = max_load;
   settings->table_growth_factor = table_growth_factor;
 
-  out = &table;
+  *out = table;
   return SEG_OK;
 }
 
@@ -62,7 +67,7 @@ seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_
 
   char *ownname = malloc(sizeof(char) * length);
   if (ownname == NULL) {
-    return SEG_NOMEM;
+    return SEG_NOMEM("Unable to allocate symbol.");
   }
   ownname = memcpy(ownname, name, length);
 
@@ -71,9 +76,14 @@ seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_
   if (err != SEG_OK) {
     return err;
   }
-  seg_stringtable_put(table, name, length, created);
 
-  out = &created;
+  void *prior;
+  err = seg_stringtable_put(table, name, length, created, &prior);
+  if (err != SEG_OK) {
+    return err;
+  }
+
+  *out = (seg_object *) created;
   return SEG_OK;
 }
 

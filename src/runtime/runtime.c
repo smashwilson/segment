@@ -10,13 +10,15 @@ struct seg_runtime {
 
 seg_err seg_new_runtime(seg_runtime **out)
 {
+  seg_err err;
+
   seg_runtime *r = malloc(sizeof(seg_runtime));
   if (r == NULL) {
-    return SEG_NOMEM;
+    return SEG_NOMEM("Unable to allocate runtime.");
   }
 
   /* Initialize the symbol table. */
-  seg_err err = seg_new_symboltable(&r->symboltable);
+  err = seg_new_symboltable(&r->symboltable);
   if (err != SEG_OK) {
     return err;
   }
@@ -27,7 +29,7 @@ seg_err seg_new_runtime(seg_runtime **out)
     return err;
   }
 
-  out = &r;
+  *out = r;
   return SEG_OK;
 }
 
@@ -36,7 +38,7 @@ seg_symboltable *seg_runtime_symboltable(seg_runtime *runtime)
   return runtime->symboltable;
 }
 
-const seg_bootstrap_objects const *seg_runtime_bootstraps(seg_runtime *runtime)
+const seg_bootstrap_objects *seg_runtime_bootstraps(seg_runtime *runtime)
 {
   return &(runtime->bootstrap);
 }

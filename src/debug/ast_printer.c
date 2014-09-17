@@ -45,7 +45,7 @@ static void print_integer(seg_integer_node *node, void *state)
   printer_state *pstate = (printer_state *) state;
   print_prefix(pstate);
 
-  fprintf(pstate->out, "INTEGER: %lu\n", node->value);
+  fprintf(pstate->out, "INTEGER: %lld\n", node->value);
 }
 
 static void print_string(seg_string_node *node, void *state)

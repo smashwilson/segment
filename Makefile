@@ -1,4 +1,4 @@
-CFLAGS = -std=c99 -Isrc/ -Itests/unit/
+CFLAGS = -std=c11 -Isrc/ -Itests/unit/
 
 ifdef DEBUG
 	CFLAGS += -g

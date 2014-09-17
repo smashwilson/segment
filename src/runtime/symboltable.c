@@ -77,7 +77,7 @@ seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_
   return SEG_OK;
 }
 
-seg_object *seg_symboltable_get(seg_symboltable *table, const char *name, size_t length)
+seg_object *seg_symboltable_get(seg_symboltable *table, const char *name, uint64_t length)
 {
   return (seg_object*) seg_stringtable_get(table, name, length);
 }

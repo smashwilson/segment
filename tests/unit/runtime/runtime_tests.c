@@ -9,9 +9,11 @@ static void test_creation(void)
 {
   seg_err err;
 
-  seg_runtime *r = NULL;
+  seg_runtime *r;
   err = seg_new_runtime(&r);
-  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+  SEG_ASSERT_OK(err);
+
+  printf("r = %p\n", r);
 
   seg_symboltable *symtable = seg_runtime_symboltable(r);
   CU_ASSERT_PTR_NOT_NULL(symtable);
@@ -25,7 +27,7 @@ static void test_bootstrap(void)
 
   seg_runtime *r = NULL;
   err = seg_new_runtime(&r);
-  CU_ASSERT_EQUAL_FATAL(err, SEG_OK);
+  SEG_ASSERT_OK(err);
 
   const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
 

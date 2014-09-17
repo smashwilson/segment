@@ -17,13 +17,13 @@ static void print_stringlike(printer_state *pstate, seg_object *object)
 
   err = seg_string_name(object, &out);
   if (err != SEG_OK) {
-    fprintf(pstate->out, "[ERR{%d}]\n", err);
+    fprintf(pstate->out, "[ERR: %s]\n", err->message);
     return;
   }
 
   err = seg_string_length(object, &length);
   if (err != SEG_OK) {
-    fprintf(pstate->out, "[ERR{%d}]\n", err);
+    fprintf(pstate->out, "[ERR: %s]\n", err->message);
     return;
   }
 

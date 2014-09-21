@@ -131,14 +131,9 @@ seg_err seg_symbol(char *str, uint64_t length, seg_object **out)
   return SEG_NOTYET("seg_symbol");
 }
 
-seg_err seg_string_name(seg_object *stringlike, char **out)
+seg_err seg_string_contents(seg_object *stringlike, char **out, uint64_t *length)
 {
-  return SEG_NOTYET("seg_string_name");
-}
-
-seg_err seg_string_length(seg_object *stringlike, uint64_t *out)
-{
-  return SEG_NOTYET("seg_string_length");
+  return SEG_NOTYET("seg_string_contents");
 }
 
 

@@ -65,18 +65,11 @@ seg_err seg_cstring(const char *str, seg_object **out);
 seg_err seg_symbol(char *str, uint64_t length, seg_object **out);
 
 /*
- * Access a symbol or string's contents.
+ * Access a symbol or string's contents and length.
  *
  * SEG_TYPE: If stringlike is not a string or symbol.
  */
-seg_err seg_string_name(seg_object *stringlike, char **out);
-
-/*
- * Access a symbol or string's length.
- *
- * SEG_TYPE: If stringlike is not a string or symbol.
- */
-seg_err seg_string_length(seg_object *stringlike, uint64_t *out);
+seg_err seg_string_contents(seg_object *stringlike, char **out, uint64_t *length);
 
 /*
  * Allocate a new slotted instance from a class.

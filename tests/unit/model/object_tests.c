@@ -1,4 +1,5 @@
 #include <CUnit/CUnit.h>
+#include <string.h>
 
 #include "unit.h"
 #include "errors.h"
@@ -43,7 +44,24 @@ static void test_integer_literal(void)
 
 static void test_string_literal(void)
 {
-  CU_FAIL("pending");
+  seg_err err;
+
+  seg_runtime *r = NULL;
+  err = seg_new_runtime(&r);
+  SEG_ASSERT_OK(err);
+
+  seg_object *s = NULL;
+  err = seg_string("sup", 3, &s);
+  SEG_ASSERT_OK(err);
+
+  char *v = NULL;
+  uint64_t len = 0;
+  err = seg_string_contents(s, &v, &len);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_EQUAL(len, 3);
+  CU_ASSERT_EQUAL(strncmp(v, "sup", len), 0);
+
+  seg_delete_runtime(r);
 }
 
 static void test_symbol_literal(void)

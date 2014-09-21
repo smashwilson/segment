@@ -30,7 +30,12 @@ static void test_integer_literal(void)
   err = seg_integer(-32l, &n);
   SEG_ASSERT_OK(err);
 
+  err = seg_integer_value(n, &v);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_EQUAL(v, -32l);
+
   err = seg_integer(1ll << 63, &i);
+  CU_ASSERT_PTR_NOT_NULL_FATAL(err);
   CU_ASSERT_EQUAL(err->code, SEG_CODE_RANGE);
 
   seg_delete_runtime(r);

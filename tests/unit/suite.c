@@ -28,10 +28,10 @@ int main(void)
   ADD_SUITE(initialize_ptrtable_suite);
   ADD_SUITE(initialize_stringtable_suite);
 
-  // ADD_SUITE(initialize_object_suite);
+  ADD_SUITE(initialize_object_suite);
 
   // ADD_SUITE(initialize_runtime_suite);
-  ADD_SUITE(initialize_symboltable_suite);
+  // ADD_SUITE(initialize_symboltable_suite);
 
   CU_basic_set_mode(CU_BRM_VERBOSE);
   CU_basic_run_tests();

@@ -27,6 +27,16 @@ seg_object *seg_class(seg_object *object, seg_runtime *r);
 seg_err seg_integer(int64_t value, seg_object **out);
 
 /*
+ * The maximum value that can legally be stored within an immediate integer.
+ */
+#define SEG_INTEGER_MAX ((int64_t) 0x1fffffffffffffff)
+
+/*
+ * The minimum value that can legally be stored within an immediate integer.
+ */
+#define SEG_INTEGER_MIN ((int64_t) 0xe000000000000000)
+
+/*
  * Access the value of an integer object.
  *
  * SEG_TYPE: If object is not an integer literal.

@@ -11,17 +11,17 @@ struct seg_object {
   uint64_t header;
 };
 
-struct seg_object_stringlike {
+typedef struct {
   seg_object object;
   char *bytes;
-};
+} seg_object_stringlike;
 
-struct seg_object_slotted {
+typedef struct {
   seg_object object;
   uint64_t capacity;
   uint64_t length;
   seg_object **slots;
-};
+} seg_object_slotted;
 
 /*
  * Create a mask that occludes all but the topmost `width` bits of a uintptr_t, where
@@ -116,14 +116,30 @@ seg_err seg_integer_value(seg_object *object, int64_t *out)
 
 // SEG_STRINGLIKE //////////////////////////////////////////////////////////////////////////////////
 
-seg_err seg_string(char *str, uint64_t length, seg_object **out)
+seg_err seg_string(const char *str, uint64_t length, seg_object **out)
 {
-  return SEG_NOTYET("seg_string");
+  if (length > SEG_STRLEN_MAX) {
+    return SEG_RANGE("Attempt to allocate a string that's too large.");
+  }
+
+  seg_object_stringlike *s = malloc(sizeof(seg_object_stringlike) + length);
+  if (s == NULL) {
+    return SEG_NOMEM("Unable to allocate string object.");
+  }
+
+  s->object.header = STRING_FLAG | (length & ~STRING_MASK);
+
+  char *content = (char *) s + sizeof(seg_object_stringlike);
+  s->bytes = memcpy(content, str, length);
+
+  *out = (seg_object*) s;
+
+  return SEG_OK;
 }
 
 seg_err seg_cstring(const char *str, seg_object **out)
 {
-  return SEG_NOTYET("seg_cstring");
+  return seg_string(str, strlen(str), out);
 }
 
 seg_err seg_symbol(char *str, uint64_t length, seg_object **out)
@@ -133,7 +149,16 @@ seg_err seg_symbol(char *str, uint64_t length, seg_object **out)
 
 seg_err seg_string_contents(seg_object *stringlike, char **out, uint64_t *length)
 {
-  return SEG_NOTYET("seg_string_contents");
+  if (!IS_STRING(stringlike) && !IS_SYMBOL(stringlike)) {
+    return SEG_TYPE("Non-string or symbol provided to seg_string_contents");
+  }
+
+  seg_object_stringlike *casted = (seg_object_stringlike *) stringlike;
+
+  *out = casted->bytes;
+  *length = casted->object.header & ~STRING_MASK;
+
+  return SEG_OK;
 }
 
 

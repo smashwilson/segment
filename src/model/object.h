@@ -44,11 +44,16 @@ seg_err seg_integer(int64_t value, seg_object **out);
 seg_err seg_integer_value(seg_object *object, int64_t *out);
 
 /*
+ * The maximum length of a string (in bytes) that can be stored within a seg_string or a seg_symbol.
+ */
+#define SEG_STRLEN_MAX ((uint64_t) 0x1fffffffffffffff)
+
+/*
  * Allocate a new string object.
  *
  * SEG_NOMEM: If the allocation attempt fails.
  */
-seg_err seg_string(char *str, uint64_t length, seg_object **out);
+seg_err seg_string(const char *str, uint64_t length, seg_object **out);
 
 /*
  * Convenience constructor for creating seg_object Strings out of literal, C-style strings.

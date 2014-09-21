@@ -31,7 +31,10 @@ typedef struct __seg_err {
 
 seg_err __seg_create_err(seg_err_code code, const char *msg);
 
-#define __PREFIX(msg) (__FILE__ ": " msg)
+#define __STRINGIZE_DETAIL(x) #x
+#define __STRINGIZE(x) __STRINGIZE_DETAIL(x)
+
+#define __PREFIX(msg) (__FILE__ "@L" __STRINGIZE(__LINE__) ": " msg)
 
 #define SEG_NOMEM(msg) __seg_create_err(SEG_CODE_NOMEM, __PREFIX(msg))
 #define SEG_RANGE(msg) __seg_create_err(SEG_CODE_RANGE, __PREFIX(msg))

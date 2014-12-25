@@ -21,4 +21,18 @@
     } \
   } while(0)
 
+#define SEG_ASSERT_SAME(a, b) \
+  do { \
+    if (!SEG_SAME(a, b)) { \
+      CU_FAIL_FATAL("Instances differed."); \
+    } \
+  } while(0)
+
+#define SEG_ASSERT_DIFFERENT(a, b) \
+  do { \
+    if (SEG_SAME(a, b)) { \
+      CU_FAIL_FATAL("Instances were the same."); \
+    } \
+  } while(0)
+
 #endif

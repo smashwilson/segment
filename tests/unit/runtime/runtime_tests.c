@@ -32,13 +32,13 @@ static void test_bootstrap(void)
   const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
 
   /* The Class class has itself as its class. */
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->class_class, r));
+  SEG_ASSERT_SAME(boots->class_class, seg_class(r, boots->class_class));
 
   /* The other classes are instances of the Class class for each literal. */
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->integer_class, r));
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->string_class, r));
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->symbol_class, r));
-  CU_ASSERT_EQUAL(boots->class_class, seg_class(boots->block_class, r));
+  SEG_ASSERT_SAME(boots->class_class, seg_class(r, boots->integer_class));
+  SEG_ASSERT_SAME(boots->class_class, seg_class(r, boots->string_class));
+  SEG_ASSERT_SAME(boots->class_class, seg_class(r, boots->symbol_class));
+  SEG_ASSERT_SAME(boots->class_class, seg_class(r, boots->block_class));
 
   seg_delete_runtime(r);
 }

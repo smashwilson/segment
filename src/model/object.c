@@ -97,14 +97,14 @@ seg_err seg_integer(seg_runtime *r, int64_t value, seg_object *out)
   out->bits.immediate = 1;
   out->bits.kind = SEG_IMM_INTEGER;
   out->bits.length = 0;
-  out->bits.body = (value << 8);
+  out->bits.body = value;
 
   return SEG_OK;
 }
 
 seg_err seg_integer_value(seg_object object, int64_t *out)
 {
-  if (!object.bits.immediate || !object.bits.kind != SEG_IMM_INTEGER) {
+  if (!object.bits.immediate || object.bits.kind != SEG_IMM_INTEGER) {
     return SEG_TYPE("Object was not an integer");
   }
 

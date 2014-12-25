@@ -23,7 +23,7 @@ char *seg_token_as_string(seg_token *tok, size_t *length);
 /*
  * Intern part of the content of this token as a symbol.
  */
-seg_object *seg_token_intern_without(
+seg_object seg_token_intern_without(
   seg_token *tok,
   seg_symboltable *table,
   size_t initial,

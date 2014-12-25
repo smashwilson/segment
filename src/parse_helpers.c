@@ -49,9 +49,10 @@ int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t len
    Even if you're nesting blocks like a crazy person a simple linear scan should do the trick
    here.
   */
-  seg_object *existing = seg_symboltable_get(state->symboltable, identifier, length);
-  if (existing == NULL) {
+  seg_object existing = seg_symboltable_get(state->symboltable, identifier, length);
+  if (SEG_SAME(existing, SEG_NO_SYMBOL)) {
     /* If it wasn't intern'd, it's not an argument. */
+    // FIXME this isn't true if the symbol is an immediate.
     return 0;
   }
 
@@ -61,7 +62,7 @@ int seg_parser_isarg(seg_parser_state *state, const char *identifier, size_t len
     seg_parameter_list *cparam = current->block->parameters;
 
     while (cparam != NULL) {
-      if (cparam->parameter == existing) {
+      if (SEG_SAME(cparam->parameter, existing)) {
         return 1;
       }
 
@@ -143,7 +144,7 @@ seg_expr_node *seg_implicit_methodcall(
   seg_expr_node *receiver,
   const char *selector
 ) {
-  seg_object *selsym = NULL;
+  seg_object selsym;
   seg_symboltable_intern(state->symboltable, selector, strlen(selector), &selsym);
 
   seg_expr_node *out = malloc(sizeof(seg_expr_node));
@@ -196,7 +197,7 @@ seg_arg_list *seg_parse_arg(seg_parser_state *state, seg_expr_node *value, seg_t
 
     seg_symboltable_intern(state->symboltable, kwname, length, &arg->keyword);
   } else {
-    arg->keyword = NULL;
+    arg->keyword.pointer = NULL;
   }
 
   arg->value = value;

@@ -8,14 +8,14 @@ typedef struct {
   int depth;
 } printer_state;
 
-static void print_stringlike(printer_state *pstate, seg_object *object)
+static void print_stringlike(printer_state *pstate, seg_object object)
 {
   seg_err err;
 
   char *out = NULL;
   uint64_t length = 0l;
 
-  err = seg_string_contents(object, &out, &length);
+  err = seg_stringlike_contents(object, &out, &length);
   if (err != SEG_OK) {
     fprintf(pstate->out, "[ERR: %s]\n", err->message);
     return;

@@ -118,7 +118,7 @@ expr (OUT) ::= STRING (S).
 expr (OUT) ::= SYMBOL (S).
 {
   /* : ... */
-  seg_object *sym = seg_token_intern_without(S, state->symboltable, 1, 0);
+  seg_object sym = seg_token_intern_without(S, state->symboltable, 1, 0);
   seg_delete_token(S);
 
   OUT = malloc(sizeof(seg_expr_node));
@@ -129,7 +129,7 @@ expr (OUT) ::= SYMBOL (S).
 expr (OUT) ::= QUOTEDSYMBOL (S).
 {
   /* :' ... ' or :" ... " */
-  seg_object *sym = seg_token_intern_without(S, state->symboltable, 2, 1);
+  seg_object sym = seg_token_intern_without(S, state->symboltable, 2, 1);
   seg_delete_token(S);
 
   OUT = malloc(sizeof(seg_expr_node));

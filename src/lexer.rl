@@ -8,6 +8,7 @@
 #include "token.h"
 #include "options.h"
 #include "parse_helpers.h"
+#include "runtime/runtime.h"
 
 #include "grammar.h"
 #include "grammar.c"
@@ -181,7 +182,7 @@ static void report(const char *name, const char *ts, const char *te, seg_options
 
 %% write data nofinal;
 
-seg_program *seg_parse(char *content, off_t length, seg_options *opts)
+seg_program *seg_parse(seg_runtime *r, char *content, off_t length, seg_options *opts)
 {
   /* Variables used by Ragel. */
   int cs, act, top;
@@ -200,7 +201,7 @@ seg_program *seg_parse(char *content, off_t length, seg_options *opts)
   seg_parser_state state;
   state.root = NULL;
   state.context = NULL;
-  seg_new_symboltable(&state.symboltable);
+  state.symboltable = seg_runtime_symboltable(r);
 
   %% write init;
 

@@ -4,10 +4,16 @@
 #include <stdint.h>
 
 #include "errors.h"
-#include "ds/stringtable.h"
 #include "model/object.h"
+#include "ds/hashtable.h"
 
-typedef seg_stringtable seg_symboltable;
+struct seg_symboltable;
+typedef struct seg_symboltable seg_symboltable;
+
+/*
+ * Signature of a function used to iterate over the key-value pairs within a hashtable.
+ */
+typedef seg_err (*seg_symboltable_iterator)(seg_object symbol, void *state);
 
 /*
  * Default growth characteristics of the symbol table. Each of these may be overridden by the
@@ -26,7 +32,7 @@ typedef seg_stringtable seg_symboltable;
  *
  * SEG_NOMEM: If the allocation fails.
  */
-seg_err seg_new_symboltable(seg_symboltable **out);
+seg_err seg_new_symboltable(seg_runtime *r, seg_symboltable **out);
 
 /*
  * Insert a new entry into the symboltable if it's not already present. Return the newly created
@@ -35,14 +41,35 @@ seg_err seg_new_symboltable(seg_symboltable **out);
  * SEG_NOMEM: If the allocation of a new symbol fails.
  * SEG_RANGE: If the symbol length is greater than seg_symbol() permits.
  */
-seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_t length, seg_object **out);
+seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_t length, seg_object *out);
 
 /*
  * Access an existing symbol if one exists with the given name. Return SEG_NO_SYMBOL if it does not.
  */
-seg_object *seg_symboltable_get(seg_symboltable *table, const char *name, uint64_t length);
+seg_object seg_symboltable_get(seg_symboltable *table, const char *name, uint64_t length);
 
-#define SEG_NO_SYMBOL NULL
+#define SEG_NO_SYMBOL SEG_NULL
+
+/*
+ * Return the number of non-immediate symbols currently stored in the symboltable.
+ */
+uint64_t seg_symboltable_count(seg_symboltable *table);
+
+/*
+ * Return the current maximum capacity of the symboltable.
+ */
+uint64_t seg_symboltable_capacity(seg_symboltable *table);
+
+/*
+* Retrieve the growth settings currently used by the symboltable. The settings are read-write.
+*/
+seg_hashtable_settings *seg_symboltable_get_settings(seg_symboltable *table);
+
+/*
+* Iterate through each interned symbol. `state` will be provided as-is to the
+* iterator function during each iteration.
+*/
+seg_err seg_symboltable_each(seg_symboltable *table, seg_symboltable_iterator iter, void *state);
 
 /*
  * Cleanly dispose of a symboltable allocated with `seg_new_symboltable`.

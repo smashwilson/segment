@@ -17,17 +17,18 @@ typedef struct seg_runtime seg_runtime;
  */
 struct seg_bootstrap_objects {
   // Notable Class instances.
-  seg_object *class_class;
-  seg_object *integer_class;
-  seg_object *string_class;
-  seg_object *symbol_class;
-  seg_object *array_class;
-  seg_object *block_class;
+  seg_object class_class;
+  seg_object integer_class;
+  seg_object float_class;
+  seg_object string_class;
+  seg_object symbol_class;
+  seg_object array_class;
+  seg_object block_class;
 
   // Useful singletons.
-  seg_object *empty_instance;
-  seg_object *true_instance;
-  seg_object *false_instance;
+  seg_object none_instance;
+  seg_object true_instance;
+  seg_object false_instance;
 };
 typedef struct seg_bootstrap_objects seg_bootstrap_objects;
 

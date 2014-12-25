@@ -22,7 +22,7 @@ char *seg_token_as_string(seg_token *tok, size_t *length)
   return v;
 }
 
-seg_object *seg_token_intern_without(
+seg_object seg_token_intern_without(
   seg_token *tok,
   seg_symboltable *table,
   size_t initial,
@@ -30,7 +30,7 @@ seg_object *seg_token_intern_without(
 ) {
   size_t len = tok->length - initial - final;
 
-  seg_object *symbol = NULL;
+  seg_object symbol;
   seg_symboltable_intern(table, tok->start + initial, len, &symbol);
   return symbol;
 }

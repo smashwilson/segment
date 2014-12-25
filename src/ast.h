@@ -33,19 +33,19 @@ typedef struct {
 } seg_string_node;
 
 typedef struct {
-  seg_object *value;
+  seg_object value;
 } seg_symbol_node;
 
 /* Variable References */
 
 typedef struct {
-  seg_object *varname;
+  seg_object varname;
 } seg_var_node;
 
 /* Blocks */
 
 typedef struct seg_parameter_list {
-  seg_object *parameter;
+  seg_object parameter;
   struct seg_parameter_list *next;
 } seg_parameter_list;
 
@@ -59,7 +59,7 @@ typedef struct {
 
 typedef struct seg_arg_list {
   /* Keyword will most often be left as NULL. */
-  seg_object *keyword;
+  seg_object keyword;
 
   struct seg_expr_node *value;
   struct seg_arg_list *next;
@@ -67,7 +67,7 @@ typedef struct seg_arg_list {
 
 typedef struct {
   struct seg_expr_node *receiver;
-  seg_object *selector;
+  seg_object selector;
   seg_arg_list *args;
 } seg_methodcall_node;
 

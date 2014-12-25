@@ -18,7 +18,7 @@ seg_err seg_new_runtime(seg_runtime **out)
   }
 
   /* Initialize the symbol table. */
-  err = seg_new_symboltable(&r->symboltable);
+  err = seg_new_symboltable(r, &r->symboltable);
   if (err != SEG_OK) {
     return err;
   }

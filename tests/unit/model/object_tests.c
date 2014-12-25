@@ -15,10 +15,10 @@ static void test_integer_literal(void)
   SEG_ASSERT_OK(err);
 
   seg_object *i = NULL;
-  err = seg_integer(42l, &i);
+  err = seg_integer(r, 42l, &i);
   SEG_ASSERT_OK(err);
 
-  seg_object *kls = seg_class(i, r);
+  seg_object *kls = seg_class(r, i);
   const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
   CU_ASSERT_PTR_EQUAL(kls, boots->integer_class);
 
@@ -28,14 +28,14 @@ static void test_integer_literal(void)
   CU_ASSERT_EQUAL(v, 42l);
 
   seg_object *n = NULL;
-  err = seg_integer(-32l, &n);
+  err = seg_integer(r, -32l, &n);
   SEG_ASSERT_OK(err);
 
   err = seg_integer_value(n, &v);
   SEG_ASSERT_OK(err);
   CU_ASSERT_EQUAL(v, -32l);
 
-  err = seg_integer(1ll << 63, &i);
+  err = seg_integer(r, 1ll << 63, &i);
   CU_ASSERT_PTR_NOT_NULL_FATAL(err);
   CU_ASSERT_EQUAL(err->code, SEG_CODE_RANGE);
 
@@ -51,7 +51,7 @@ static void test_string_literal(void)
   SEG_ASSERT_OK(err);
 
   seg_object *s = NULL;
-  err = seg_string("sup", 3, &s);
+  err = seg_string(r, "sup", 3, &s);
   SEG_ASSERT_OK(err);
 
   char *v = NULL;

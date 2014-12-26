@@ -39,6 +39,16 @@ typedef union {
   } bits;
 } seg_object;
 
+/*
+ * Storage mechanisms that may be used for a specific instance.
+ */
+typedef enum {
+  SEG_STORAGE_IMMEDIATE = 0,
+  SEG_STORAGE_EMPTY,
+  SEG_STORAGE_STRINGLIKE,
+  SEG_STORAGE_SLOTTED
+} seg_storage;
+
 /* Macro to determine whether or not a given seg_object is an immediate or not. */
 #define SEG_IS_IMMEDIATE(obj) ((obj).bits.immediate)
 
@@ -68,6 +78,13 @@ seg_object seg_class(seg_runtime *r, seg_object object);
  * in C code.
  */
 bool seg_object_same(seg_object a, seg_object b);
+
+/*
+ * Determine the underlying storage mechanism used by a specific instance.
+ *
+ * SEG_INVAL: o is an invalid object.
+ */
+seg_err seg_object_storage(seg_object o, seg_storage *out);
 
 /*
  * Construct a seg_object from an arbitrary pointer, which must be a seg_object_common*.

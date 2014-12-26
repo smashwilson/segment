@@ -14,6 +14,9 @@ typedef enum {
   /* Operation performed on an instance of an incorrect type. */
   SEG_CODE_TYPE,
 
+  /* Invalid object storage. */
+  SEG_CODE_INVAL,
+
   /* Unexpected hash collision encountered. */
   SEG_CODE_COLLISION,
 
@@ -39,6 +42,7 @@ seg_err __seg_create_err(seg_err_code code, const char *msg);
 #define SEG_NOMEM(msg) __seg_create_err(SEG_CODE_NOMEM, __PREFIX(msg))
 #define SEG_RANGE(msg) __seg_create_err(SEG_CODE_RANGE, __PREFIX(msg))
 #define SEG_TYPE(msg) __seg_create_err(SEG_CODE_TYPE, __PREFIX(msg))
+#define SEG_INVAL(msg) __seg_create_err(SEG_CODE_INVAL, __PREFIX(msg))
 #define SEG_COLLISION(msg) __seg_create_err(SEG_CODE_COLLISION, __PREFIX(msg))
 #define SEG_NOTYET(msg) __seg_create_err(SEG_CODE_NOTYET, __PREFIX(msg))
 

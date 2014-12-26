@@ -79,6 +79,11 @@ bool seg_object_same(seg_object a, seg_object b)
   return SEG_SAME(a, b);
 }
 
+seg_err seg_object_storage(seg_object o, seg_storage *out)
+{
+  return SEG_NOTYET("seg_object_storage");
+}
+
 seg_object seg_object_frompointer(void *p)
 {
   seg_object o;

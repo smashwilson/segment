@@ -94,9 +94,36 @@ static void test_immediate_symbol(void)
   seg_delete_runtime(r);
 }
 
-static void test_isclass(void)
+static void test_storage(void)
 {
-  CU_FAIL("pending");
+  seg_err err;
+
+  seg_runtime *r = NULL;
+  err = seg_new_runtime(&r);
+  SEG_ASSERT_OK(err);
+
+  seg_object imm, empty, stringlike, slotted;
+  err = seg_integer(r, 42l, &imm);
+  SEG_ASSERT_OK(err);
+
+  seg_storage storage;
+  err = seg_object_storage(imm, &storage);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_EQUAL(storage, SEG_STORAGE_IMMEDIATE);
+
+  err = seg_object_storage(empty, &storage);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_EQUAL(storage, SEG_STORAGE_EMPTY);
+
+  err = seg_object_storage(stringlike, &storage);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_EQUAL(storage, SEG_STORAGE_STRINGLIKE);
+
+  err = seg_object_storage(slotted, &storage);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_EQUAL(storage, SEG_STORAGE_SLOTTED);
+
+  seg_delete_runtime(r);
 }
 
 CU_pSuite initialize_object_suite(void)
@@ -109,7 +136,7 @@ CU_pSuite initialize_object_suite(void)
   ADD_TEST(test_immediate_integer);
   ADD_TEST(test_immediate_string);
   ADD_TEST(test_immediate_symbol);
-  ADD_TEST(test_isclass);
+  ADD_TEST(test_storage);
 
   return pSuite;
 }

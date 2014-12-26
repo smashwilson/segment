@@ -54,6 +54,10 @@ static void test_immediate_string(void)
   err = seg_string(r, "sup", 3, &s);
   SEG_ASSERT_OK(err);
 
+  seg_object kls = seg_class(r, s);
+  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
+  SEG_ASSERT_SAME(kls, boots->string_class);
+
   char *v = NULL;
   uint64_t len = 0;
   err = seg_stringlike_contents(&s, &v, &len);
@@ -66,7 +70,28 @@ static void test_immediate_string(void)
 
 static void test_immediate_symbol(void)
 {
-  CU_FAIL("pending");
+  seg_err err;
+
+  seg_runtime *r = NULL;
+  err = seg_new_runtime(&r);
+  SEG_ASSERT_OK(err);
+
+  seg_object s;
+  err = seg_symbol(r, "short", 5, &s);
+  SEG_ASSERT_OK(err);
+
+  seg_object kls = seg_class(r, s);
+  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
+  SEG_ASSERT_SAME(kls, boots->symbol_class);
+
+  char *v = NULL;
+  uint64_t len = 0;
+  err = seg_stringlike_contents(&s, &v, &len);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_EQUAL(len, 5);
+  CU_ASSERT_EQUAL(strncmp(v, "short", len), 0);
+
+  seg_delete_runtime(r);
 }
 
 static void test_isclass(void)

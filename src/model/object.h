@@ -114,7 +114,7 @@ seg_err seg_string(seg_runtime *r, const char *str, uint64_t length, seg_object 
 /*
  * Determine pre-instantiation whether or not a stringlike object will be an immediate or not.
  */
-#define SEG_WILLBE_IMM(len) ((len) <= SEG_STR_IMMLEN)
+#define SEG_STR_WILLBEIMM(len) ((len) <= SEG_STR_IMMLEN)
 
 /*
  * Convenience constructor for creating seg_object Strings out of literal, C-style strings. If it's

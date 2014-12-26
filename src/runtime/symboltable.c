@@ -72,6 +72,19 @@ seg_err seg_new_symboltable(seg_runtime *r, seg_symboltable **out)
 seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_t length, seg_object *out)
 {
   seg_err err;
+  seg_object created;
+
+  // Immediate values don't need to be stored in the symbol table. You can already compare them
+  // for equality by a single pointer comparison.
+  if (SEG_STR_WILLBEIMM(length)) {
+    err = seg_symbol(table->runtime, name, length, &created);
+    if (err != SEG_OK) {
+      return err;
+    }
+
+    *out = created;
+    return SEG_OK;
+  }
 
   seg_object existing = SEG_FROMPOINTER(seg_stringtable_get(table->storage, name, length));
 
@@ -80,17 +93,9 @@ seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_
     return SEG_OK;
   }
 
-  seg_object created;
   err = seg_symbol(table->runtime, name, length, &created);
   if (err != SEG_OK) {
     return err;
-  }
-
-  if (SEG_IS_IMMEDIATE(created)) {
-    // Immediate values don't need to be stored in the symbol table. You can already compare them
-    // for equality by a single pointer comparison.
-    *out = created;
-    return SEG_OK;
   }
 
   void *prior;
@@ -105,6 +110,19 @@ seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_
 
 seg_object seg_symboltable_get(seg_symboltable *table, const char *name, uint64_t length)
 {
+  // Always treat immediate symbols as though they're in the symboltable.
+  if (SEG_STR_WILLBEIMM(length)) {
+    seg_err err;
+    seg_object created;
+
+    err = seg_symbol(table->runtime, name, length, &created);
+    if (err != SEG_OK) {
+      return SEG_NO_SYMBOL;
+    }
+
+    return created;
+  }
+
   seg_object o = SEG_FROMPOINTER(seg_stringtable_get(table->storage, name, length));
   return o;
 }

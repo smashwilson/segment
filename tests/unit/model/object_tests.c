@@ -6,7 +6,7 @@
 #include "model/object.h"
 #include "runtime/runtime.h"
 
-static void test_integer_literal(void)
+static void test_immediate_integer(void)
 {
   seg_err err;
 
@@ -42,7 +42,7 @@ static void test_integer_literal(void)
   seg_delete_runtime(r);
 }
 
-static void test_string_literal(void)
+static void test_immediate_string(void)
 {
   seg_err err;
 
@@ -56,7 +56,7 @@ static void test_string_literal(void)
 
   char *v = NULL;
   uint64_t len = 0;
-  err = seg_stringlike_contents(s, &v, &len);
+  err = seg_stringlike_contents(&s, &v, &len);
   SEG_ASSERT_OK(err);
   CU_ASSERT_EQUAL(len, 3);
   CU_ASSERT_EQUAL(strncmp(v, "sup", len), 0);
@@ -64,7 +64,7 @@ static void test_string_literal(void)
   seg_delete_runtime(r);
 }
 
-static void test_symbol_literal(void)
+static void test_immediate_symbol(void)
 {
   CU_FAIL("pending");
 }
@@ -81,9 +81,9 @@ CU_pSuite initialize_object_suite(void)
     return NULL;
   }
 
-  ADD_TEST(test_integer_literal);
-  ADD_TEST(test_string_literal);
-  ADD_TEST(test_symbol_literal);
+  ADD_TEST(test_immediate_integer);
+  ADD_TEST(test_immediate_string);
+  ADD_TEST(test_immediate_symbol);
   ADD_TEST(test_isclass);
 
   return pSuite;

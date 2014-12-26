@@ -146,6 +146,9 @@ static seg_err _stringlike(seg_runtime *r, const char *str, uint64_t length, boo
   }
   out->bits.length = length;
 
+  // FIXME This is specific to the endianness of the processor.
+  // For little-endian systems, we should pack bytes the other way as:
+  // package += v << ((SEG_STR_IMMLEN - i - 1) * 8)
   unsigned long packed = 0;
   for (int i = 0; i < length; i++) {
     unsigned long v = (unsigned long) str[i];
@@ -171,20 +174,21 @@ seg_err seg_symbol(seg_runtime *r, const char *str, uint64_t length, seg_object 
   return _stringlike(r, str, length, false, out);
 }
 
-seg_err seg_stringlike_contents(seg_object stringlike, char **out, uint64_t *length)
+seg_err seg_stringlike_contents(seg_object *stringlike, char **out, uint64_t *length)
 {
-  if (stringlike.bits.immediate) {
-    if (stringlike.bits.kind != SEG_IMM_STRING && stringlike.bits.kind != SEG_IMM_SYMBOL) {
+  if (stringlike->bits.immediate) {
+    if (stringlike->bits.kind != SEG_IMM_STRING && stringlike->bits.kind != SEG_IMM_SYMBOL) {
       return SEG_TYPE("Non-string or symbol provided to seg_stringlike_contents");
     }
 
-    *length = stringlike.bits.length;
-    *out = ((char*) &(stringlike.bits)) + (SEG_STR_IMMLEN - *length);
+    *length = stringlike->bits.length;
+    // FIXME The +1 here is only necessary on big-endian systems.
+    *out = (char*) stringlike + 1;
 
     return SEG_OK;
   }
 
-  seg_object_stringlike *casted = (seg_object_stringlike *) stringlike.pointer;
+  seg_object_stringlike *casted = (seg_object_stringlike *) stringlike->pointer;
 
   *length = casted->length;
   *out = casted->bytes;

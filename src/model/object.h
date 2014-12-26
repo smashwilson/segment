@@ -133,7 +133,7 @@ seg_err seg_symbol(seg_runtime *r, const char *str, uint64_t length, seg_object 
  *
  * SEG_TYPE: If stringlike is not a string or symbol.
  */
-seg_err seg_stringlike_contents(seg_object stringlike, char **out, uint64_t *length);
+seg_err seg_stringlike_contents(seg_object *stringlike, char **out, uint64_t *length);
 
 /*
  * Allocate a new slotted instance from a class.

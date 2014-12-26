@@ -19,17 +19,17 @@ static void test_access(void)
   seg_symboltable *table = seg_runtime_symboltable(runtime);
 
   seg_object a0sym;
-  err = seg_symboltable_intern(table, "aaa", 3, &a0sym);
+  err = seg_symboltable_intern(table, "aaaaaaaaa", 9, &a0sym);
   SEG_ASSERT_OK(err);
 
   seg_object b0sym;
-  err = seg_symboltable_intern(table, "bbb", 3, &b0sym);
+  err = seg_symboltable_intern(table, "bbbbbbbbb", 9, &b0sym);
   SEG_ASSERT_OK(err);
 
   SEG_ASSERT_DIFFERENT(a0sym, b0sym);
 
   seg_object b1sym;
-  err = seg_symboltable_intern(table, "bbb", 3, &b1sym);
+  err = seg_symboltable_intern(table, "bbbbbbbbb", 9, &b1sym);
   SEG_ASSERT_OK(err);
 
   SEG_ASSERT_SAME(b0sym, b1sym);

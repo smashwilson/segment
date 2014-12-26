@@ -71,7 +71,7 @@ typedef struct seg_runtime seg_runtime;
 /*
  * Access the class of any instance.
  */
-seg_object seg_class(seg_runtime *r, seg_object object);
+seg_object seg_object_class(seg_runtime *r, seg_object object);
 
 /*
  * Return true if the two objects represent the same instance, or false if they don't. Use SEG_SAME

@@ -47,7 +47,7 @@ typedef struct {
   seg_object slots[];
 } seg_object_slotted;
 
-seg_object seg_class(seg_runtime *r, seg_object object)
+seg_object seg_object_class(seg_runtime *r, seg_object object)
 {
   if (object.bits.immediate) {
     const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);

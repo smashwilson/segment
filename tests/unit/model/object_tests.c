@@ -18,7 +18,7 @@ static void test_immediate_integer(void)
   err = seg_integer(r, 42l, &i);
   SEG_ASSERT_OK(err);
 
-  seg_object kls = seg_class(r, i);
+  seg_object kls = seg_object_class(r, i);
   const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
   SEG_ASSERT_SAME(kls, boots->integer_class);
 
@@ -54,7 +54,7 @@ static void test_immediate_string(void)
   err = seg_string(r, "sup", 3, &s);
   SEG_ASSERT_OK(err);
 
-  seg_object kls = seg_class(r, s);
+  seg_object kls = seg_object_class(r, s);
   const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
   SEG_ASSERT_SAME(kls, boots->string_class);
 
@@ -80,7 +80,7 @@ static void test_immediate_symbol(void)
   err = seg_symbol(r, "short", 5, &s);
   SEG_ASSERT_OK(err);
 
-  seg_object kls = seg_class(r, s);
+  seg_object kls = seg_object_class(r, s);
   const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
   SEG_ASSERT_SAME(kls, boots->symbol_class);
 

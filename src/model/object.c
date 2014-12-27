@@ -6,6 +6,7 @@
 #include "errors.h"
 #include "model/object.h"
 #include "runtime/runtime.h"
+#include "runtime/symboltable.h"
 
 typedef enum {
   SEG_IMM_INTEGER = 1,
@@ -47,27 +48,33 @@ typedef struct {
   seg_object slots[];
 } seg_object_slotted;
 
-seg_object seg_object_class(seg_runtime *r, seg_object object)
+seg_err seg_object_class(seg_runtime *r, seg_object instance, seg_object *out)
 {
-  if (object.bits.immediate) {
+  if (instance.bits.immediate) {
     const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
 
-    switch (object.bits.kind) {
+    switch (instance.bits.kind) {
     case SEG_IMM_INTEGER:
-      return boots->integer_class;
+      *out = boots->integer_class;
+      break;
     case SEG_IMM_FLOAT:
-      return boots->float_class;
+      *out = boots->float_class;
+      break;
     case SEG_IMM_STRING:
-      return boots->string_class;
+      *out = boots->string_class;
+      break;
     case SEG_IMM_SYMBOL:
-      return boots->symbol_class;
+      *out = boots->symbol_class;
+      break;
     default:
-      /* Default to integers, for now. */
-      return boots->integer_class;
+      return SEG_INVAL("Invalid immediate kind.");
     }
+    return SEG_OK;
   }
 
-  return object.pointer->klass;
+  out->pointer = instance.pointer->klass.pointer;
+
+  return SEG_OK;
 }
 
 const seg_object SEG_NULL = {
@@ -223,14 +230,102 @@ seg_err seg_slot_at(seg_object slotted, uint64_t index, seg_object *out)
   return SEG_NOTYET("seg_slot_at");
 }
 
-seg_err seg_slot_atput(seg_object slotted, uint64_t index, seg_object *out)
+seg_err seg_slot_atput(seg_object slotted, uint64_t index, seg_object value)
 {
   return SEG_NOTYET("seg_slot_atput");
 }
+
+// CLASSES /////////////////////////////////////////////////////////////////////////////////////////
+
+seg_err seg_class(seg_runtime *r, const char *name, seg_storage storage, seg_object *out)
+{
+  return SEG_NOTYET("seg_class");
+}
+
+seg_err seg_class_ivars(seg_runtime *r, seg_object klass, int64_t count, ...)
+{
+  va_list args;
+  char *ivarname;
+  seg_err err;
+
+  seg_symboltable *table = seg_runtime_symboltable(r);
+
+  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
+
+  seg_object ivar_array;
+  err = seg_slotted(r, boots->array_class, &ivar_array);
+  if (err != SEG_OK) {
+    return err;
+  }
+  err = seg_slotted_grow(ivar_array, count);
+  if (err != SEG_OK) {
+    return err;
+  }
+
+  va_start(args, count);
+
+  for (int i = 0; i < count; i++) {
+    ivarname = va_arg(args, char *);
+
+    seg_object ivarsym;
+    err = seg_symboltable_cintern(table, ivarname, &ivarsym);
+    if (err != SEG_OK) {
+      va_end(args);
+      return err;
+    }
+
+    err = seg_slot_atput(ivar_array, i, ivarsym);
+    if (err != SEG_OK) {
+      va_end(args);
+      return err;
+    }
+  }
+
+  va_end(args);
+
+  seg_object slot_count;
+  err = seg_integer(r, count, &slot_count);
+  if (err != SEG_OK) {
+    return err;
+  }
+  err = seg_slot_atput(klass, SEG_CLASS_SLOT_SLOTS, slot_count);
+  if (err != SEG_OK) {
+    return err;
+  }
+  err = seg_slot_atput(klass, SEG_CLASS_SLOT_IVARS, ivar_array);
+  if (err != SEG_OK) {
+    return err;
+  }
+
+  return SEG_OK;
+}
+
 
 // BOOTSTRAPPING ///////////////////////////////////////////////////////////////////////////////////
 
 seg_err _seg_bootstrap_runtime(seg_runtime *runtime, seg_bootstrap_objects *bootstrap)
 {
+  seg_err err;
+
+  seg_symboltable *symtable = seg_runtime_symboltable(runtime);
+
+  seg_object sym_name, sym_storage, sym_ivars;
+  err = seg_symboltable_cintern(symtable, "name", &sym_name);
+  if (err != SEG_OK) {
+    return err;
+  }
+  err = seg_symboltable_cintern(symtable, "storage", &sym_storage);
+  if (err != SEG_OK) {
+    return err;
+  }
+  err = seg_symboltable_cintern(symtable, "instance_variables", &sym_ivars);
+
+  // Start with the Class class, which has itself as a class.
+  seg_object name_class;
+  err = seg_cstring(runtime, "Class", &name_class);
+  if (err != SEG_OK) {
+    return err;
+  }
+
   return SEG_OK;
 }

@@ -44,6 +44,11 @@ seg_err seg_new_symboltable(seg_runtime *r, seg_symboltable **out);
 seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_t length, seg_object *out);
 
 /*
+ * Convenience function to intern a symbol from a C-style NULL-terminated string.
+ */
+seg_err seg_symboltable_cintern(seg_symboltable *table, const char *name, seg_object *out);
+
+/*
  * Access an existing symbol if one exists with the given name. Return SEG_NO_SYMBOL if it does not.
  */
 seg_object seg_symboltable_get(seg_symboltable *table, const char *name, uint64_t length);

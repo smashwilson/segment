@@ -108,6 +108,11 @@ seg_err seg_symboltable_intern(seg_symboltable *table, const char *name, uint64_
   return SEG_OK;
 }
 
+seg_err seg_symboltable_cintern(seg_symboltable *table, const char *name, seg_object *out)
+{
+  return seg_symboltable_intern(table, name, strlen(name), out);
+}
+
 seg_object seg_symboltable_get(seg_symboltable *table, const char *name, uint64_t length)
 {
   // Always treat immediate symbols as though they're in the symboltable.

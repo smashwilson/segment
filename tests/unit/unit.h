@@ -35,4 +35,10 @@
     } \
   } while(0)
 
+#define TRY(expr) \
+  do { \
+    seg_err err = (expr); \
+    SEG_ASSERT_OK(err); \
+  } while (0)
+
 #endif

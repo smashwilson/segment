@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #include "errors.h"
 
@@ -44,7 +45,6 @@ typedef union {
  */
 typedef enum {
   SEG_STORAGE_IMMEDIATE = 0,
-  SEG_STORAGE_EMPTY,
   SEG_STORAGE_STRINGLIKE,
   SEG_STORAGE_SLOTTED
 } seg_storage;
@@ -71,7 +71,7 @@ typedef struct seg_runtime seg_runtime;
 /*
  * Access the class of any instance.
  */
-seg_object seg_object_class(seg_runtime *r, seg_object object);
+seg_err seg_object_class(seg_runtime *r, seg_object instance, seg_object *out);
 
 /*
  * Return true if the two objects represent the same instance, or false if they don't. Use SEG_SAME
@@ -195,13 +195,36 @@ seg_err seg_slot_at(seg_object slotted, uint64_t index, seg_object *out);
  * SEG_TYPE: If slotted is not actually a slotted object.
  * SEG_RANGE: If the index is beyond the object's current ivar capacity.
  */
-seg_err seg_slot_atput(seg_object slotted, uint64_t index, seg_object *out);
+seg_err seg_slot_atput(seg_object slotted, uint64_t index, seg_object value);
 
 #define SEG_NO_IVAR UINT64_MAX
 
 /* Forward declared for _seg_bootstrap_runtime. */
 struct seg_bootstrap_objects;
 typedef struct seg_bootstrap_objects seg_bootstrap_objects;
+
+/* Slot indices used by Class objects. */
+typedef enum {
+  SEG_CLASS_SLOT_NAME = 0,
+  SEG_CLASS_SLOT_STORAGE,
+  SEG_CLASS_SLOT_SLOTS,
+  SEG_CLASS_SLOT_IVARS,
+  SEG_CLASS_SLOTCOUNT = SEG_CLASS_SLOT_IVARS
+} seg_class_slots;
+
+/*
+ * Instantiate a new class.
+ *
+ * SEG_INVAL: if storage is invalid.
+ */
+seg_err seg_class(seg_runtime *r, const char *name, seg_storage storage, seg_object *out);
+
+/*
+ * Set a slotted class' instance variables to an Array of the specified names.
+ *
+ * SEG_INVAL: if klass doesn't have slotted storage.
+ */
+seg_err seg_class_ivars(seg_runtime *r, seg_object klass, int64_t count, ...);
 
 /*
  * Populate a runtime with an initial set of basic classes and objects.

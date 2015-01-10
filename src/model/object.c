@@ -43,7 +43,7 @@ typedef struct {
  * objects, indexed by instance variable name or by numeric offset.
  */
 typedef struct {
-  seg_object object;
+  seg_object_common common;
   uint64_t length;
   seg_object slots[];
 } seg_object_slotted;
@@ -212,7 +212,75 @@ seg_err seg_stringlike_contents(seg_object *stringlike, char **out, uint64_t *le
 
 seg_err seg_slotted(seg_runtime *r, seg_object klass, seg_object *out)
 {
+  seg_err err;
+  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
+
+  // Verify that klass is indeed a class that specifies slotted storage.
+  if (SEG_IS_IMMEDIATE(klass) || !SEG_SAME(klass.pointer->klass, boots->class_class)) {
+    return SEG_TYPE("Attempt to instantiate a non-class.");
+  }
+
+  seg_object storage_slot;
+  int64_t storage_value;
+  err = seg_slot_at(klass, SEG_CLASS_SLOT_STORAGE, &storage_slot);
+  if (err != SEG_OK) {
+    return err;
+  }
+  err = seg_integer_value(storage_slot, &storage_value);
+  if (err != SEG_OK) {
+    return err;
+  }
+  if (storage_value != SEG_STORAGE_SLOTTED) {
+    return SEG_TYPE("Attempt to instantiate a slotted instance from a non-slotted class.");
+  }
+
+  // Read the preferred initial length from the class.
+  seg_object length_slot;
+  int64_t length_value;
+  err = seg_slot_at(klass, SEG_CLASS_SLOT_LENGTH, &length_slot);
+  if (err != SEG_OK) {
+    return err;
+  }
+  err = seg_integer_value(length_slot, &length_value);
+  if (err != SEG_OK) {
+    return err;
+  }
+
+  seg_object_slotted *result;
+  err = _slotted_alloc(length_value, &result);
+  if (err != SEG_OK) {
+    return err;
+  }
+  _slotted_init_header(result, klass, length_value);
+  _slotted_init_slots(result, klass);
+
+  out->pointer = (seg_object_common*) result;
+
   return SEG_NOTYET("seg_slotted");
+}
+
+static seg_err _slotted_alloc(uint64_t length, seg_object_slotted **out)
+{
+  *out = malloc(sizeof(seg_object_slotted) + (length * sizeof(seg_object)));
+  if (*out == NULL) {
+    return SEG_NOMEM("Unable to allocate a slotted object.");
+  }
+  return SEG_OK;
+}
+
+static void _slotted_init_header(seg_object_slotted *object, seg_object klass, uint64_t length)
+{
+  object->common.klass.pointer = klass.pointer;
+  object->length = length;
+}
+
+static void _slotted_init_slots(seg_runtime *r, seg_object_slotted *object)
+{
+  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
+
+  for (uint64_t i = 0; i < object->length; i++) {
+    object->slots[i] = boots->none_instance;
+  }
 }
 
 seg_err seg_slotted_length(seg_object instance, uint64_t *out)

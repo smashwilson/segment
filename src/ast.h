@@ -3,7 +3,8 @@
 
 #include <stddef.h>
 
-#include "symboltable.h"
+#include "model/object.h"
+#include "runtime/symboltable.h"
 
 /* Kind Tag Enums */
 
@@ -23,28 +24,28 @@ struct seg_expr_node;
 /* Literals */
 
 typedef struct {
-  int value;
+  int64_t value;
 } seg_integer_node;
 
 typedef struct {
   const char *value;
-  size_t length;
+  uint64_t length;
 } seg_string_node;
 
 typedef struct {
-  seg_symbol *value;
+  seg_object value;
 } seg_symbol_node;
 
 /* Variable References */
 
 typedef struct {
-  seg_symbol *varname;
+  seg_object varname;
 } seg_var_node;
 
 /* Blocks */
 
 typedef struct seg_parameter_list {
-  seg_symbol *parameter;
+  seg_object parameter;
   struct seg_parameter_list *next;
 } seg_parameter_list;
 
@@ -58,7 +59,7 @@ typedef struct {
 
 typedef struct seg_arg_list {
   /* Keyword will most often be left as NULL. */
-  seg_symbol *keyword;
+  seg_object keyword;
 
   struct seg_expr_node *value;
   struct seg_arg_list *next;
@@ -66,7 +67,7 @@ typedef struct seg_arg_list {
 
 typedef struct {
   struct seg_expr_node *receiver;
-  seg_symbol *selector;
+  seg_object selector;
   seg_arg_list *args;
 } seg_methodcall_node;
 
@@ -87,6 +88,7 @@ typedef struct seg_expr_node {
 
 /* Visitor */
 
+// FIXME don't do this.
 typedef struct seg_ast_visitor* seg_ast_visitor;
 
 /*

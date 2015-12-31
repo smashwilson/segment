@@ -5,7 +5,7 @@
 
 #include "ast.h"
 #include "token.h"
-#include "symboltable.h"
+#include "runtime/symboltable.h"
 
 /* Methods that have special significance. */
 

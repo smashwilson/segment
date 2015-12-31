@@ -9,7 +9,12 @@
 
 static void test_access(void)
 {
-  seg_stringtable *table = seg_new_stringtable(10L);
+  seg_err err;
+  void *out;
+
+  seg_stringtable *table;
+  err = seg_new_stringtable(10L, &table);
+  SEG_ASSERT_OK(err);
 
   const char *key0 = "somekey";
   size_t length0 = strlen(key0);
@@ -20,7 +25,9 @@ static void test_access(void)
 
   CU_ASSERT_EQUAL(seg_stringtable_count(table), 0);
 
-  seg_stringtable_put(table, key0, length0, value0);
+  err = seg_stringtable_put(table, key0, length0, value0, &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
   CU_ASSERT_EQUAL(seg_stringtable_count(table), 1);
 
   const char *out0 = seg_stringtable_get(table, key0, length0);
@@ -34,7 +41,11 @@ static void test_access(void)
 
 static void test_putifabsent(void)
 {
-  seg_stringtable *table = seg_new_stringtable(10L);
+  seg_err err;
+  void *out;
+
+  seg_stringtable *table;
+  err = seg_new_stringtable(10L, &table);
 
   /* Populate the table. */
 
@@ -48,16 +59,22 @@ static void test_putifabsent(void)
 
   char *value01 = "newvalue";
 
-  seg_stringtable_put(table, key0, length0, value0);
+  err = seg_stringtable_put(table, key0, length0, value0, &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
   CU_ASSERT_EQUAL(seg_stringtable_count(table), 1);
 
   /* Insert a new item. */
-  void *existing1 = seg_stringtable_putifabsent(table, key1, length1, value1);
+  void *existing1;
+  err = seg_stringtable_putifabsent(table, key1, length1, value1, &existing1);
+  SEG_ASSERT_OK(err);
   CU_ASSERT_PTR_EQUAL(existing1, value1);
   CU_ASSERT_EQUAL(seg_stringtable_count(table), 2);
 
   /* Retrieve an existing item. */
-  void *existing0 = seg_stringtable_putifabsent(table, key0, length0, value01);
+  void *existing0;
+  err = seg_stringtable_putifabsent(table, key0, length0, value01, &existing0);
+  SEG_ASSERT_OK(err);
   CU_ASSERT_PTR_EQUAL(existing0, value0);
   CU_ASSERT_EQUAL(seg_stringtable_count(table), 2);
 
@@ -75,7 +92,7 @@ typedef struct {
   int incorrect;
 } iterator_state;
 
-static void stringtable_iterator(const char *key, const size_t key_length, void *value, void *state)
+static seg_err stringtable_iterator(const char *key, const uint64_t key_length, void *value, void *state)
 {
   iterator_state *s = (iterator_state *) state;
 
@@ -91,22 +108,40 @@ static void stringtable_iterator(const char *key, const size_t key_length, void 
     printf("Unexpected pair in stringtable! [%.*s] -> [%s]\n", (int) key_length, key, (const char*) value);
     s->incorrect++;
   }
+
+  return SEG_OK;
 }
 
 static void test_each(void)
 {
+  seg_err err;
+  void *out;
+
   iterator_state s;
   s.correct = 0;
   s.incorrect = 0;
 
-  seg_stringtable *table = seg_new_stringtable(10L);
-  seg_stringtable_put(table, "aaa", 3, "aval");
-  seg_stringtable_put(table, "bbb", 3, "bval");
-  seg_stringtable_put(table, "ccc", 3, "cval");
-  seg_stringtable_put(table, "ddd", 3, "dval");
+  seg_stringtable *table;
+  err = seg_new_stringtable(10L, &table);
+  SEG_ASSERT_OK(err);
+
+  err = seg_stringtable_put(table, "aaa", 3, "aval", &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
+  err = seg_stringtable_put(table, "bbb", 3, "bval", &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
+  err = seg_stringtable_put(table, "ccc", 3, "cval", &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
+  err = seg_stringtable_put(table, "ddd", 3, "dval", &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
+
   CU_ASSERT_EQUAL(seg_stringtable_count(table), 4);
 
-  seg_stringtable_each(table, &stringtable_iterator, &s);
+  err = seg_stringtable_each(table, &stringtable_iterator, &s);
+  SEG_ASSERT_OK(err);
 
   CU_ASSERT_EQUAL(s.correct, 4);
   CU_ASSERT_EQUAL(s.incorrect, 0);
@@ -116,16 +151,29 @@ static void test_each(void)
 
 static void test_resize(void)
 {
-  seg_stringtable *table = seg_new_stringtable(5L);
+  seg_err err;
+  void *out;
 
-  seg_stringtable_put(table, "aaa", 3, "aval");
-  seg_stringtable_put(table, "bbb", 3, "bval");
-  seg_stringtable_put(table, "ccc", 3, "cval");
+  seg_stringtable *table;
+  err = seg_new_stringtable(5L, &table);
+  SEG_ASSERT_OK(err);
+
+  err = seg_stringtable_put(table, "aaa", 3, "aval", &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
+  err = seg_stringtable_put(table, "bbb", 3, "bval", &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
+  err = seg_stringtable_put(table, "ccc", 3, "cval", &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
 
   CU_ASSERT_EQUAL(seg_stringtable_count(table), 3);
   CU_ASSERT_EQUAL(seg_stringtable_capacity(table), 5);
 
-  seg_stringtable_put(table, "ddd", 3, "dval");
+  err = seg_stringtable_put(table, "ddd", 3, "dval", &out);
+  SEG_ASSERT_OK(err);
+  CU_ASSERT_PTR_NULL(out);
 
   CU_ASSERT_EQUAL(seg_stringtable_count(table), 4);
   CU_ASSERT_EQUAL(seg_stringtable_capacity(table), 10);

@@ -13,6 +13,7 @@
 #include "lexer.h"
 #include "debug/ast_printer.h"
 #include "debug/symbol_printer.h"
+#include "runtime/runtime.h"
 
 /*
  * Print a usage statement and exit with an exit code.
@@ -121,7 +122,7 @@ static void process_options(int argc, char **argv, seg_options *opts)
   }
 }
 
-static int process_file(const char *path, seg_options *opts)
+static int process_file(seg_runtime *r, const char *path, seg_options *opts)
 {
   int res;
   struct stat istat;
@@ -144,7 +145,7 @@ static int process_file(const char *path, seg_options *opts)
     exit(1);
   }
 
-  seg_program *program = seg_parse((char*) content, istat.st_size, opts);
+  seg_program *program = seg_parse(r, (char*) content, istat.st_size, opts);
 
   if (program->ast == NULL && opts->ast_invoke) {
     fputs("Syntax error!\n", stderr);
@@ -181,16 +182,26 @@ static int process_file(const char *path, seg_options *opts)
 int main(int argc, char **argv)
 {
   int res;
+  seg_err err;
   seg_options opts;
+  seg_runtime *runtime;
+
+  err = seg_new_runtime(&runtime);
+  if (err != SEG_OK) {
+    fprintf(stderr, "Unable to initialize runtime: %s", err->message);
+    exit(1);
+  }
 
   process_options(argc, argv, &opts);
 
   for (int i = 0; i < opts.src_count; i++) {
-    res = process_file(opts.src_paths[i], &opts);
+    res = process_file(runtime, opts.src_paths[i], &opts);
     if (res) {
+      seg_delete_runtime(runtime);
       return res;
     }
   }
 
+  seg_delete_runtime(runtime);
   return 0;
 }

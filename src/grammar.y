@@ -6,9 +6,9 @@
   #include "ast.h"
   #include "token.h"
   #include "parse_helpers.h"
-  #include "symboltable.h"
+  #include "runtime/symboltable.h"
 
-  #define INTERN(name, length) seg_symboltable_intern(state->symboltable, name, length)
+  #define INTERN(out, name, length) seg_symboltable_intern(state->symboltable, name, length, out)
 }
 
 // Grammar definition for segment.
@@ -88,7 +88,7 @@ statement (OUT) ::= spaceinvocation (IN). { OUT = IN; }
 
 expr (OUT) ::= INTEGER (L).
 {
-  int value = seg_token_as_integer(L);
+  int64_t value = seg_token_as_integer(L);
   seg_delete_token(L);
 
   OUT = malloc(sizeof(seg_expr_node));
@@ -118,7 +118,7 @@ expr (OUT) ::= STRING (S).
 expr (OUT) ::= SYMBOL (S).
 {
   /* : ... */
-  seg_symbol *sym = seg_token_intern_without(S, state->symboltable, 1, 0);
+  seg_object sym = seg_token_intern_without(S, state->symboltable, 1, 0);
   seg_delete_token(S);
 
   OUT = malloc(sizeof(seg_expr_node));
@@ -129,7 +129,7 @@ expr (OUT) ::= SYMBOL (S).
 expr (OUT) ::= QUOTEDSYMBOL (S).
 {
   /* :' ... ' or :" ... " */
-  seg_symbol *sym = seg_token_intern_without(S, state->symboltable, 2, 1);
+  seg_object sym = seg_token_intern_without(S, state->symboltable, 2, 1);
   seg_delete_token(S);
 
   OUT = malloc(sizeof(seg_expr_node));
@@ -228,10 +228,10 @@ expr (OUT) ::= IDENTIFIER (V).
 
   if (seg_parser_isarg(state, name, length)) {
     OUT->child_kind = SEG_VAR;
-    OUT->child.var.varname = INTERN(name, length);
+    INTERN(&OUT->child.var.varname, name, length);
   } else {
     OUT->child_kind = SEG_METHODCALL;
-    OUT->child.methodcall.selector = INTERN(name, length);
+    INTERN(&OUT->child.methodcall.selector, name, length);
     OUT->child.methodcall.receiver = seg_implicit_self(state);
     OUT->child.methodcall.args = NULL;
   }
@@ -295,7 +295,7 @@ parameter (OUT) ::= IDENTIFIER (ID).
   seg_delete_token(ID);
 
   OUT = malloc(sizeof(seg_parameter_list));
-  OUT->parameter = INTERN(name, length);
+  INTERN(&OUT->parameter, name, length);
   OUT->next = NULL;
 }
 

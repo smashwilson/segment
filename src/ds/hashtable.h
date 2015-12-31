@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "errors.h"
+
 /*
  * Settings that control the growth behavior of a hashtable.
  */

@@ -1,4 +1,4 @@
 BLOCK: without parameters
-|-METHODCALL: +
+|-METHODCALL: [+]
 | |-INTEGER: 3
 | |-INTEGER: 4

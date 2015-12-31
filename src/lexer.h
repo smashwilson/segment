@@ -5,7 +5,7 @@
 
 #include "ast.h"
 #include "options.h"
-#include "symboltable.h"
+#include "runtime/symboltable.h"
 
 typedef struct {
   seg_block_node *ast;
@@ -15,7 +15,7 @@ typedef struct {
 /**
  * Parse a coherent chunk of segment code and return its AST.
  */
-seg_program *seg_parse(char *content, off_t length, seg_options *opts);
+seg_program *seg_parse(seg_runtime *r, char *content, off_t length, seg_options *opts);
 
 /* The initial size of the Ragel stack. */
 #define RAGEL_INIT_STACK_SIZE 5

@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "errors.h"
 #include "ds/hashtable.h"
 
 /*
@@ -17,9 +18,9 @@ typedef struct seg_stringtable seg_stringtable;
 /*
  * Signature of a function used to iterate over the key-value pairs within a hashtable.
  */
-typedef void (*seg_stringtable_iterator)(
+typedef seg_err (*seg_stringtable_iterator)(
   const char *key,
-  const size_t key_length,
+  const uint64_t key_length,
   void *value,
   void *state
 );
@@ -27,7 +28,7 @@ typedef void (*seg_stringtable_iterator)(
 /*
  * Allocate a new stringtable with the specified initial capacity.
  */
-seg_stringtable *seg_new_stringtable(uint64_t capacity);
+seg_err seg_new_stringtable(uint64_t capacity, seg_stringtable **out);
 
 /*
  * Return the number of items currently stored in a stringtable.
@@ -49,28 +50,30 @@ seg_hashtable_settings *seg_stringtable_get_settings(seg_stringtable *table);
  * load increases beyond the threshold. Notice that `capacity` can be greater or less than the
  * current capacity.
  */
-void seg_stringtable_resize(seg_stringtable *table, uint64_t capacity);
+seg_err seg_stringtable_resize(seg_stringtable *table, uint64_t capacity);
 
 /*
  * Add a new item to the stringtable, expanding it if necessary. Return the value previously
  * assigned to `key` if one was present. Otherwise, return `NULL`.
  */
-void *seg_stringtable_put(
+seg_err seg_stringtable_put(
   seg_stringtable *table,
   const char *key,
   size_t key_length,
-  void *value
+  void *value,
+  void **out
 );
 
 /*
  * Add a new item to the stringtable if and only if `key` is currently unassigned. Return the
  * existing item mapped to `key` if there was one, or the newly assigned `value` otherwise.
  */
-void *seg_stringtable_putifabsent(
+seg_err seg_stringtable_putifabsent(
   seg_stringtable *table,
   const char *key,
   size_t key_length,
-  void *value
+  void *value,
+  void **out
 );
 
 /*
@@ -83,7 +86,7 @@ void *seg_stringtable_get(seg_stringtable *table, const char *key, size_t key_le
  * Iterate through each key-value pair in the hashtable. `state` will be provided as-is to the
  * iterator function during each iteration.
  */
-void seg_stringtable_each(seg_stringtable *table, seg_stringtable_iterator iter, void *state);
+seg_err seg_stringtable_each(seg_stringtable *table, seg_stringtable_iterator iter, void *state);
 
 /*
  * Destroy a stringtable created with `seg_new_stringtable`.

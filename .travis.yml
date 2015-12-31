@@ -1,6 +1,11 @@
 language: c
-compiler: gcc
-install: script/bootstrap
+compiler: clang
+addons:
+  apt:
+    packages:
+    - ragel
+    - lemon
+    - libcunit1-dev
 script: make test
 notifications:
   email: false

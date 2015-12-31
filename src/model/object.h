@@ -207,7 +207,7 @@ typedef struct seg_bootstrap_objects seg_bootstrap_objects;
 typedef enum {
   SEG_CLASS_SLOT_NAME = 0,
   SEG_CLASS_SLOT_STORAGE,
-  SEG_CLASS_SLOT_SLOTS,
+  SEG_CLASS_SLOT_LENGTH,
   SEG_CLASS_SLOT_IVARS,
   SEG_CLASS_SLOTCOUNT = SEG_CLASS_SLOT_IVARS
 } seg_class_slots;

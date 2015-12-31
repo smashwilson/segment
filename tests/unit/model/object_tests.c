@@ -121,7 +121,7 @@ static void test_class(void)
   TRY(seg_integer_value(o, &i));
   CU_ASSERT_EQUAL(i, SEG_STORAGE_SLOTTED);
 
-  TRY(seg_slot_at(klass, SEG_CLASS_SLOT_SLOTS, &o));
+  TRY(seg_slot_at(klass, SEG_CLASS_SLOT_LENGTH, &o));
   TRY(seg_integer_value(o, &i));
   CU_ASSERT_EQUAL(i, 3);
 

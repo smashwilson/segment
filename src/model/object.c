@@ -356,7 +356,7 @@ seg_err seg_class_ivars(seg_runtime *r, seg_object klass, int64_t count, ...)
   if (err != SEG_OK) {
     return err;
   }
-  err = seg_slot_atput(klass, SEG_CLASS_SLOT_SLOTS, slot_count);
+  err = seg_slot_atput(klass, SEG_CLASS_SLOT_LENGTH, slot_count);
   if (err != SEG_OK) {
     return err;
   }

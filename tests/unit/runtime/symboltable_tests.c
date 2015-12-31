@@ -17,25 +17,26 @@ static void test_access(void)
   SEG_ASSERT_OK(err);
 
   seg_symboltable *table = seg_runtime_symboltable(r);
+  uint64_t init_count = seg_symboltable_count(table);
 
   seg_object a0sym;
-  err = seg_symboltable_intern(table, "aaaaaaaaa", 9, &a0sym);
+  err = seg_symboltable_cintern(table, "aaaaaaaaa", &a0sym);
   SEG_ASSERT_OK(err);
 
   seg_object b0sym;
-  err = seg_symboltable_intern(table, "bbbbbbbbb", 9, &b0sym);
+  err = seg_symboltable_cintern(table, "bbbbbbbbb", &b0sym);
   SEG_ASSERT_OK(err);
 
   SEG_ASSERT_DIFFERENT(a0sym, b0sym);
 
   seg_object b1sym;
-  err = seg_symboltable_intern(table, "bbbbbbbbb", 9, &b1sym);
+  err = seg_symboltable_cintern(table, "bbbbbbbbb", &b1sym);
   SEG_ASSERT_OK(err);
 
   SEG_ASSERT_SAME(b0sym, b1sym);
 
   uint64_t count = seg_symboltable_count(table);
-  CU_ASSERT_EQUAL(count, 2);
+  CU_ASSERT_EQUAL(count - init_count, 2);
 
   seg_delete_runtime(r);
 }
@@ -49,6 +50,7 @@ static void test_get(void)
   SEG_ASSERT_OK(err);
 
   seg_symboltable *table = seg_runtime_symboltable(r);
+  uint64_t init_count = seg_symboltable_count(table);
 
   seg_object a0sym;
   err = seg_symboltable_intern(table, "aaaaaaaaa", 9, &a0sym);
@@ -61,7 +63,7 @@ static void test_get(void)
   SEG_ASSERT_SAME(b0sym, SEG_NO_SYMBOL);
 
   uint64_t count = seg_symboltable_count(table);
-  CU_ASSERT_EQUAL(count, 1);
+  CU_ASSERT_EQUAL(count - init_count, 1);
 
   seg_delete_runtime(r);
 }
@@ -75,6 +77,7 @@ static void test_immediate(void)
   SEG_ASSERT_OK(err);
 
   seg_symboltable *table = seg_runtime_symboltable(r);
+  uint64_t init_count = seg_symboltable_count(table);
 
   seg_object a0sym;
   err = seg_symboltable_intern(table, "aaa", 3, &a0sym);
@@ -82,7 +85,7 @@ static void test_immediate(void)
   CU_ASSERT(SEG_IS_IMMEDIATE(a0sym));
 
   uint64_t count = seg_symboltable_count(table);
-  CU_ASSERT_EQUAL(count, 0);
+  CU_ASSERT_EQUAL(count - init_count, 0);
 
   seg_object a1sym = seg_symboltable_get(table, "aaa", 3);
   CU_ASSERT(SEG_IS_IMMEDIATE(a1sym));

@@ -30,4 +30,9 @@ seg_err seg_class(seg_runtime *r, const char *name, seg_storage storage, seg_obj
  */
 seg_err seg_class_ivars(seg_runtime *r, seg_object klass, int64_t count, ...);
 
+/*
+ * Access a class object's storage implementation.
+ */
+seg_err seg_class_storage(seg_object klass, seg_storage *out);
+
 #endif

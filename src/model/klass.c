@@ -73,3 +73,21 @@ seg_err seg_class_ivars(seg_runtime *r, seg_object klass, int64_t count, ...)
 
   return SEG_OK;
 }
+
+seg_err seg_class_storage(seg_object klass, seg_storage *out)
+{
+  seg_err err;
+  seg_object o_storage;
+  int64_t i_storage;
+
+  SEG_TRY(seg_slot_at(klass, SEG_CLASS_SLOT_STORAGE, &o_storage));
+  SEG_TRY(seg_integer_value(o_storage, &i_storage));
+
+  if (i_storage < 0 || i_storage >= SEG_STORAGECOUNT) {
+    return SEG_INVAL("Unrecognized storage designator");
+  }
+
+  *out = (seg_storage) i_storage;
+
+  return SEG_OK;
+}

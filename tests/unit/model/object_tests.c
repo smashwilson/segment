@@ -4,6 +4,7 @@
 #include "unit.h"
 #include "errors.h"
 #include "model/object.h"
+#include "model/klass.h"
 #include "runtime/runtime.h"
 
 static void test_immediate_integer(void)
@@ -156,7 +157,6 @@ CU_pSuite initialize_object_suite(void)
   ADD_TEST(test_immediate_integer);
   ADD_TEST(test_immediate_string);
   ADD_TEST(test_immediate_symbol);
-  ADD_TEST(test_class);
   ADD_TEST(test_slotted);
   ADD_TEST(test_storage);
 

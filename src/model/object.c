@@ -5,6 +5,7 @@
 
 #include "errors.h"
 #include "model/object.h"
+#include "model/klass.h"
 #include "runtime/runtime.h"
 #include "runtime/symboltable.h"
 
@@ -210,55 +211,6 @@ seg_err seg_buffer_contents(seg_object *buffer, char **out, uint64_t *length)
 
 // SEG_SLOTTED /////////////////////////////////////////////////////////////////////////////////////
 
-seg_err seg_slotted(seg_runtime *r, seg_object klass, seg_object *out)
-{
-  seg_err err;
-  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
-
-  // Verify that klass is indeed a class that specifies slotted storage.
-  if (SEG_IS_IMMEDIATE(klass) || !SEG_SAME(klass.pointer->klass, boots->class_class)) {
-    return SEG_TYPE("Attempt to instantiate a non-class.");
-  }
-
-  seg_object storage_slot;
-  int64_t storage_value;
-  err = seg_slot_at(klass, SEG_CLASS_SLOT_STORAGE, &storage_slot);
-  if (err != SEG_OK) {
-    return err;
-  }
-  err = seg_integer_value(storage_slot, &storage_value);
-  if (err != SEG_OK) {
-    return err;
-  }
-  if (storage_value != SEG_STORAGE_SLOTTED) {
-    return SEG_TYPE("Attempt to instantiate a slotted instance from a non-slotted class.");
-  }
-
-  // Read the preferred initial length from the class.
-  seg_object length_slot;
-  int64_t length_value;
-  err = seg_slot_at(klass, SEG_CLASS_SLOT_LENGTH, &length_slot);
-  if (err != SEG_OK) {
-    return err;
-  }
-  err = seg_integer_value(length_slot, &length_value);
-  if (err != SEG_OK) {
-    return err;
-  }
-
-  seg_object_slotted *result;
-  err = _slotted_alloc(length_value, &result);
-  if (err != SEG_OK) {
-    return err;
-  }
-  _slotted_init_header(result, klass, length_value);
-  _slotted_init_slots(result, klass);
-
-  out->pointer = (seg_object_common*) result;
-
-  return SEG_NOTYET("seg_slotted");
-}
-
 static seg_err _slotted_alloc(uint64_t length, seg_object_slotted **out)
 {
   *out = malloc(sizeof(seg_object_slotted) + (length * sizeof(seg_object)));
@@ -283,6 +235,41 @@ static void _slotted_init_slots(seg_runtime *r, seg_object_slotted *object)
   }
 }
 
+seg_err seg_slotted(seg_runtime *r, seg_object klass, seg_object *out)
+{
+  seg_err err;
+  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
+
+  // Verify that klass is indeed a class that specifies slotted storage.
+  if (SEG_IS_IMMEDIATE(klass) || !SEG_SAME(klass.pointer->klass, boots->class_class)) {
+    return SEG_TYPE("Attempt to instantiate an invalid class.");
+  }
+
+  seg_object storage_slot;
+  int64_t storage_value;
+  SEG_TRY(seg_slot_at(klass, SEG_CLASS_SLOT_STORAGE, &storage_slot));
+  SEG_TRY(seg_integer_value(storage_slot, &storage_value));
+
+  if (storage_value != SEG_STORAGE_SLOTTED) {
+    return SEG_TYPE("Attempt to instantiate a slotted instance from a non-slotted class.");
+  }
+
+  // Read the preferred initial length from the class.
+  seg_object length_slot;
+  int64_t length_value;
+  SEG_TRY(seg_slot_at(klass, SEG_CLASS_SLOT_LENGTH, &length_slot));
+  SEG_TRY(seg_integer_value(length_slot, &length_value));
+
+  seg_object_slotted *result;
+  SEG_TRY(_slotted_alloc(length_value, &result));
+  _slotted_init_header(result, klass, length_value);
+  _slotted_init_slots(r, result);
+
+  out->pointer = (seg_object_common*) result;
+
+  return SEG_OK;
+}
+
 seg_err seg_slotted_length(seg_object instance, uint64_t *out)
 {
   return SEG_NOTYET("seg_slotted_length");
@@ -303,97 +290,62 @@ seg_err seg_slot_atput(seg_object slotted, uint64_t index, seg_object value)
   return SEG_NOTYET("seg_slot_atput");
 }
 
-// CLASSES /////////////////////////////////////////////////////////////////////////////////////////
-
-seg_err seg_class(seg_runtime *r, const char *name, seg_storage storage, seg_object *out)
-{
-  return SEG_NOTYET("seg_class");
-}
-
-seg_err seg_class_ivars(seg_runtime *r, seg_object klass, int64_t count, ...)
-{
-  va_list args;
-  char *ivarname;
-  seg_err err;
-
-  seg_symboltable *table = seg_runtime_symboltable(r);
-
-  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
-
-  seg_object ivar_array;
-  err = seg_slotted(r, boots->array_class, &ivar_array);
-  if (err != SEG_OK) {
-    return err;
-  }
-  err = seg_slotted_grow(ivar_array, count);
-  if (err != SEG_OK) {
-    return err;
-  }
-
-  va_start(args, count);
-
-  for (int i = 0; i < count; i++) {
-    ivarname = va_arg(args, char *);
-
-    seg_object ivarsym;
-    err = seg_symboltable_cintern(table, ivarname, &ivarsym);
-    if (err != SEG_OK) {
-      va_end(args);
-      return err;
-    }
-
-    err = seg_slot_atput(ivar_array, i, ivarsym);
-    if (err != SEG_OK) {
-      va_end(args);
-      return err;
-    }
-  }
-
-  va_end(args);
-
-  seg_object slot_count;
-  err = seg_integer(r, count, &slot_count);
-  if (err != SEG_OK) {
-    return err;
-  }
-  err = seg_slot_atput(klass, SEG_CLASS_SLOT_LENGTH, slot_count);
-  if (err != SEG_OK) {
-    return err;
-  }
-  err = seg_slot_atput(klass, SEG_CLASS_SLOT_IVARS, ivar_array);
-  if (err != SEG_OK) {
-    return err;
-  }
-
-  return SEG_OK;
-}
-
-
 // BOOTSTRAPPING ///////////////////////////////////////////////////////////////////////////////////
 
 seg_err _seg_bootstrap_runtime(seg_runtime *runtime, seg_bootstrap_objects *bootstrap)
 {
   seg_err err;
-
   seg_symboltable *symtable = seg_runtime_symboltable(runtime);
 
-  seg_object sym_name, sym_storage, sym_ivars;
-  err = seg_symboltable_cintern(symtable, "name", &sym_name);
-  if (err != SEG_OK) {
-    return err;
-  }
-  err = seg_symboltable_cintern(symtable, "storage", &sym_storage);
-  if (err != SEG_OK) {
-    return err;
-  }
-  err = seg_symboltable_cintern(symtable, "instance_variables", &sym_ivars);
+  // Prepopulate the symbol table with symbols that we're going to use as names later.
+  seg_object sym_name, sym_storage, sym_length, sym_ivars;
+  SEG_TRY(seg_symboltable_cintern(symtable, "name", &sym_name));
+  SEG_TRY(seg_symboltable_cintern(symtable, "storage", &sym_storage));
+  SEG_TRY(seg_symboltable_cintern(symtable, "preferred_length", &sym_length));
+  SEG_TRY(seg_symboltable_cintern(symtable, "instance_variables", &sym_ivars));
 
-  // Start with the Class class, which has itself as a class.
-  seg_object name_class;
-  err = seg_cstring(runtime, "Class", &name_class);
-  if (err != SEG_OK) {
-    return err;
-  }
+  seg_object sym_name_class;
+  SEG_TRY(seg_symboltable_cintern(symtable, "Class", &sym_name_class));
+
+  // Construct immediates that we'll need.
+  seg_object slotted_storage, preferred_length;
+  SEG_TRY(seg_integer(runtime, (int64_t) SEG_STORAGE_SLOTTED, &slotted_storage));
+  SEG_TRY(seg_integer(runtime, (int64_t) SEG_CLASS_SLOTCOUNT, &preferred_length));
+
+  // Initialize the Class class, which has itself as a class.
+  // This is tricky because we can't use seg_slotted (or seg_class) to initialize Class itself, or
+  // the sanity checks will fail.
+
+  seg_object class_class;
+  seg_object_slotted *class_class_internal;
+
+  SEG_TRY(_slotted_alloc(SEG_CLASS_SLOTCOUNT, &class_class_internal));
+  class_class.pointer = (seg_object_common*) class_class_internal;
+  _slotted_init_header(class_class_internal, class_class, SEG_CLASS_SLOTCOUNT);
+
+  SEG_TRY(seg_slot_atput(class_class, (uint64_t) SEG_CLASS_SLOT_NAME, sym_name_class));
+  SEG_TRY(seg_slot_atput(class_class, (uint64_t) SEG_CLASS_SLOT_STORAGE, slotted_storage));
+  SEG_TRY(seg_slot_atput(class_class, (uint64_t) SEG_CLASS_SLOT_LENGTH, preferred_length));
+
+  bootstrap->class_class = class_class;
+
+  // Instantiate the Array class and instance, then correct the ivars slots in the two classes created so far.
+  SEG_TRY(seg_class(runtime, "Array", SEG_STORAGE_SLOTTED, &bootstrap->array_class));
+
+  seg_object empty_array_0, empty_array_1;
+  SEG_TRY(seg_slotted(runtime, bootstrap->array_class, &empty_array_0));
+  SEG_TRY(seg_slotted(runtime, bootstrap->array_class, &empty_array_1));
+
+  SEG_TRY(seg_slot_atput(bootstrap->class_class, (uint64_t) SEG_CLASS_SLOT_IVARS, empty_array_0));
+  SEG_TRY(seg_slot_atput(bootstrap->array_class, (uint64_t) SEG_CLASS_SLOT_IVARS, empty_array_1));
+
+  // Initialize the rest of the well-known class objects.
+  SEG_TRY(seg_class(runtime, "Integer", SEG_STORAGE_IMMEDIATE, &bootstrap->integer_class));
+  SEG_TRY(seg_class(runtime, "Float", SEG_STORAGE_IMMEDIATE, &bootstrap->float_class));
+  SEG_TRY(seg_class(runtime, "String", SEG_STORAGE_BUFFER, &bootstrap->string_class));
+  SEG_TRY(seg_class(runtime, "Symbol", SEG_STORAGE_BUFFER, &bootstrap->symbol_class));
+  SEG_TRY(seg_class(runtime, "Array", SEG_STORAGE_SLOTTED, &bootstrap->array_class));
+  SEG_TRY(seg_class(runtime, "Block", SEG_STORAGE_BUFFER, &bootstrap->block_class));
 
   return SEG_OK;
 }

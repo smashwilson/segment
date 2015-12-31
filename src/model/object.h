@@ -45,7 +45,8 @@ typedef union {
 typedef enum {
   SEG_STORAGE_IMMEDIATE = 0,
   SEG_STORAGE_BUFFER,
-  SEG_STORAGE_SLOTTED
+  SEG_STORAGE_SLOTTED,
+  SEG_STORAGECOUNT
 } seg_storage;
 
 /* Macro to determine whether or not a given seg_object is an immediate or not. */

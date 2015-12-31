@@ -1,6 +1,8 @@
 #ifndef UNIT
 #define UNIT
 
+#include <stdio.h>
+
 /**
  * Register the test function +name+ with CUnit.  Use within an
  * +initialize_xx_suite+ function to cleanly register a test case.

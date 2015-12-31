@@ -4,28 +4,19 @@ ifdef DEBUG
 	CFLAGS += -g
 endif
 
-CORE_OBJECTS = src/lexer.o
-CORE_OBJECTS += src/token.o src/ast.o
-CORE_OBJECTS += src/parse_helpers.o
-
-CORE_OBJECTS += src/errors.o
-CORE_OBJECTS += src/ds/stringtable.o src/ds/ptrtable.o src/ds/plugtable.o src/ds/murmur.o
-
-CORE_OBJECTS += src/model/object.o
-CORE_OBJECTS += src/runtime/symboltable.o src/runtime/runtime.o
-CORE_OBJECTS += src/debug/ast_printer.o src/debug/symbol_printer.o
+CORE_OBJECTS = src/lexer.o src/token.o src/ast.o src/parse_helpers.o src/errors.o
+CORE_OBJECTS += $(patsubst %.c,%.o,$(wildcard src/ds/*.c))
+CORE_OBJECTS += $(patsubst %.c,%.o,$(wildcard src/model/*.c))
+CORE_OBJECTS += $(patsubst %.c,%.o,$(wildcard src/runtime/*.c))
+CORE_OBJECTS += $(patsubst %.c,%.o,$(wildcard src/debug/*.c))
 
 EXEC_OBJECTS = src/entry.o
 
 TEST_OBJECTS = tests/unit/suite.o
 
-TEST_OBJECTS += tests/unit/ds/stringtable_tests.o tests/unit/ds/ptrtable_tests.o
-TEST_OBJECTS += tests/unit/ds/plugtable_tests.o
-
-TEST_OBJECTS += tests/unit/model/object_tests.o
-
-TEST_OBJECTS += tests/unit/runtime/symboltable_tests.o
-TEST_OBJECTS += tests/unit/runtime/runtime_tests.o
+TEST_OBJECTS += $(patsubst %.c,%.o,$(wildcard tests/unit/ds/*.c))
+TEST_OBJECTS += $(patsubst %.c,%.o,$(wildcard tests/unit/model/*.c))
+TEST_OBJECTS += $(patsubst %.c,%.o,$(wildcard tests/unit/runtime/*.c))
 
 .PHONY: test
 test: bin/segment tests/units

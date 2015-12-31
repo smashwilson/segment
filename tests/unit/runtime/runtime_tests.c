@@ -21,22 +21,28 @@ static void test_creation(void)
 
 static void test_bootstrap(void)
 {
-  seg_err err;
-
   seg_runtime *r = NULL;
-  err = seg_new_runtime(&r);
-  SEG_ASSERT_OK(err);
+  SEG_ASSERT_TRY(seg_new_runtime(&r));
 
   const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
 
   /* The Class class has itself as its class. */
-  SEG_ASSERT_SAME(boots->class_class, seg_object_class(r, boots->class_class));
+  seg_object out;
+  SEG_ASSERT_TRY(seg_object_class(r, boots->class_class, &out));
+  SEG_ASSERT_SAME(boots->class_class, out);
 
   /* The other classes are instances of the Class class for each literal. */
-  SEG_ASSERT_SAME(boots->class_class, seg_object_class(r, boots->integer_class));
-  SEG_ASSERT_SAME(boots->class_class, seg_object_class(r, boots->string_class));
-  SEG_ASSERT_SAME(boots->class_class, seg_object_class(r, boots->symbol_class));
-  SEG_ASSERT_SAME(boots->class_class, seg_object_class(r, boots->block_class));
+  SEG_ASSERT_TRY(seg_object_class(r, boots->integer_class, &out));
+  SEG_ASSERT_SAME(boots->class_class, out);
+
+  SEG_ASSERT_TRY(seg_object_class(r, boots->string_class, &out));
+  SEG_ASSERT_SAME(boots->class_class, out);
+
+  SEG_ASSERT_TRY(seg_object_class(r, boots->symbol_class, &out));
+  SEG_ASSERT_SAME(boots->class_class, out);
+
+  SEG_ASSERT_TRY(seg_object_class(r, boots->block_class, &out));
+  SEG_ASSERT_SAME(boots->class_class, out);
 
   seg_delete_runtime(r);
 }

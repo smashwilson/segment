@@ -8,14 +8,14 @@ typedef struct {
   int depth;
 } printer_state;
 
-static void print_stringlike(printer_state *pstate, seg_object object)
+static void print_buffer(printer_state *pstate, seg_object object)
 {
   seg_err err;
 
   char *out = NULL;
   uint64_t length = 0l;
 
-  err = seg_stringlike_contents(&object, &out, &length);
+  err = seg_buffer_contents(&object, &out, &length);
   if (err != SEG_OK) {
     fprintf(pstate->out, "[ERR: %s]\n", err->message);
     return;
@@ -56,7 +56,7 @@ static void print_symbol(seg_symbol_node *node, void *state)
   print_prefix(pstate);
 
   fputs("SYMBOL: ", pstate->out);
-  print_stringlike(pstate, node->value);
+  print_buffer(pstate, node->value);
 }
 
 static void print_var(seg_var_node *node, void *state)
@@ -65,7 +65,7 @@ static void print_var(seg_var_node *node, void *state)
   print_prefix(pstate);
 
   fputs("VAR: ", pstate->out);
-  print_stringlike(pstate, node->varname);
+  print_buffer(pstate, node->varname);
 }
 
 static void print_methodcall(seg_methodcall_node *node, void *state)
@@ -74,7 +74,7 @@ static void print_methodcall(seg_methodcall_node *node, void *state)
   print_prefix(pstate);
 
   fputs("METHODCALL: ", pstate->out);
-  print_stringlike(pstate, node->selector);
+  print_buffer(pstate, node->selector);
 
   pstate->depth++;
 }
@@ -99,7 +99,7 @@ static void print_block(seg_block_node *node, void *state)
     if (current != initial) {
       fputc(' ', pstate->out);
     }
-    print_stringlike(pstate, current->parameter);
+    print_buffer(pstate, current->parameter);
 
     current = current->next;
   }

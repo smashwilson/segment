@@ -29,14 +29,14 @@ struct seg_object_common {
 };
 
 /*
- * Stringlike objects (to include strings of various encodings and symbols) store their content
- * as an opaque sequence of bytes.
+ * Buffers (to include strings of various encodings and symbols) store their content as an opaque
+ * sequence of bytes.
  */
 typedef struct {
   seg_object_common common;
   uint64_t length;
   char bytes[];
-} seg_object_stringlike;
+} seg_object_buffer;
 
 /*
  * Most instances are slotted objects. Slotted objects contain references to one or more other
@@ -125,14 +125,14 @@ seg_err seg_integer_value(seg_object object, int64_t *out)
   return SEG_OK;
 }
 
-// SEG_STRINGLIKE //////////////////////////////////////////////////////////////////////////////////
+// SEG_BUFFER //////////////////////////////////////////////////////////////////////////////////////
 
-static seg_err _stringlike(seg_runtime *r, const char *str, uint64_t length, bool is_string, seg_object *out) {
+static seg_err _buffer(seg_runtime *r, const char *str, uint64_t length, bool is_string, seg_object *out) {
   if (length > SEG_STR_IMMLEN) {
     // Allocate a non-immediate string object.
-    seg_object_stringlike *s = malloc(sizeof(seg_object_stringlike) + length);
+    seg_object_buffer *s = malloc(sizeof(seg_object_buffer) + length);
     if (s == NULL) {
-      return SEG_NOMEM("Unable to allocate a stringlike object.");
+      return SEG_NOMEM("Unable to allocate a buffer.");
     }
 
     const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
@@ -173,7 +173,7 @@ static seg_err _stringlike(seg_runtime *r, const char *str, uint64_t length, boo
 
 seg_err seg_string(seg_runtime *r, const char *str, uint64_t length, seg_object *out)
 {
-  return _stringlike(r, str, length, true, out);
+  return _buffer(r, str, length, true, out);
 }
 
 seg_err seg_cstring(seg_runtime *r, const char *str, seg_object *out)
@@ -183,24 +183,24 @@ seg_err seg_cstring(seg_runtime *r, const char *str, seg_object *out)
 
 seg_err seg_symbol(seg_runtime *r, const char *str, uint64_t length, seg_object *out)
 {
-  return _stringlike(r, str, length, false, out);
+  return _buffer(r, str, length, false, out);
 }
 
-seg_err seg_stringlike_contents(seg_object *stringlike, char **out, uint64_t *length)
+seg_err seg_buffer_contents(seg_object *buffer, char **out, uint64_t *length)
 {
-  if (stringlike->bits.immediate) {
-    if (stringlike->bits.kind != SEG_IMM_STRING && stringlike->bits.kind != SEG_IMM_SYMBOL) {
-      return SEG_TYPE("Non-string or symbol provided to seg_stringlike_contents");
+  if (buffer->bits.immediate) {
+    if (buffer->bits.kind != SEG_IMM_STRING && buffer->bits.kind != SEG_IMM_SYMBOL) {
+      return SEG_TYPE("Non-string or symbol provided to seg_buffer_contents");
     }
 
-    *length = stringlike->bits.length;
+    *length = buffer->bits.length;
     // FIXME The +1 here is only necessary on big-endian systems.
-    *out = (char*) stringlike + 1;
+    *out = (char*) buffer + 1;
 
     return SEG_OK;
   }
 
-  seg_object_stringlike *casted = (seg_object_stringlike *) stringlike->pointer;
+  seg_object_buffer *casted = (seg_object_buffer *) buffer->pointer;
 
   *length = casted->length;
   *out = casted->bytes;

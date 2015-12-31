@@ -55,7 +55,7 @@ static void test_immediate_string(void)
 
   char *v = NULL;
   uint64_t len = 0;
-  TRY(seg_stringlike_contents(&s, &v, &len));
+  TRY(seg_buffer_contents(&s, &v, &len));
   CU_ASSERT_EQUAL(len, 3);
   CU_ASSERT_EQUAL(strncmp(v, "sup", len), 0);
 
@@ -79,7 +79,7 @@ static void test_immediate_symbol(void)
 
   char *v = NULL;
   uint64_t len = 0;
-  TRY(seg_stringlike_contents(&s, &v, &len));
+  TRY(seg_buffer_contents(&s, &v, &len));
   CU_ASSERT_EQUAL(len, 5);
   CU_ASSERT_EQUAL(strncmp(v, "short", len), 0);
 
@@ -113,7 +113,7 @@ static void test_class(void)
   SEG_ASSERT_SAME(o, boots->class_class);
 
   TRY(seg_slot_at(klass, SEG_CLASS_SLOT_NAME, &o));
-  TRY(seg_stringlike_contents(&o, &n, &u));
+  TRY(seg_buffer_contents(&o, &n, &u));
   CU_ASSERT_EQUAL(u, 4);
   CU_ASSERT_EQUAL(strncmp(n, "Test", u), 0);
 
@@ -130,17 +130,17 @@ static void test_class(void)
   CU_ASSERT_EQUAL(u, 3);
 
   TRY(seg_slot_at(ivars, 0, &o));
-  TRY(seg_stringlike_contents(&o, &n, &u));
+  TRY(seg_buffer_contents(&o, &n, &u));
   CU_ASSERT_EQUAL(u, 3);
   CU_ASSERT_EQUAL(strncmp(n, "one", u), 0);
 
   TRY(seg_slot_at(ivars, 1, &o));
-  TRY(seg_stringlike_contents(&o, &n, &u));
+  TRY(seg_buffer_contents(&o, &n, &u));
   CU_ASSERT_EQUAL(u, 3);
   CU_ASSERT_EQUAL(strncmp(n, "two", u), 0);
 
   TRY(seg_slot_at(ivars, 2, &o));
-  TRY(seg_stringlike_contents(&o, &n, &u));
+  TRY(seg_buffer_contents(&o, &n, &u));
   CU_ASSERT_EQUAL(u, 5);
   CU_ASSERT_EQUAL(strncmp(n, "three", u), 0);
 
@@ -191,15 +191,15 @@ static void test_storage(void)
   seg_runtime *r = NULL;
   TRY(seg_new_runtime(&r));
 
-  seg_object imm, stringlike, slotted;
+  seg_object imm, buffer, slotted;
   TRY(seg_integer(r, 42l, &imm));
 
   seg_storage storage;
   TRY(seg_object_storage(imm, &storage));
   CU_ASSERT_EQUAL(storage, SEG_STORAGE_IMMEDIATE);
 
-  TRY(seg_object_storage(stringlike, &storage));
-  CU_ASSERT_EQUAL(storage, SEG_STORAGE_STRINGLIKE);
+  TRY(seg_object_storage(buffer, &storage));
+  CU_ASSERT_EQUAL(storage, SEG_STORAGE_BUFFER);
 
   TRY(seg_object_storage(slotted, &storage));
   CU_ASSERT_EQUAL(storage, SEG_STORAGE_SLOTTED);

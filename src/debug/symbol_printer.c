@@ -8,7 +8,7 @@ static seg_err print_symbol(seg_object symbol, void *state)
   uint64_t length;
   seg_err err;
 
-  err = seg_stringlike_contents(&symbol, &name, &length);
+  err = seg_buffer_contents(&symbol, &name, &length);
   if (err != SEG_OK) {
     return err;
   }

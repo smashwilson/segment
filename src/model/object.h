@@ -45,7 +45,7 @@ typedef union {
  */
 typedef enum {
   SEG_STORAGE_IMMEDIATE = 0,
-  SEG_STORAGE_STRINGLIKE,
+  SEG_STORAGE_BUFFER,
   SEG_STORAGE_SLOTTED
 } seg_storage;
 
@@ -129,7 +129,7 @@ seg_err seg_string(seg_runtime *r, const char *str, uint64_t length, seg_object 
 #define SEG_STR_IMMLEN 7
 
 /*
- * Determine pre-instantiation whether or not a stringlike object will be an immediate or not.
+ * Determine pre-instantiation whether or not a buffer object will be an immediate or not.
  */
 #define SEG_STR_WILLBEIMM(len) ((len) <= SEG_STR_IMMLEN)
 
@@ -153,9 +153,9 @@ seg_err seg_symbol(seg_runtime *r, const char *str, uint64_t length, seg_object 
 /*
  * Access a symbol or string's contents and length.
  *
- * SEG_TYPE: If stringlike is not a string or symbol.
+ * SEG_TYPE: If the object is not a buffer.
  */
-seg_err seg_stringlike_contents(seg_object *stringlike, char **out, uint64_t *length);
+seg_err seg_buffer_contents(seg_object *buffer, char **out, uint64_t *length);
 
 /*
  * Allocate a new slotted instance from a class.

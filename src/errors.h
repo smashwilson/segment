@@ -39,11 +39,19 @@ seg_err __seg_create_err(seg_err_code code, const char *msg);
 
 #define __PREFIX(msg) (__FILE__ "@L" __STRINGIZE(__LINE__) ": " msg)
 
-#define SEG_NOMEM(msg) __seg_create_err(SEG_CODE_NOMEM, __PREFIX(msg))
-#define SEG_RANGE(msg) __seg_create_err(SEG_CODE_RANGE, __PREFIX(msg))
-#define SEG_TYPE(msg) __seg_create_err(SEG_CODE_TYPE, __PREFIX(msg))
-#define SEG_INVAL(msg) __seg_create_err(SEG_CODE_INVAL, __PREFIX(msg))
-#define SEG_COLLISION(msg) __seg_create_err(SEG_CODE_COLLISION, __PREFIX(msg))
-#define SEG_NOTYET(msg) __seg_create_err(SEG_CODE_NOTYET, __PREFIX(msg))
+#define SEG_TRY(expr) \
+  do { \
+    err = (expr); \
+    if (err != SEG_OK) { \
+      return err; \
+    } \
+  } while(0)
+
+#define SEG_NOMEM(msg) __seg_create_err(SEG_CODE_NOMEM, __PREFIX("NOMEM " msg))
+#define SEG_RANGE(msg) __seg_create_err(SEG_CODE_RANGE, __PREFIX("RANGE " msg))
+#define SEG_TYPE(msg) __seg_create_err(SEG_CODE_TYPE, __PREFIX("TYPE " msg))
+#define SEG_INVAL(msg) __seg_create_err(SEG_CODE_INVAL, __PREFIX("INVAL " msg))
+#define SEG_COLLISION(msg) __seg_create_err(SEG_CODE_COLLISION, __PREFIX("COLLISION " msg))
+#define SEG_NOTYET(msg) __seg_create_err(SEG_CODE_NOTYET, __PREFIX("NOTYET " msg))
 
 #endif

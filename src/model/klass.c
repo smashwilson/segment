@@ -21,7 +21,7 @@ seg_err seg_class(seg_runtime *r, const char *name, seg_storage storage, seg_obj
 
   // Ensure that the class object has enough slots for its own instance variables, then populate
   // them.
-  SEG_TRY(seg_slotted_grow(*out, (uint64_t) SEG_CLASS_SLOTCOUNT));
+  SEG_TRY(seg_slotted_grow(out, (uint64_t) SEG_CLASS_SLOTCOUNT));
 
   SEG_TRY(seg_slot_atput(*out, (uint64_t) SEG_CLASS_SLOT_NAME, o_name));
   SEG_TRY(seg_slot_atput(*out, (uint64_t) SEG_CLASS_SLOT_STORAGE, o_storage));
@@ -43,7 +43,7 @@ seg_err seg_class_ivars(seg_runtime *r, seg_object klass, int64_t count, ...)
 
   seg_object ivar_array;
   SEG_TRY(seg_slotted(r, boots->array_class, &ivar_array));
-  SEG_TRY(seg_slotted_grow(ivar_array, count));
+  SEG_TRY(seg_slotted_grow(&ivar_array, count));
 
   va_start(args, count);
 

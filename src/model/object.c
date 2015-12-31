@@ -89,7 +89,15 @@ bool seg_object_same(seg_object a, seg_object b)
 
 seg_err seg_object_storage(seg_object o, seg_storage *out)
 {
-  return SEG_NOTYET("seg_object_storage");
+  if (o.bits.immediate) {
+    return SEG_STORAGE_IMMEDIATE;
+  }
+
+  seg_err err;
+  seg_object klass = o.pointer->klass;
+  SEG_TRY(seg_class_storage(klass, out));
+
+  return SEG_OK;
 }
 
 seg_object seg_object_frompointer(void *p)

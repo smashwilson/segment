@@ -270,24 +270,57 @@ seg_err seg_slotted(seg_runtime *r, seg_object klass, seg_object *out)
   return SEG_OK;
 }
 
-seg_err seg_slotted_length(seg_object instance, uint64_t *out)
+seg_err seg_slotted_length(seg_object slotted, uint64_t *out)
 {
-  return SEG_NOTYET("seg_slotted_length");
+  seg_object_slotted *casted = (seg_object_slotted*) slotted.pointer;
+  *out = casted->length;
+  return SEG_OK;
 }
 
-seg_err seg_slotted_grow(seg_object instance, uint64_t length)
+seg_err seg_slotted_grow(seg_object *slotted, uint64_t length)
 {
-  return SEG_NOTYET("seg_slotted_grow");
+  seg_err err;
+  seg_object_slotted *casted = (seg_object_slotted*) slotted->pointer;
+
+  if (casted->length >= length) {
+    return SEG_OK;
+  }
+
+  seg_object_slotted *bigger;
+  SEG_TRY(_slotted_alloc(length, &bigger));
+  _slotted_init_header(bigger, casted->common.klass, length);
+  memcpy(bigger->slots, casted->slots, (size_t) casted->length);
+
+  slotted->pointer = (seg_object_common*) bigger;
+  free(casted);
+
+  return SEG_OK;
 }
 
 seg_err seg_slot_at(seg_object slotted, uint64_t index, seg_object *out)
 {
-  return SEG_NOTYET("seg_slot_at");
+  seg_object_slotted *casted = (seg_object_slotted*) slotted.pointer;
+
+  if (casted->length >= index) {
+    return SEG_RANGE("Attempt to access invalid slot index");
+  }
+
+  *out = casted->slots[index];
+
+  return SEG_OK;
 }
 
 seg_err seg_slot_atput(seg_object slotted, uint64_t index, seg_object value)
 {
-  return SEG_NOTYET("seg_slot_atput");
+  seg_object_slotted *casted = (seg_object_slotted*) slotted.pointer;
+
+  if (casted->length >= index) {
+    return SEG_RANGE("Attempt to mutate invalid slot index");
+  }
+
+  casted->slots[index] = value;
+
+  return SEG_OK;
 }
 
 // BOOTSTRAPPING ///////////////////////////////////////////////////////////////////////////////////

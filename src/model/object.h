@@ -178,7 +178,7 @@ seg_err seg_slotted_length(seg_object instance, uint64_t *out);
  * SEG_TYPE: If instance is not a slotted object.
  * SEG_NOMEM: If the allocation fails.
  */
-seg_err seg_slotted_grow(seg_object instance, uint64_t length);
+seg_err seg_slotted_grow(seg_object *instance, uint64_t length);
 
 /*
  * Access a slot within a slotted object at a specific index.

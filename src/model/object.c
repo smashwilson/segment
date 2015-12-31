@@ -90,7 +90,8 @@ bool seg_object_same(seg_object a, seg_object b)
 seg_err seg_object_storage(seg_object o, seg_storage *out)
 {
   if (o.bits.immediate) {
-    return SEG_STORAGE_IMMEDIATE;
+    *out = SEG_STORAGE_IMMEDIATE;
+    return SEG_OK;
   }
 
   seg_err err;

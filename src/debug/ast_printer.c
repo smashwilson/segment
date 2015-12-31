@@ -17,11 +17,11 @@ static void print_buffer(printer_state *pstate, seg_object object)
 
   err = seg_buffer_contents(&object, &out, &length);
   if (err != SEG_OK) {
-    fprintf(pstate->out, "[ERR: %s]\n", err->message);
+    fprintf(pstate->out, "[ERR: %s]", err->message);
     return;
   }
 
-  fprintf(pstate->out, "[%.*s]\n", (int) length, out);
+  fprintf(pstate->out, "[%.*s]", (int) length, out);
 }
 
 static void print_prefix(printer_state *pstate)
@@ -57,6 +57,7 @@ static void print_symbol(seg_symbol_node *node, void *state)
 
   fputs("SYMBOL: ", pstate->out);
   print_buffer(pstate, node->value);
+  fputc('\n', pstate->out);
 }
 
 static void print_var(seg_var_node *node, void *state)
@@ -66,6 +67,7 @@ static void print_var(seg_var_node *node, void *state)
 
   fputs("VAR: ", pstate->out);
   print_buffer(pstate, node->varname);
+  fputc('\n', pstate->out);
 }
 
 static void print_methodcall(seg_methodcall_node *node, void *state)
@@ -75,6 +77,7 @@ static void print_methodcall(seg_methodcall_node *node, void *state)
 
   fputs("METHODCALL: ", pstate->out);
   print_buffer(pstate, node->selector);
+  fputc('\n', pstate->out);
 
   pstate->depth++;
 }

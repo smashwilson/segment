@@ -309,7 +309,7 @@ seg_err seg_slot_at(seg_object slotted, uint64_t index, seg_object *out)
 {
   seg_object_slotted *casted = (seg_object_slotted*) slotted.pointer;
 
-  if (casted->length >= index) {
+  if (index >= casted->length) {
     return SEG_RANGE("Attempt to access invalid slot index");
   }
 
@@ -322,7 +322,7 @@ seg_err seg_slot_atput(seg_object slotted, uint64_t index, seg_object value)
 {
   seg_object_slotted *casted = (seg_object_slotted*) slotted.pointer;
 
-  if (casted->length >= index) {
+  if (index >= casted->length) {
     return SEG_RANGE("Attempt to mutate invalid slot index");
   }
 

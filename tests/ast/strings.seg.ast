@@ -1,24 +1,24 @@
 BLOCK: without parameters
 |-STRING: [double-quoted with \" internal]
 |-STRING: [single-quoted with \' internal]
-|-METHODCALL: <<
+|-METHODCALL: [<<]
 | |-STRING: [the answer is ]
-| |-METHODCALL: as_string
-| | |-METHODCALL: *
+| |-METHODCALL: [as_string]
+| | |-METHODCALL: [*]
 | | | |-INTEGER: 6
 | | | |-INTEGER: 7
-|-METHODCALL: <<
+|-METHODCALL: [<<]
 | |-STRING: [multiple ]
-| |-METHODCALL: as_string
+| |-METHODCALL: [as_string]
 | | |-INTEGER: 1
 | |-STRING: [ interpolations ]
-| |-METHODCALL: as_string
+| |-METHODCALL: [as_string]
 | | |-INTEGER: 2
 | |-STRING: [ inside]
-|-METHODCALL: <<
+|-METHODCALL: [<<]
 | |-STRING: [this ]
-| |-METHODCALL: as_string
-| | |-METHODCALL: <<
+| |-METHODCALL: [as_string]
+| | |-METHODCALL: [<<]
 | | | |-STRING: [is ]
 | | | |-STRING: [crazy]
 | | | |-STRING: [ but ]

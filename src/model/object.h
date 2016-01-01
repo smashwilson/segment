@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "errors.h"
+#include "model/errors.h"
 
 struct seg_object_common;
 typedef struct seg_object_common seg_object_common;

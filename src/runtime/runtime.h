@@ -1,7 +1,7 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#include "errors.h"
+#include "model/errors.h"
 #include "runtime/symboltable.h"
 #include "model/object.h"
 

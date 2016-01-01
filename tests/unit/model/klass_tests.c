@@ -3,7 +3,7 @@
 #include "model/klass.h"
 
 #include "unit.h"
-#include "errors.h"
+#include "model/errors.h"
 #include "runtime/runtime.h"
 
 static void test_class(void)

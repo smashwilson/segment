@@ -2,7 +2,7 @@
 
 #include "unit.h"
 
-#include "errors.h"
+#include "model/errors.h"
 #include "runtime/runtime.h"
 #include "runtime/symboltable.h"
 #include "model/object.h"

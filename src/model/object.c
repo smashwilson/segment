@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "errors.h"
+#include "model/errors.h"
 #include "model/object.h"
 #include "model/klass.h"
 #include "runtime/runtime.h"

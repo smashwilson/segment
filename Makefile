@@ -4,9 +4,7 @@ ifdef DEBUG
 	CFLAGS += -g
 endif
 
-CORE_OBJECTS = src/errors.o
-
-CORE_OBJECTS += src/compiler/ast.o src/compiler/lexer.o src/compiler/parse_helpers.o
+CORE_OBJECTS = src/compiler/ast.o src/compiler/lexer.o src/compiler/parse_helpers.o
 CORE_OBJECTS += src/compiler/token.o
 
 CORE_OBJECTS += $(patsubst %.c,%.o,$(wildcard src/ds/*.c))

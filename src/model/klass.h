@@ -5,7 +5,7 @@
 #include <stdarg.h>
 
 #include "object.h"
-#include "errors.h"
+#include "model/errors.h"
 
 /* Slot indices used by Class objects. */
 typedef enum {

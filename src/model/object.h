@@ -22,10 +22,10 @@ typedef union {
   /* Immediate value storage. */
   struct {
     /*
-    * Because malloc() aligns the memory it allocates (on 64-bit systems, generally on four-byte
-    * boundaries), it will never return an odd pointer. This means that we can use the least
-    * significant bit as a flag for immediates.
-    */
+     * Because malloc() aligns the memory it allocates (on 64-bit systems, generally on four-byte
+     * boundaries), it will never return an odd pointer. This means that we can use the least
+     * significant bit as a flag for immediates.
+     */
     unsigned immediate: 1;
 
     /* Enum constant from seg_imm_kinds. */

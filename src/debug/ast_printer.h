@@ -1,7 +1,7 @@
 #ifndef AST_PRINTER_H
 #define AST_PRINTER_H
 
-#include "../ast.h"
+#include "compiler/ast.h"
 
 /*
  Print an ASCII-art representation of a parsed AST.

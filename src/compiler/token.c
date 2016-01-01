@@ -3,7 +3,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "token.h"
+#include "compiler/token.h"
 #include "runtime/symboltable.h"
 
 seg_token *seg_new_token(const char *start, const char *end)

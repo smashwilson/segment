@@ -10,7 +10,7 @@
 #include <sys/mman.h>
 
 #include "options.h"
-#include "lexer.h"
+#include "compiler/lexer.h"
 #include "debug/ast_printer.h"
 #include "debug/symbol_printer.h"
 #include "runtime/runtime.h"

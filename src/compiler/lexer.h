@@ -3,7 +3,7 @@
 
 #include <sys/types.h>
 
-#include "ast.h"
+#include "compiler/ast.h"
 #include "options.h"
 #include "runtime/symboltable.h"
 

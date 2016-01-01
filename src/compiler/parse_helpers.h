@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
-#include "ast.h"
-#include "token.h"
+#include "compiler/ast.h"
+#include "compiler/token.h"
 #include "runtime/symboltable.h"
 
 /* Methods that have special significance. */

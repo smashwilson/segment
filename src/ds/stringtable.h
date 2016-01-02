@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "errors.h"
+#include "model/errors.h"
 #include "ds/hashtable.h"
 
 /*

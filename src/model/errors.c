@@ -1,4 +1,4 @@
-#include "errors.h"
+#include "model/errors.h"
 
 struct __seg_err __seg_err_nomem = {
   .code = SEG_CODE_NOMEM,

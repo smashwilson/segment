@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "errors.h"
+#include "model/errors.h"
 #include "model/object.h"
 #include "ds/hashtable.h"
 

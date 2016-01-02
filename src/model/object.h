@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "errors.h"
+#include "model/errors.h"
 
 struct seg_object_common;
 typedef struct seg_object_common seg_object_common;
@@ -22,10 +22,10 @@ typedef union {
   /* Immediate value storage. */
   struct {
     /*
-    * Because malloc() aligns the memory it allocates (on 64-bit systems, generally on four-byte
-    * boundaries), it will never return an odd pointer. This means that we can use the least
-    * significant bit as a flag for immediates.
-    */
+     * Because malloc() aligns the memory it allocates (on 64-bit systems, generally on four-byte
+     * boundaries), it will never return an odd pointer. This means that we can use the least
+     * significant bit as a flag for immediates.
+     */
     unsigned immediate: 1;
 
     /* Enum constant from seg_imm_kinds. */
@@ -158,12 +158,21 @@ seg_err seg_symbol(seg_runtime *r, const char *str, uint64_t length, seg_object 
 seg_err seg_buffer_contents(seg_object *buffer, char **out, uint64_t *length);
 
 /*
- * Allocate a new slotted instance from a class.
+ * Allocate a new slotted instance from a class, respecting the class's stated preferred slot
+ * length.
  *
- * SEG_TYPE: If class is not actually a class object.
+ * SEG_TYPE: If class is not actually a class object that specifies slotted storage.
  * SEG_NOMEM: If the instance allocation fails.
  */
 seg_err seg_slotted(seg_runtime *r, seg_object klass, seg_object *out);
+
+/*
+ * Allocate a new slotted instance from a class with an explicitly provided initial slot capacity.
+ *
+ * SEG_TYPE: If class is not actually a class object that specifies slotted storage.
+ * SEG_NOMEM: If the instance allocation fails.
+ */
+seg_err seg_slotted_with_length(seg_runtime *r, seg_object klass, uint64_t length, seg_object *out);
 
 /*
  * Return the currently allocated slot length of a class.

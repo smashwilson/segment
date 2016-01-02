@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "parse_helpers.h"
-#include "ast.h"
+#include "compiler/parse_helpers.h"
+#include "compiler/ast.h"
 
 struct seg_parser_context {
   seg_block_node *block;

@@ -3,14 +3,14 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "lexer.h"
-#include "ast.h"
-#include "token.h"
+#include "compiler/lexer.h"
+#include "compiler/ast.h"
+#include "compiler/token.h"
 #include "options.h"
-#include "parse_helpers.h"
+#include "compiler/parse_helpers.h"
 #include "runtime/runtime.h"
 
-#include "grammar.h"
+#include "compiler/grammar.h"
 #include "grammar.c"
 
 static void report(const char *name, const char *ts, const char *te, seg_options *opts) {

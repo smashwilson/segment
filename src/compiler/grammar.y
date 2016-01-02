@@ -3,9 +3,9 @@
   #include <stdlib.h>
   #include <stdio.h>
 
-  #include "ast.h"
-  #include "token.h"
-  #include "parse_helpers.h"
+  #include "compiler/ast.h"
+  #include "compiler/token.h"
+  #include "compiler/parse_helpers.h"
   #include "runtime/symboltable.h"
 
   #define INTERN(out, name, length) seg_symboltable_intern(state->symboltable, name, length, out)

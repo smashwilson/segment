@@ -244,6 +244,19 @@ static void _slotted_init_slots(seg_runtime *r, seg_object_slotted *object)
   }
 }
 
+static seg_err _slotted_create(seg_runtime *r, seg_object klass, uint64_t length, seg_object *out)
+{
+  seg_err err;
+
+  seg_object_slotted *result;
+  SEG_TRY(_slotted_alloc(length, &result));
+  _slotted_init_header(result, klass, length);
+  _slotted_init_slots(r, result);
+  out->pointer = (seg_object_common*) result;
+
+  return SEG_OK;
+}
+
 seg_err seg_slotted(seg_runtime *r, seg_object klass, seg_object *out)
 {
   seg_err err;
@@ -269,12 +282,24 @@ seg_err seg_slotted(seg_runtime *r, seg_object klass, seg_object *out)
   SEG_TRY(seg_slot_at(klass, SEG_CLASS_SLOT_LENGTH, &length_slot));
   SEG_TRY(seg_integer_value(length_slot, &length_value));
 
-  seg_object_slotted *result;
-  SEG_TRY(_slotted_alloc(length_value, &result));
-  _slotted_init_header(result, klass, length_value);
-  _slotted_init_slots(r, result);
+  // Allocate and initialize the instance.
+  SEG_TRY(_slotted_create(r, klass, length_value, out));
 
-  out->pointer = (seg_object_common*) result;
+  return SEG_OK;
+}
+
+seg_err seg_slotted_with_length(seg_runtime *r, seg_object klass, uint64_t length, seg_object *out)
+{
+  seg_err err;
+  const seg_bootstrap_objects *boots = seg_runtime_bootstraps(r);
+
+  // Verify that klass is indeed a class that specifies slotted storage.
+  if (SEG_IS_IMMEDIATE(klass) || !SEG_SAME(klass.pointer->klass, boots->class_class)) {
+    return SEG_TYPE("Attempt to instantiate an invalid class.");
+  }
+
+  // Allocate and initialize the instance.
+  SEG_TRY(_slotted_create(r, klass, length, out));
 
   return SEG_OK;
 }

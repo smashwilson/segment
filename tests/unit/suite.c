@@ -9,6 +9,7 @@ CU_pSuite initialize_stringtable_suite(void);
 
 CU_pSuite initialize_object_suite(void);
 CU_pSuite initialize_klass_suite(void);
+CU_pSuite initialize_array_suite(void);
 
 CU_pSuite initialize_runtime_suite(void);
 CU_pSuite initialize_symboltable_suite(void);
@@ -31,6 +32,7 @@ int main(void)
 
   ADD_SUITE(initialize_object_suite);
   ADD_SUITE(initialize_klass_suite);
+  ADD_SUITE(initialize_array_suite);
 
   ADD_SUITE(initialize_runtime_suite);
   ADD_SUITE(initialize_symboltable_suite);

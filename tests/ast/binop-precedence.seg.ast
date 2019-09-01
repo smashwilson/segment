@@ -1,6 +1,0 @@
-BLOCK: without parameters
-|-METHODCALL: [+]
-| |-INTEGER: 3
-| |-METHODCALL: [*]
-| | |-INTEGER: 4
-| | |-INTEGER: 7

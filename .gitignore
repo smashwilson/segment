@@ -1,12 +1,2 @@
-grammar.c
-grammar.h
-grammar.out
-
-lexer.c
-
-*.o
-
-bin/
-tests/suite
-
-default.seg
+/target
+**/*.rs.bk

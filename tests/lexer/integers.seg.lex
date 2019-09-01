@@ -1,6 +1,0 @@
-tok: INTEGER [1]
-tok: INTEGER [44]
-tok: INTEGER [1240072]
-tok: INTEGER [-16]
-tok: INTEGER [+4]
-tok: NEWLINE [\n]

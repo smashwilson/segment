@@ -1,4 +1,0 @@
-## operator definition
-(([foo 0] + [foo 1]) + [foo 2])
-false
-([foo 0] otherop- ([foo 1] someop* [foo 2]))

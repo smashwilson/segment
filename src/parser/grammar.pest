@@ -1,0 +1,11 @@
+source = { SOI ~ expressionlist ~ EOI }
+
+expressionlist = { expression ~ ("\n"+ ~ expression)* ~ "\n"* }
+
+expression = { identifier }
+
+identifier = { identstart ~ identinner* }
+
+identstart = { LETTER | PUNCTUATION | SYMBOL }
+
+identinner = { identstart | NUMBER }
